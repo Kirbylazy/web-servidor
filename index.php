@@ -13,6 +13,7 @@
 <h1>Proyectos</h1>
 <ul>
     <li><a href="/poker-sencillo/index.php">Poker sencillo (PHP)</a></li>
+    <li><a href="/Pruebas/index.php">Pruebas (PHP)</a></li>
 </ul>
 
 </body>
