@@ -12,7 +12,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-<h1>Poker Actulizado v2</h1>
 <!DOCTYPE html>
 <html lang="es">
 <head>
