@@ -55,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $_SESSION['comenzar'] = null;
         $_SESSION['confirmar'] = null;
         $_SESSION['resultado'] = null;
+        $_SESSION['baraja'] = null;
     }
 
     if (isset($_POST['logout'])){
