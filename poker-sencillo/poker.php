@@ -149,7 +149,7 @@ if (!isset($_SESSION['comenzar']) && !isset($_SESSION['confirmar']) && !isset($_
 
 }
 
-if (isset($_SESSION['comenzar']) && isset($_SESSION['confirmar']) && !isset($_SESSION['resultado'])){
+if (isset($_SESSION['comenzar']) && isset($_SESSION['confirmar'])){
 
 ?>
 
