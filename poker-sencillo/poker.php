@@ -198,7 +198,6 @@ if (isset($_SESSION['comenzar']) && isset($_SESSION['confirmar']) && isset($_SES
 <form method="post" action="">
 
             <button type="submit" name="volver">Volver a jugar</button>
-            <button type="submit" name="logout">Logout</button>
             <p><br></p>
 
         </form>
