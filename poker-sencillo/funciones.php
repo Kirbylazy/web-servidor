@@ -12,41 +12,42 @@ $baraja = [
 function repartir($numJug, $nombre) {
 
     global $baraja;
+    $miBaraja = $baraja;
     $numJug--;
     $juego[$nombre] = [];
     for ($j = 0; $j < 5; $j++) {
-            $palo = array_rand($baraja);
-            $valor = $baraja[$palo][array_rand($baraja[$palo])];
+            $palo = array_rand($miBaraja);
+            $valor = $miBaraja[$palo][array_rand($miBaraja[$palo])];
 
             $juego[$nombre][] = [
                 "palo" => $palo,
                 "valor" => $valor];
 
-            unset($baraja[$palo][array_search($valor, $baraja[$palo])]);
+            unset($miBaraja[$palo][array_search($valor, $miBaraja[$palo])]);
             
         }
 
     for ($i = 0; $i < $numJug; $i++) {
         $juego[$i] = [];
         for ($j = 0; $j < 5; $j++) {
-            $palo = array_rand($baraja);
-            $valor = $baraja[$palo][array_rand($baraja[$palo])];
+            $palo = array_rand($miBaraja);
+            $valor = $miBaraja[$palo][array_rand($miBaraja[$palo])];
 
             $juego[$i][] = [
                 "palo" => $palo,
                 "valor" => $valor];
 
-            unset($baraja[$palo][array_search($valor, $baraja[$palo])]);
+            unset($miBaraja[$palo][array_search($valor, $miBaraja[$palo])]);
             
         }
     }
-
+    $_SESSION['baraja'] = $miBaraja;
     return $juego;
 }
 
 function descartar($juego, $d1, $d2, $nombre) {
 
-    global $baraja;
+    $baraja = $_SESSION['baraja'];
 
     // Ajustamos índices (el usuario introduce 1–5)
     $d1--;

@@ -55,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $_SESSION['comenzar'] = null;
         $_SESSION['confirmar'] = null;
         $_SESSION['resultado'] = null;
+        $_SESSION['baraja'] = null;
     }
 
     if (isset($_POST['logout'])){
@@ -149,7 +150,7 @@ if (!isset($_SESSION['comenzar']) && !isset($_SESSION['confirmar']) && !isset($_
 
 }
 
-if (isset($_SESSION['comenzar']) && isset($_SESSION['confirmar']) && !isset($_SESSION['resultado'])){
+if (isset($_SESSION['comenzar']) && isset($_SESSION['confirmar'])){
 
 ?>
 
@@ -198,7 +199,6 @@ if (isset($_SESSION['comenzar']) && isset($_SESSION['confirmar']) && isset($_SES
 <form method="post" action="">
 
             <button type="submit" name="volver">Volver a jugar</button>
-            <button type="submit" name="logout">Logout</button>
             <p><br></p>
 
         </form>
