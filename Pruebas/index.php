@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Poker prueba de upload</title>
+    <title>Poker prueba de</title>
 </head>
 <body>
 
