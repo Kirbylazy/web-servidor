@@ -23,7 +23,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php if (!isset($_SESSION['nombre'])): ?>
 
     <!-- FORMULARIO LOGIN -->
-    <h2>Iniciar sesión</h2>
+    <h2>Iniciar sesión prueba 1</h2>
     <form method="post">
         <label for="n">Nombre:</label>
         <input type="text" name="n" id="n" required>
