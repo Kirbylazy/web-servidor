@@ -159,7 +159,7 @@ if (isset($_SESSION['comenzar']) && isset($_SESSION['confirmar'])){
         <?php foreach ($_SESSION['juego'] as $jugador => $mano): ?>
 
             <tr>
-                <th>Jugador <?= is_string($jugador) ? $jugador : $jugador + 1 ?></th>
+                <th>Jugador <?= is_string($jugador) ? $jugador : $jugador ?></th>
                 <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
             </tr>
 
