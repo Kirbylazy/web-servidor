@@ -66,13 +66,11 @@
         /* ── HERO ── */
         #hero {
             min-height: 100vh;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            text-align: center;
-            padding: 120px 24px 60px;
+            display: flex; align-items: center; justify-content: center;
+            padding: 120px 48px 60px;
             position: relative;
             background:
-                radial-gradient(ellipse 70% 50% at 50% 60%, rgba(0,229,255,0.04) 0%, transparent 70%),
+                radial-gradient(ellipse 70% 50% at 30% 60%, rgba(0,229,255,0.04) 0%, transparent 70%),
                 radial-gradient(ellipse 40% 30% at 80% 20%, rgba(168,85,247,0.05) 0%, transparent 60%);
         }
         #hero .pixel-grid {
@@ -82,15 +80,24 @@
                 linear-gradient(90deg, var(--border) 1px, transparent 1px);
             background-size: 40px 40px; opacity: 0.25;
         }
+        #hero .hero-inner {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 64px;
+            align-items: center;
+            width: 100%; max-width: 1000px;
+            position: relative; z-index: 1;
+        }
+        #hero .hero-text { display: flex; flex-direction: column; align-items: flex-start; }
         #hero .badge {
             font-family: 'Press Start 2P', monospace;
-            font-size: 8px; color: var(--cyan);
+            font-size: 7px; color: var(--cyan);
             border: 2px solid var(--cyan);
-            padding: 6px 16px; margin-bottom: 32px;
+            padding: 6px 14px; margin-bottom: 28px;
             display: inline-block;
             box-shadow: 0 0 12px rgba(0,229,255,0.25);
             animation: pulse-cyan 2s ease-in-out infinite;
-            position: relative; z-index: 1;
+            line-height: 1.8;
         }
         @keyframes pulse-cyan {
             0%,100% { box-shadow: 0 0 12px rgba(0,229,255,0.25); }
@@ -102,19 +109,17 @@
         }
         #hero h1 {
             font-family: 'Press Start 2P', monospace;
-            font-size: clamp(22px, 5vw, 52px);
+            font-size: clamp(20px, 4vw, 46px);
             color: #fff; line-height: 1.5;
             text-shadow: 0 0 40px rgba(0,229,255,0.15);
-            margin-bottom: 20px;
-            position: relative; z-index: 1;
+            margin-bottom: 18px;
         }
         #hero h1 span { color: var(--cyan); }
         #hero .role {
             font-family: 'Press Start 2P', monospace;
-            font-size: clamp(10px, 2vw, 14px);
+            font-size: clamp(9px, 1.6vw, 13px);
             color: var(--green);
-            margin-bottom: 20px;
-            position: relative; z-index: 1;
+            margin-bottom: 18px;
             text-shadow: 0 0 12px rgba(57,255,20,0.4);
         }
         #hero .cursor {
@@ -123,17 +128,58 @@
         }
         @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
         #hero .tagline {
-            font-size: 21px; color: var(--text-dim);
-            margin-bottom: 48px;
-            position: relative; z-index: 1;
+            font-size: 20px; color: var(--text-dim);
+            margin-bottom: 40px;
         }
+
+        /* ── AVATAR ── */
+        .avatar-wrap {
+            position: relative; flex-shrink: 0;
+        }
+        .avatar-wrap::before {
+            content: '// PLAYER_1';
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px; color: var(--green);
+            display: block; text-align: center;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+        .avatar-frame {
+            position: relative;
+            border: 3px solid var(--green);
+            box-shadow:
+                0 0 0 1px var(--bg),
+                0 0 0 4px rgba(57,255,20,0.2),
+                8px 8px 0 0 var(--cyan),
+                0 0 40px rgba(57,255,20,0.15);
+            display: inline-block;
+            background: #5da8cc; /* mismo tono que el fondo del avatar */
+        }
+        .avatar-frame img {
+            display: block;
+            width: 220px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            /* blend para fundir el fondo azul con el del frame */
+            mix-blend-mode: multiply;
+            filter: contrast(1.05);
+        }
+        .avatar-wrap::after {
+            content: '';
+            position: absolute;
+            bottom: -14px; left: 8px;
+            width: calc(100% - 8px); height: 14px;
+            background: rgba(0,229,255,0.15);
+            filter: blur(8px);
+        }
+
         .btn {
             font-family: 'Press Start 2P', monospace;
             font-size: 9px; padding: 14px 26px;
             border: 2px solid var(--green); color: var(--green);
             background: transparent; text-decoration: none;
             display: inline-block; cursor: pointer;
-            transition: all 0.2s; position: relative; z-index: 1;
+            transition: all 0.2s;
         }
         .btn:hover {
             background: var(--green); color: var(--bg);
@@ -370,6 +416,17 @@
         .fade-in.visible { opacity: 1; transform: translateY(0); }
 
         /* ── RESPONSIVE ── */
+        @media (max-width: 780px) {
+            #hero { padding: 100px 24px 60px; }
+            #hero .hero-inner {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 40px;
+            }
+            #hero .hero-text { align-items: center; }
+            .avatar-wrap { display: flex; flex-direction: column; align-items: center; }
+            .avatar-frame img { width: 160px; }
+        }
         @media (max-width: 680px) {
             nav ul { gap: 10px; }
             nav ul a { font-size: 6px; }
@@ -398,13 +455,22 @@
 <!-- HERO -->
 <section id="hero">
     <div class="pixel-grid"></div>
-    <div class="badge">// TÉCNICO SUPERIOR EN DESARROLLO DE APLICACIONES WEB · 2026</div>
-    <h1>DARIO <span>AGUILAR</span><br>RODRIGUEZ</h1>
-    <div class="role">DESARROLLADOR WEB<span class="cursor">_</span></div>
-    <p class="tagline">Frontend · Backend · Bases de datos · Despliegue</p>
-    <div>
-        <a href="#proyectos" class="btn">VER PROYECTOS</a>
-        <a href="#contacto" class="btn btn-outline">CONTACTO</a>
+    <div class="hero-inner">
+        <div class="hero-text">
+            <div class="badge">// TÉCNICO SUPERIOR EN DESARROLLO DE APLICACIONES WEB · 2026</div>
+            <h1>DARIO <span>AGUILAR</span><br>RODRIGUEZ</h1>
+            <div class="role">DESARROLLADOR WEB<span class="cursor">_</span></div>
+            <p class="tagline">Frontend · Backend · Bases de datos · Despliegue</p>
+            <div>
+                <a href="#proyectos" class="btn">VER PROYECTOS</a>
+                <a href="#contacto" class="btn btn-outline">CONTACTO</a>
+            </div>
+        </div>
+        <div class="avatar-wrap">
+            <div class="avatar-frame">
+                <img src="/avatar.png" alt="Dario Aguilar Rodriguez">
+            </div>
+        </div>
     </div>
 </section>
 
