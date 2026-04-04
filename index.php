@@ -153,16 +153,12 @@
                 8px 8px 0 0 var(--cyan),
                 0 0 40px rgba(57,255,20,0.15);
             display: inline-block;
-            background: #5da8cc; /* mismo tono que el fondo del avatar */
         }
         .avatar-frame img {
             display: block;
             width: 220px;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-            /* blend para fundir el fondo azul con el del frame */
-            mix-blend-mode: multiply;
-            filter: contrast(1.05);
         }
         .avatar-wrap::after {
             content: '';
