@@ -425,6 +425,7 @@
             .avatar-frame img { width: 160px; }
         }
         @media (max-width: 680px) {
+            nav { flex-direction: column; align-items: flex-start; gap: 10px; padding: 10px 20px; }
             nav ul { gap: 10px; }
             nav ul a { font-size: 6px; }
             .about-grid { grid-template-columns: 1fr; }
