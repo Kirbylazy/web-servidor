@@ -23,7 +23,7 @@ const Home = () => {
 
       <main className="home-main">
         <h2>Bienvenido a TravelCar</h2>
-        <p>Próximamente podrás publicar y buscar viajes.</p>
+        <p>Próximamente podrás publicar y buscar viajes. 🚗</p>
       </main>
     </div>
   )
