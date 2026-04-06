@@ -8,7 +8,7 @@ import Profile from './pages/Profile'
 
 const App = () => {
   return (
-    <BrowserRouter basename="/TravelCar">
+    <BrowserRouter basename="/Zirpo">
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />

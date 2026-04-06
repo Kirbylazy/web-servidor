@@ -8,7 +8,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1>TravelCar</h1>
+        <h1>Zirpo</h1>
         <div className="header-user">
           <Link to="/profile" className="header-profile">
             {user.foto
@@ -22,7 +22,7 @@ const Home = () => {
       </header>
 
       <main className="home-main">
-        <h2>Bienvenido a TravelCar</h2>
+        <h2>Bienvenido a Zirpo</h2>
         <p>Próximamente podrás publicar y buscar viajes. 🚗</p>
       </main>
     </div>

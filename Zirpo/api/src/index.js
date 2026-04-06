@@ -23,5 +23,5 @@ app.use('/api/users', usersRouter)
 app.use('/api/messages', messagesRouter)
 
 app.listen(PORT, () => {
-  console.log(`TravelCar API corriendo en http://localhost:${PORT}`)
+  console.log(`Zirpo API corriendo en http://localhost:${PORT}`)
 })
