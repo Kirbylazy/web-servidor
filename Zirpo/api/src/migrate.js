@@ -25,6 +25,37 @@ const createTables = async () => {
     `)
 
     await conn.query(`
+      CREATE TABLE IF NOT EXISTS trips (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        conductor_id INT NOT NULL,
+        origen VARCHAR(150) NOT NULL,
+        destino VARCHAR(150) NOT NULL,
+        fecha DATE NOT NULL,
+        hora TIME NOT NULL,
+        asientos_totales INT NOT NULL,
+        asientos_disponibles INT NOT NULL,
+        precio_asiento DECIMAL(6,2) NOT NULL,
+        descripcion VARCHAR(255),
+        estado ENUM('activo','completado','cancelado') DEFAULT 'activo',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conductor_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `)
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS bookings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        trip_id INT NOT NULL,
+        pasajero_id INT NOT NULL,
+        estado ENUM('pendiente','confirmada','cancelada') DEFAULT 'pendiente',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+        FOREIGN KEY (pasajero_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_booking (trip_id, pasajero_id)
+      )
+    `)
+
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS vehicles (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL UNIQUE,

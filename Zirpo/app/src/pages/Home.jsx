@@ -1,9 +1,18 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import './Home.css'
 
 const Home = () => {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [search, setSearch] = useState({ origen: '', destino: '', fecha: '' })
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    const params = new URLSearchParams(search).toString()
+    navigate(`/search?${params}`)
+  }
 
   return (
     <div className="home-container">
@@ -22,8 +31,40 @@ const Home = () => {
       </header>
 
       <main className="home-main">
-        <h2>Bienvenido a Zirpo</h2>
-        <p>Próximamente podrás publicar y buscar viajes. 🚗</p>
+        <section className="hero">
+          <h2>¿A dónde vas?</h2>
+          <form className="search-form" onSubmit={handleSearch}>
+            <input
+              placeholder="Origen"
+              value={search.origen}
+              onChange={e => setSearch({ ...search, origen: e.target.value })}
+            />
+            <input
+              placeholder="Destino"
+              value={search.destino}
+              onChange={e => setSearch({ ...search, destino: e.target.value })}
+            />
+            <input
+              type="date"
+              value={search.fecha}
+              onChange={e => setSearch({ ...search, fecha: e.target.value })}
+            />
+            <button type="submit" className="btn-primary">Buscar</button>
+          </form>
+        </section>
+
+        <section className="actions">
+          <Link to="/publish" className="action-card action-publish">
+            <span className="action-icon">🚗</span>
+            <strong>Publicar viaje</strong>
+            <span>Ofrece plazas en tu coche</span>
+          </Link>
+          <Link to="/my-trips" className="action-card action-mytrips">
+            <span className="action-icon">📋</span>
+            <strong>Mis viajes</strong>
+            <span>Gestiona tus viajes y reservas</span>
+          </Link>
+        </section>
       </main>
     </div>
   )

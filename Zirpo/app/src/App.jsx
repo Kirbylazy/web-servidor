@@ -5,6 +5,10 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Home from './pages/Home'
 import Profile from './pages/Profile'
+import PublishTrip from './pages/PublishTrip'
+import SearchTrips from './pages/SearchTrips'
+import TripDetail from './pages/TripDetail'
+import MyTrips from './pages/MyTrips'
 
 const App = () => {
   return (
@@ -13,22 +17,12 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/publish" element={<ProtectedRoute><PublishTrip /></ProtectedRoute>} />
+          <Route path="/search" element={<ProtectedRoute><SearchTrips /></ProtectedRoute>} />
+          <Route path="/trips/:id" element={<ProtectedRoute><TripDetail /></ProtectedRoute>} />
+          <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
