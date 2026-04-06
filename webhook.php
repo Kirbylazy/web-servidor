@@ -9,7 +9,7 @@ if (!hash_equals($internalSecret, $received)) {
     exit;
 }
 
-$repoPath = '/mnt/m2/www';
+$repoPath = '/mnt/m2/www/default';
 chdir($repoPath);
 
 $output = shell_exec('git pull origin main 2>&1');
