@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { api } from '../services/api'
 import './Profile.css'
@@ -100,6 +101,9 @@ const Profile = () => {
   return (
     <div className="profile-page">
       <div className="profile-card">
+        <div className="profile-topbar">
+          <Link to="/" className="back-link">← Volver al inicio</Link>
+        </div>
 
         <div className="profile-header">
           <label className="photo-wrapper">
