@@ -26,6 +26,39 @@
   font-size: 0.95rem;
 }
 
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+}
+
+.header-profile:hover {
+  color: #2563eb;
+}
+
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.header-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .btn-logout {
   padding: 0.4rem 1rem;
   border: 1.5px solid #e2e8f0;

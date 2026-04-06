@@ -9,6 +9,7 @@ const createTables = async () => {
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(100) NOT NULL,
+        apellidos VARCHAR(100),
         email VARCHAR(150) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         telefono VARCHAR(20),
@@ -19,9 +20,32 @@ const createTables = async () => {
       )
     `)
 
-    console.log('Tabla users creada correctamente')
+    await conn.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS apellidos VARCHAR(100) AFTER nombre
+    `)
+
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS vehicles (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL UNIQUE,
+        marca VARCHAR(50) NOT NULL,
+        modelo VARCHAR(50) NOT NULL,
+        matricula VARCHAR(20) NOT NULL UNIQUE,
+        color VARCHAR(30) NOT NULL,
+        plazas INT NOT NULL,
+        anio INT,
+        aire_acondicionado BOOLEAN DEFAULT FALSE,
+        musica BOOLEAN DEFAULT FALSE,
+        maletero_grande BOOLEAN DEFAULT FALSE,
+        descripcion VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `)
+
+    console.log('Tablas creadas/actualizadas correctamente')
   } catch (err) {
-    console.error('Error creando tablas:', err.message)
+    console.error('Error en migración:', err.message)
   } finally {
     conn.release()
     process.exit()

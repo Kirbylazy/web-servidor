@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './Home.css'
 
@@ -9,7 +10,13 @@ const Home = () => {
       <header className="home-header">
         <h1>TravelCar</h1>
         <div className="header-user">
-          <span>Hola, {user.nombre}</span>
+          <Link to="/profile" className="header-profile">
+            {user.foto
+              ? <img src={user.foto} alt="perfil" className="header-avatar" />
+              : <div className="header-avatar-placeholder">{user.nombre?.[0]?.toUpperCase()}</div>
+            }
+            <span>{user.nombre}</span>
+          </Link>
           <button onClick={logout} className="btn-logout">Cerrar sesión</button>
         </div>
       </header>
