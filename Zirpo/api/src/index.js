@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import 'dotenv/config'
 
 import authRouter from './routes/auth.js'
@@ -11,6 +12,19 @@ import messagesRouter from './routes/messages.js'
 const app = express()
 const PORT = process.env.PORT || 3000
 
+app.use(helmet({
+  hsts: {
+    maxAge: 31536000,        // 1 año en segundos
+    includeSubDomains: true,
+    preload: true
+  },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'none'"],
+      frameAncestors: ["'none'"]
+    }
+  }
+}))
 app.use(cors())
 app.use(express.json())
 

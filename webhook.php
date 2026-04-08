@@ -12,8 +12,12 @@ if (!hash_equals($internalSecret, $received)) {
 $repoPath = '/mnt/m2/www/default';
 chdir($repoPath);
 
-$output = shell_exec('git pull origin main 2>&1');
+$gitOutput = shell_exec('git pull origin main 2>&1');
+$npmOutput = shell_exec('cd /mnt/m2/www/default/Zirpo/api && npm install --omit=dev 2>&1');
+$restartOutput = shell_exec('pm2 restart zirpo-api 2>&1');
 
 echo "OK\n";
-echo $output;
+echo $gitOutput;
+echo $npmOutput;
+echo $restartOutput;
 
