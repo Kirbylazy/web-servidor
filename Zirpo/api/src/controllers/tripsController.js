@@ -29,19 +29,32 @@ async function calcularRuta(origen, destino) {
 export const getTrips = async (req, res) => {
   const { origen, destino, fecha } = req.query
   try {
+    // precio_tramo: precio del segmento buscado. Si no hay paradas o no hay búsqueda, usa precio_asiento
+    const precioTramoSQL = origen && destino
+      ? `COALESCE(
+          (SELECT pd.precio_desde_origen - po.precio_desde_origen
+           FROM paradas po JOIN paradas pd ON pd.trip_id = po.trip_id
+           WHERE po.trip_id = t.id AND pd.trip_id = t.id
+             AND po.ciudad LIKE ? AND pd.ciudad LIKE ?
+             AND po.orden < pd.orden
+           LIMIT 1),
+          t.precio_asiento
+        )`
+      : 't.precio_asiento'
+
     let sql = `
       SELECT t.*, u.nombre AS conductor_nombre, u.apellidos AS conductor_apellidos,
              u.foto AS conductor_foto, u.valoracion_media AS conductor_valoracion,
-             v.marca, v.modelo, v.color, v.aire_acondicionado, v.musica, v.maletero_grande
+             v.marca, v.modelo, v.color, v.aire_acondicionado, v.musica, v.maletero_grande,
+             ${precioTramoSQL} AS precio_tramo
       FROM trips t
       JOIN users u ON t.conductor_id = u.id
       LEFT JOIN vehicles v ON v.user_id = t.conductor_id
       WHERE t.estado = 'activo' AND t.asientos_disponibles > 0 AND t.fecha >= CURDATE()
     `
-    const params = []
+    const params = origen && destino ? [`%${origen}%`, `%${destino}%`] : []
 
     if (origen && destino) {
-      // Busca en origen/destino del viaje O en paradas intermedias (respetando el orden)
       sql += ` AND (
         (t.origen LIKE ? AND t.destino LIKE ?)
         OR EXISTS (

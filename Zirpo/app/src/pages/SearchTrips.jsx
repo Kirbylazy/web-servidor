@@ -74,11 +74,11 @@ const SearchTrips = () => {
           <Link to={`/trips/${trip.id}`} key={trip.id} className="trip-card">
             <div className="trip-card-header">
               <div className="trip-route">
-                <span className="trip-city">{trip.origen}</span>
+                <span className="trip-city">{form.origen || trip.origen}</span>
                 <span className="trip-arrow">→</span>
-                <span className="trip-city">{trip.destino}</span>
+                <span className="trip-city">{form.destino || trip.destino}</span>
               </div>
-              <span className="trip-price">{Number(trip.precio_asiento).toFixed(2)} €</span>
+              <span className="trip-price">{Number(trip.precio_tramo ?? trip.precio_asiento).toFixed(2)} €</span>
             </div>
             <div className="trip-card-meta">
               <span>{formatDate(trip.fecha)} · {formatTime(trip.hora)}</span>
