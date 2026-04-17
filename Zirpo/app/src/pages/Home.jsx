@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import CityAutocomplete from '../components/CityAutocomplete'
 import './Home.css'
 
 const Home = () => {
@@ -34,20 +35,22 @@ const Home = () => {
         <section className="hero">
           <h2>¿A dónde vas?</h2>
           <form className="search-form" onSubmit={handleSearch}>
-            <input
-              placeholder="Origen"
+            <CityAutocomplete
+              name="origen"
               value={search.origen}
-              onChange={e => setSearch({ ...search, origen: e.target.value })}
+              placeholder="Origen"
+              onChange={e => { const v = e.target.value; setSearch(prev => ({ ...prev, origen: v })) }}
             />
-            <input
-              placeholder="Destino"
+            <CityAutocomplete
+              name="destino"
               value={search.destino}
-              onChange={e => setSearch({ ...search, destino: e.target.value })}
+              placeholder="Destino"
+              onChange={e => { const v = e.target.value; setSearch(prev => ({ ...prev, destino: v })) }}
             />
             <input
               type="date"
               value={search.fecha}
-              onChange={e => setSearch({ ...search, fecha: e.target.value })}
+              onChange={e => setSearch(prev => ({ ...prev, fecha: e.target.value }))}
             />
             <button type="submit" className="btn-primary">Buscar</button>
           </form>

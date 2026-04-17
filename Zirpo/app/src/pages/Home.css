@@ -105,6 +105,8 @@
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s;
+  background: #ffffff;
+  color: #1e293b;
 }
 
 .search-form input:focus { border-color: #2563eb; }
