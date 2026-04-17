@@ -39,8 +39,29 @@ export const getTrips = async (req, res) => {
       WHERE t.estado = 'activo' AND t.asientos_disponibles > 0 AND t.fecha >= CURDATE()
     `
     const params = []
-    if (origen) { sql += ' AND t.origen LIKE ?'; params.push(`%${origen}%`) }
-    if (destino) { sql += ' AND t.destino LIKE ?'; params.push(`%${destino}%`) }
+
+    if (origen && destino) {
+      // Busca en origen/destino del viaje O en paradas intermedias (respetando el orden)
+      sql += ` AND (
+        (t.origen LIKE ? AND t.destino LIKE ?)
+        OR EXISTS (
+          SELECT 1 FROM paradas po
+          JOIN paradas pd ON pd.trip_id = po.trip_id
+          WHERE po.trip_id = t.id
+            AND po.ciudad LIKE ?
+            AND pd.ciudad LIKE ?
+            AND po.orden < pd.orden
+        )
+      )`
+      params.push(`%${origen}%`, `%${destino}%`, `%${origen}%`, `%${destino}%`)
+    } else if (origen) {
+      sql += ` AND (t.origen LIKE ? OR EXISTS (SELECT 1 FROM paradas WHERE trip_id = t.id AND ciudad LIKE ?))`
+      params.push(`%${origen}%`, `%${origen}%`)
+    } else if (destino) {
+      sql += ` AND (t.destino LIKE ? OR EXISTS (SELECT 1 FROM paradas WHERE trip_id = t.id AND ciudad LIKE ?))`
+      params.push(`%${destino}%`, `%${destino}%`)
+    }
+
     if (fecha) { sql += ' AND t.fecha = ?'; params.push(fecha) }
     sql += ' ORDER BY t.fecha ASC, t.hora ASC'
 
