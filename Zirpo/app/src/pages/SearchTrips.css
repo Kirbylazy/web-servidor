@@ -45,6 +45,8 @@
   border-radius: 8px;
   font-size: 0.9rem;
   outline: none;
+  background: #ffffff;
+  color: #1e293b;
 }
 
 .search-filters input:focus { border-color: #2563eb; }

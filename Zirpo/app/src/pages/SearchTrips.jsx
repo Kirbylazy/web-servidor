@@ -55,9 +55,9 @@ const SearchTrips = () => {
 
       <form className="search-filters" onSubmit={handleSubmit}>
         <CityAutocomplete name="origen" value={form.origen} placeholder="Origen"
-          onChange={e => setForm({ ...form, origen: e.target.value })} />
+          onChange={e => { const v = e.target.value; setForm(prev => ({ ...prev, origen: v })) }} />
         <CityAutocomplete name="destino" value={form.destino} placeholder="Destino"
-          onChange={e => setForm({ ...form, destino: e.target.value })} />
+          onChange={e => { const v = e.target.value; setForm(prev => ({ ...prev, destino: v })) }} />
         <input type="date" value={form.fecha}
           onChange={e => setForm({ ...form, fecha: e.target.value })} />
         <button type="submit" className="btn-search">Buscar</button>

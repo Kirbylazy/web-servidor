@@ -48,6 +48,8 @@
   outline: none;
   transition: border-color 0.2s;
   font-family: inherit;
+  background: #ffffff;
+  color: #1e293b;
 }
 
 .form-group input:focus, .form-group textarea:focus {
