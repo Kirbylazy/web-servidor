@@ -1,8 +1,60 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import './TripDetail.css'
+
+function TripMap({ polyline, origenLat, origenLng, destinoLat, destinoLng }) {
+  const mapRef = useRef(null)
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+
+  useEffect(() => {
+    if (!apiKey || !mapRef.current) return
+    if (!origenLat || !destinoLat) return
+
+    const init = () => {
+      const map = new window.google.maps.Map(mapRef.current, {
+        zoom: 7,
+        center: {
+          lat: (parseFloat(origenLat) + parseFloat(destinoLat)) / 2,
+          lng: (parseFloat(origenLng) + parseFloat(destinoLng)) / 2,
+        },
+        disableDefaultUI: true,
+        zoomControl: true,
+      })
+
+      new window.google.maps.Marker({ position: { lat: parseFloat(origenLat), lng: parseFloat(origenLng) }, map, title: 'Origen' })
+      new window.google.maps.Marker({ position: { lat: parseFloat(destinoLat), lng: parseFloat(destinoLng) }, map, title: 'Destino' })
+
+      if (polyline) {
+        const decoded = window.google.maps.geometry.encoding.decodePath(polyline)
+        new window.google.maps.Polyline({
+          path: decoded,
+          map,
+          strokeColor: '#4F46E5',
+          strokeWeight: 4,
+        })
+        const bounds = new window.google.maps.LatLngBounds()
+        decoded.forEach(p => bounds.extend(p))
+        map.fitBounds(bounds, 40)
+      }
+    }
+
+    if (window.google?.maps) {
+      init()
+    } else {
+      const script = document.createElement('script')
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry,places&language=es`
+      script.async = true
+      script.onload = init
+      document.head.appendChild(script)
+    }
+  }, [polyline, origenLat, destinoLat])
+
+  if (!apiKey || !origenLat) return null
+
+  return <div ref={mapRef} className="trip-map" />
+}
 
 const TripDetail = () => {
   const { id } = useParams()
@@ -96,6 +148,19 @@ const TripDetail = () => {
             <span className="detail-price">{Number(trip.precio_asiento).toFixed(2)} €/plaza</span>
           </div>
         </div>
+
+        {(trip.distancia_km || trip.duracion_min) && (
+          <div className="detail-route-info">
+            {trip.distancia_km && <span>{trip.distancia_km} km</span>}
+            {trip.duracion_min && <span>{Math.floor(trip.duracion_min / 60)}h {trip.duracion_min % 60}min</span>}
+          </div>
+        )}
+
+        <TripMap
+          polyline={trip.ruta_polyline}
+          origenLat={trip.origen_lat} origenLng={trip.origen_lng}
+          destinoLat={trip.destino_lat} destinoLng={trip.destino_lng}
+        />
 
         {trip.descripcion && (
           <p className="detail-desc">{trip.descripcion}</p>

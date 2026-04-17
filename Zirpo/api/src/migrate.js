@@ -30,17 +30,40 @@ const createTables = async () => {
         conductor_id INT NOT NULL,
         origen VARCHAR(150) NOT NULL,
         destino VARCHAR(150) NOT NULL,
+        origen_lat DECIMAL(10,7),
+        origen_lng DECIMAL(10,7),
+        destino_lat DECIMAL(10,7),
+        destino_lng DECIMAL(10,7),
         fecha DATE NOT NULL,
         hora TIME NOT NULL,
         asientos_totales INT NOT NULL,
         asientos_disponibles INT NOT NULL,
         precio_asiento DECIMAL(6,2) NOT NULL,
+        precio_maximo DECIMAL(6,2),
+        distancia_km INT,
+        duracion_min INT,
+        ruta_polyline TEXT,
         descripcion VARCHAR(255),
         estado ENUM('activo','completado','cancelado') DEFAULT 'activo',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (conductor_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `)
+
+    // Añadir columnas a trips si ya existe la tabla (instancias ya desplegadas)
+    const tripColumns = [
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS origen_lat DECIMAL(10,7)",
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS origen_lng DECIMAL(10,7)",
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS destino_lat DECIMAL(10,7)",
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS destino_lng DECIMAL(10,7)",
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS precio_maximo DECIMAL(6,2)",
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS distancia_km INT",
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS duracion_min INT",
+      "ALTER TABLE trips ADD COLUMN IF NOT EXISTS ruta_polyline TEXT",
+    ]
+    for (const sql of tripColumns) {
+      await conn.query(sql).catch(() => {}) // ignora si ya existe
+    }
 
     await conn.query(`
       CREATE TABLE IF NOT EXISTS bookings (

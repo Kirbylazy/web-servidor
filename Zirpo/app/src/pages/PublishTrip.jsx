@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../services/api'
+import CityAutocomplete from '../components/CityAutocomplete'
 import './TripForm.css'
 
 const PublishTrip = () => {
@@ -40,11 +41,11 @@ const PublishTrip = () => {
           <div className="form-row">
             <div className="form-group">
               <label>Origen</label>
-              <input name="origen" value={form.origen} onChange={handle} placeholder="Ciudad de salida" required />
+              <CityAutocomplete name="origen" value={form.origen} onChange={handle} placeholder="Ciudad de salida" required />
             </div>
             <div className="form-group">
               <label>Destino</label>
-              <input name="destino" value={form.destino} onChange={handle} placeholder="Ciudad de llegada" required />
+              <CityAutocomplete name="destino" value={form.destino} onChange={handle} placeholder="Ciudad de llegada" required />
             </div>
           </div>
 

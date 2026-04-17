@@ -1,5 +1,18 @@
 *.pdf
 
+# Dependencias
+node_modules/
+
+# Variables de entorno (nunca subir credenciales)
+.env
+.env.local
+.env.production
+.env.development
+!.env.example
+
+# Build
+dist/
+
 # Claude Code
 CLAUDE.md
 .claude/

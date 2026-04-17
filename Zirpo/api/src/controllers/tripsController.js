@@ -1,5 +1,31 @@
 import pool from '../db.js'
 
+const GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY
+
+async function calcularRuta(origen, destino) {
+  if (!GOOGLE_MAPS_KEY) return null
+  try {
+    const url = `https://maps.googleapis.com/maps/api/directions/json?` +
+      `origin=${encodeURIComponent(origen)}&destination=${encodeURIComponent(destino)}` +
+      `&mode=driving&language=es&key=${GOOGLE_MAPS_KEY}`
+    const res = await fetch(url)
+    const data = await res.json()
+    if (data.status !== 'OK') return null
+    const leg = data.routes[0].legs[0]
+    return {
+      origen_lat: leg.start_location.lat,
+      origen_lng: leg.start_location.lng,
+      destino_lat: leg.end_location.lat,
+      destino_lng: leg.end_location.lng,
+      distancia_km: Math.round(leg.distance.value / 1000),
+      duracion_min: Math.round(leg.duration.value / 60),
+      ruta_polyline: data.routes[0].overview_polyline.points,
+    }
+  } catch {
+    return null
+  }
+}
+
 export const getTrips = async (req, res) => {
   const { origen, destino, fecha } = req.query
   try {
@@ -62,10 +88,30 @@ export const createTrip = async (req, res) => {
   }
 
   try {
+    const ruta = await calcularRuta(origen, destino)
+
+    // Precio máximo DGT: distancia × 0,19 € / nº asientos
+    const precio_maximo = ruta
+      ? Math.round((ruta.distancia_km * 0.19 / asientos_totales) * 100) / 100
+      : null
+
     const [result] = await pool.query(`
-      INSERT INTO trips (conductor_id, origen, destino, fecha, hora, asientos_totales, asientos_disponibles, precio_asiento, descripcion)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [req.user.id, origen, destino, fecha, hora, asientos_totales, asientos_totales, precio_asiento, descripcion || null])
+      INSERT INTO trips (
+        conductor_id, origen, destino,
+        origen_lat, origen_lng, destino_lat, destino_lng,
+        fecha, hora, asientos_totales, asientos_disponibles,
+        precio_asiento, precio_maximo, distancia_km, duracion_min, ruta_polyline,
+        descripcion
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      req.user.id, origen, destino,
+      ruta?.origen_lat ?? null, ruta?.origen_lng ?? null,
+      ruta?.destino_lat ?? null, ruta?.destino_lng ?? null,
+      fecha, hora, asientos_totales, asientos_totales,
+      precio_asiento, precio_maximo,
+      ruta?.distancia_km ?? null, ruta?.duracion_min ?? null, ruta?.ruta_polyline ?? null,
+      descripcion || null
+    ])
 
     const [rows] = await pool.query('SELECT * FROM trips WHERE id = ?', [result.insertId])
     res.status(201).json({ trip: rows[0] })

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { api } from '../services/api'
+import CityAutocomplete from '../components/CityAutocomplete'
 import './SearchTrips.css'
 
 const SearchTrips = () => {
@@ -53,9 +54,9 @@ const SearchTrips = () => {
       </div>
 
       <form className="search-filters" onSubmit={handleSubmit}>
-        <input placeholder="Origen" value={form.origen}
+        <CityAutocomplete name="origen" value={form.origen} placeholder="Origen"
           onChange={e => setForm({ ...form, origen: e.target.value })} />
-        <input placeholder="Destino" value={form.destino}
+        <CityAutocomplete name="destino" value={form.destino} placeholder="Destino"
           onChange={e => setForm({ ...form, destino: e.target.value })} />
         <input type="date" value={form.fecha}
           onChange={e => setForm({ ...form, fecha: e.target.value })} />
