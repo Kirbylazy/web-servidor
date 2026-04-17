@@ -90,3 +90,178 @@
 
 .msg-error { color: #dc2626; font-size: 0.875rem; margin-bottom: 0.5rem; }
 .msg-ok { color: #16a34a; font-size: 0.875rem; margin-bottom: 0.5rem; }
+
+/* Sección de ruta con paradas */
+.route-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  border-left: 2px solid #e2e8f0;
+}
+
+.route-stop {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.route-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-bottom: 0.85rem;
+  margin-left: -0.875rem;
+}
+
+.route-dot-origin { background: #16a34a; }
+.route-dot-stop   { background: #f59e0b; }
+.route-dot-dest   { background: #dc2626; }
+
+.btn-add-stop {
+  background: none;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.85rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  margin: 0.25rem 0 0.5rem 0.5rem;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-add-stop:hover { border-color: #2563eb; color: #2563eb; }
+
+.btn-remove-stop {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+  margin-bottom: 1rem;
+  line-height: 1;
+}
+
+.btn-remove-stop:hover { color: #dc2626; }
+
+.btn-calculate {
+  width: 100%;
+  padding: 0.8rem;
+  background: #0f172a;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background 0.2s;
+}
+
+.btn-calculate:hover:not(:disabled) { background: #1e293b; }
+.btn-calculate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Preview de ruta */
+.route-preview {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.route-summary {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  font-size: 0.875rem;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.total-price {
+  margin-left: auto;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.segments-list {
+  padding: 0.75rem 1rem;
+}
+
+.segments-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.segment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.segment-row:last-child { border-bottom: none; }
+
+.segment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.segment-cities {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.segment-meta {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.segment-price-input {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.segment-price-input input {
+  width: 70px;
+  padding: 0.4rem 0.5rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: right;
+  background: #ffffff;
+  color: #1e293b;
+  outline: none;
+}
+
+.segment-price-input input:focus { border-color: #2563eb; }
+.segment-price-input span { font-size: 0.85rem; color: #64748b; }
+
+.btn-recalculate {
+  width: 100%;
+  padding: 0.6rem;
+  background: none;
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.btn-recalculate:hover { color: #2563eb; }

@@ -79,6 +79,21 @@ const createTables = async () => {
     `)
 
     await conn.query(`
+      CREATE TABLE IF NOT EXISTS paradas (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        trip_id INT NOT NULL,
+        ciudad VARCHAR(255) NOT NULL,
+        lat DECIMAL(10,7),
+        lng DECIMAL(10,7),
+        orden TINYINT NOT NULL,
+        distancia_desde_origen_km INT DEFAULT 0,
+        precio_desde_origen DECIMAL(6,2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
+      )
+    `)
+
+    await conn.query(`
       CREATE TABLE IF NOT EXISTS vehicles (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL UNIQUE,

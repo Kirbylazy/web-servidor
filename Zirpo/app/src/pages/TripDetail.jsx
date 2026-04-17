@@ -2,57 +2,47 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { loadGoogleMapsScript } from '../utils/googleMaps'
 import './TripDetail.css'
 
-function TripMap({ polyline, origenLat, origenLng, destinoLat, destinoLng }) {
+function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoLng }) {
   const mapRef = useRef(null)
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
   useEffect(() => {
-    if (!apiKey || !mapRef.current) return
-    if (!origenLat || !destinoLat) return
+    if (!apiKey || !mapRef.current || !origenLat) return
 
-    const init = () => {
+    loadGoogleMapsScript(apiKey).then(() => {
       const map = new window.google.maps.Map(mapRef.current, {
-        zoom: 7,
-        center: {
-          lat: (parseFloat(origenLat) + parseFloat(destinoLat)) / 2,
-          lng: (parseFloat(origenLng) + parseFloat(destinoLng)) / 2,
-        },
         disableDefaultUI: true,
         zoomControl: true,
       })
 
-      new window.google.maps.Marker({ position: { lat: parseFloat(origenLat), lng: parseFloat(origenLng) }, map, title: 'Origen' })
-      new window.google.maps.Marker({ position: { lat: parseFloat(destinoLat), lng: parseFloat(destinoLng) }, map, title: 'Destino' })
+      // Marcadores para cada parada si existen, si no solo origen y destino
+      const points = paradas?.length > 0
+        ? paradas.map(p => ({ lat: parseFloat(p.lat), lng: parseFloat(p.lng), label: p.ciudad }))
+        : [
+            { lat: parseFloat(origenLat), lng: parseFloat(origenLng), label: 'Origen' },
+            { lat: parseFloat(destinoLat), lng: parseFloat(destinoLng), label: 'Destino' },
+          ]
+
+      points.forEach(p => new window.google.maps.Marker({ position: p, map, title: p.label }))
 
       if (polyline) {
         const decoded = window.google.maps.geometry.encoding.decodePath(polyline)
-        new window.google.maps.Polyline({
-          path: decoded,
-          map,
-          strokeColor: '#4F46E5',
-          strokeWeight: 4,
-        })
+        new window.google.maps.Polyline({ path: decoded, map, strokeColor: '#4F46E5', strokeWeight: 4 })
         const bounds = new window.google.maps.LatLngBounds()
         decoded.forEach(p => bounds.extend(p))
         map.fitBounds(bounds, 40)
+      } else {
+        const bounds = new window.google.maps.LatLngBounds()
+        points.forEach(p => bounds.extend(p))
+        map.fitBounds(bounds, 40)
       }
-    }
-
-    if (window.google?.maps) {
-      init()
-    } else {
-      const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry,places&language=es`
-      script.async = true
-      script.onload = init
-      document.head.appendChild(script)
-    }
-  }, [polyline, origenLat, destinoLat])
+    })
+  }, [polyline, origenLat, paradas])
 
   if (!apiKey || !origenLat) return null
-
   return <div ref={mapRef} className="trip-map" />
 }
 
@@ -62,6 +52,7 @@ const TripDetail = () => {
   const navigate = useNavigate()
   const [trip, setTrip] = useState(null)
   const [bookings, setBookings] = useState([])
+  const [paradas, setParadas] = useState([])
   const [loading, setLoading] = useState(true)
   const [booking, setBooking] = useState(false)
   const [msg, setMsg] = useState('')
@@ -73,6 +64,7 @@ const TripDetail = () => {
       const data = await api.get(`/trips/${id}`)
       setTrip(data.trip)
       setBookings(data.bookings)
+      setParadas(data.paradas || [])
     } catch {
       navigate('/')
     } finally {
@@ -158,9 +150,34 @@ const TripDetail = () => {
 
         <TripMap
           polyline={trip.ruta_polyline}
+          paradas={paradas}
           origenLat={trip.origen_lat} origenLng={trip.origen_lng}
           destinoLat={trip.destino_lat} destinoLng={trip.destino_lng}
         />
+
+        {paradas.length > 1 && (
+          <div className="paradas-list">
+            {paradas.map((p, i) => {
+              const siguiente = paradas[i + 1]
+              const esFinal = i === paradas.length - 1
+              return (
+                <div key={p.id} className={`parada-item ${esFinal ? 'parada-final' : ''}`}>
+                  <div className={`parada-dot ${i === 0 ? 'dot-origin' : esFinal ? 'dot-dest' : 'dot-stop'}`} />
+                  <div className="parada-info">
+                    <span className="parada-ciudad">{p.ciudad}</span>
+                    {!esFinal && siguiente && (
+                      <span className="parada-precio">
+                        hasta {siguiente.ciudad}: {(parseFloat(siguiente.precio_desde_origen) - parseFloat(p.precio_desde_origen)).toFixed(2)} €
+                      </span>
+                    )}
+                  </div>
+                  {i === 0 && <span className="parada-tag">Salida</span>}
+                  {esFinal && <span className="parada-tag">Llegada</span>}
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {trip.descripcion && (
           <p className="detail-desc">{trip.descripcion}</p>

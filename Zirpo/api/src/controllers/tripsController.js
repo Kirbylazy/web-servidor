@@ -73,7 +73,12 @@ export const getTripById = async (req, res) => {
       WHERE b.trip_id = ?
     `, [req.params.id])
 
-    res.json({ trip: rows[0], bookings })
+    const [paradas] = await pool.query(
+      'SELECT * FROM paradas WHERE trip_id = ? ORDER BY orden',
+      [req.params.id]
+    )
+
+    res.json({ trip: rows[0], bookings, paradas })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Error interno del servidor' })
@@ -81,18 +86,26 @@ export const getTripById = async (req, res) => {
 }
 
 export const createTrip = async (req, res) => {
-  const { origen, destino, fecha, hora, asientos_totales, precio_asiento, descripcion } = req.body
+  const {
+    origen, destino, fecha, hora, asientos_totales, precio_asiento, descripcion,
+    paradas, ruta_polyline, distancia_km, duracion_min,
+    origen_lat, origen_lng, destino_lat, destino_lng
+  } = req.body
 
   if (!origen || !destino || !fecha || !hora || !asientos_totales || !precio_asiento) {
     return res.status(400).json({ error: 'Faltan campos obligatorios' })
   }
 
   try {
-    const ruta = await calcularRuta(origen, destino)
+    // Si el cliente ya calculó la ruta, usamos esos datos; si no, la calculamos en el servidor
+    let routeInfo = { origen_lat, origen_lng, destino_lat, destino_lng, distancia_km, duracion_min, ruta_polyline }
+    if (!ruta_polyline) {
+      const ruta = await calcularRuta(origen, destino)
+      if (ruta) routeInfo = ruta
+    }
 
-    // Precio máximo DGT: distancia × 0,19 € / nº asientos
-    const precio_maximo = ruta
-      ? Math.round((ruta.distancia_km * 0.19 / asientos_totales) * 100) / 100
+    const precio_maximo = routeInfo.distancia_km
+      ? Math.round((routeInfo.distancia_km * 0.19 / asientos_totales) * 100) / 100
       : null
 
     const [result] = await pool.query(`
@@ -105,15 +118,27 @@ export const createTrip = async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       req.user.id, origen, destino,
-      ruta?.origen_lat ?? null, ruta?.origen_lng ?? null,
-      ruta?.destino_lat ?? null, ruta?.destino_lng ?? null,
+      routeInfo.origen_lat ?? null, routeInfo.origen_lng ?? null,
+      routeInfo.destino_lat ?? null, routeInfo.destino_lng ?? null,
       fecha, hora, asientos_totales, asientos_totales,
       precio_asiento, precio_maximo,
-      ruta?.distancia_km ?? null, ruta?.duracion_min ?? null, ruta?.ruta_polyline ?? null,
+      routeInfo.distancia_km ?? null, routeInfo.duracion_min ?? null, routeInfo.ruta_polyline ?? null,
       descripcion || null
     ])
 
-    const [rows] = await pool.query('SELECT * FROM trips WHERE id = ?', [result.insertId])
+    const tripId = result.insertId
+
+    // Guardar paradas si se proporcionaron
+    if (paradas && paradas.length > 0) {
+      for (const p of paradas) {
+        await pool.query(`
+          INSERT INTO paradas (trip_id, ciudad, lat, lng, orden, distancia_desde_origen_km, precio_desde_origen)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [tripId, p.ciudad, p.lat ?? null, p.lng ?? null, p.orden, p.distancia_desde_origen_km ?? 0, p.precio_desde_origen ?? 0])
+      }
+    }
+
+    const [rows] = await pool.query('SELECT * FROM trips WHERE id = ?', [tripId])
     res.status(201).json({ trip: rows[0] })
   } catch (err) {
     console.error(err)

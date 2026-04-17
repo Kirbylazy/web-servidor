@@ -1,28 +1,5 @@
 import { useEffect, useRef } from 'react'
-
-let scriptLoaded = false
-let scriptLoading = false
-const callbacks = []
-
-function loadGoogleMapsScript(apiKey) {
-  if (scriptLoaded) return Promise.resolve()
-  if (scriptLoading) return new Promise(resolve => callbacks.push(resolve))
-
-  scriptLoading = true
-  return new Promise((resolve) => {
-    callbacks.push(resolve)
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=es`
-    script.async = true
-    script.onload = () => {
-      scriptLoaded = true
-      scriptLoading = false
-      callbacks.forEach(cb => cb())
-      callbacks.length = 0
-    }
-    document.head.appendChild(script)
-  })
-}
+import { loadGoogleMapsScript } from '../utils/googleMaps'
 
 export default function CityAutocomplete({ value, onChange, placeholder, name, required }) {
   const inputRef = useRef(null)
