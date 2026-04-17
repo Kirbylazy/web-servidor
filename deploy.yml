@@ -28,9 +28,10 @@ jobs:
             npm install --omit=dev
             npm run build
 
-            # Instalar dependencias del backend
+            # Instalar dependencias del backend y migrar BD
             cd /mnt/m2/www/default/Zirpo/api
             npm install --omit=dev
+            node src/migrate.js
 
             # Reiniciar el backend
             pm2 restart zirpo-api || pm2 start src/index.js --name zirpo-api

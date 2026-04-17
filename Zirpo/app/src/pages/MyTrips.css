@@ -162,3 +162,38 @@
   font-size: 0.8rem;
   font-weight: 600;
 }
+
+.mytrip-card-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.mytrip-card-wrapper .mytrip-card {
+  flex: 1;
+}
+
+.btn-cancel-trip {
+  padding: 0 0.9rem;
+  background: #fee2e2;
+  color: #991b1b;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.btn-cancel-trip:hover:not(:disabled) { background: #fecaca; }
+.btn-cancel-trip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.historial-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0.5rem 0 0;
+}

@@ -163,7 +163,11 @@ export const getMyTrips = async (req, res) => {
       WHERE t.conductor_id = ?
       ORDER BY t.fecha DESC, t.hora DESC
     `, [req.user.id])
-    res.json({ trips })
+
+    const activos = trips.filter(t => t.estado === 'activo')
+    const historial = trips.filter(t => t.estado !== 'activo')
+
+    res.json({ trips: activos, historial })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Error interno del servidor' })
