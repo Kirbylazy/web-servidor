@@ -5,6 +5,8 @@ const createTables = async () => {
   const conn = await pool.getConnection()
 
   try {
+    await conn.query(`ALTER DATABASE ${process.env.DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`)
+
     await conn.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
