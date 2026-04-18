@@ -7,11 +7,10 @@ import './TripForm.css'
 
 // --- Utilities ---
 
-// Precio sugerido por tramo: 60% del baremo DGT (0,19€/km) asumiendo 3 pasajeros
 function calcDefaultPrices(legs) {
   return legs.map(leg => {
     const price = leg.distanceKm * 0.19 / 3 * 0.6
-    return String(Math.round(price * 2) / 2) // redondeo a 0,50€
+    return String(Math.round(price * 2) / 2)
   })
 }
 
@@ -23,6 +22,8 @@ const PublishTrip = () => {
   const navigate = useNavigate()
   const mapRef = useRef(null)
   const rendererRef = useRef(null)
+  const modalMapRef = useRef(null)
+  const modalSearchRef = useRef(null)
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
   const [step, setStep] = useState(1)
@@ -42,6 +43,12 @@ const PublishTrip = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Step 3
+  const [pickupPoints, setPickupPoints] = useState({})
+  const [pickupModalCity, setPickupModalCity] = useState(null)
+  const [tempPickup, setTempPickup] = useState(null)
+  const [loadingPickups, setLoadingPickups] = useState(false)
+
   const handle = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
 
   // --- Route calculation ---
@@ -53,8 +60,6 @@ const PublishTrip = () => {
     const service = new window.google.maps.DirectionsService()
     const filledWaypoints = waypoints.filter(s => s.trim())
     const wp = filledWaypoints.map(s => ({ location: `${s}, España`, stopover: true }))
-
-    // Nombres de ciudad en orden: origen → paradas → destino
     const cityNames = [origen, ...filledWaypoints, destino]
 
     return new Promise((resolve, reject) => {
@@ -103,29 +108,21 @@ const PublishTrip = () => {
   const findSuggestions = async (polyline, totalKm) => {
     setLoadingSuggestions(true)
     try {
-      // Usar la librería geometry de Google Maps para decodificar la polyline
       const path = window.google.maps.geometry.encoding.decodePath(polyline)
       const spherical = window.google.maps.geometry.spherical
-
-      // Muestrear puntos cada ~100km a lo largo de la ruta (con 50km de margen en los extremos)
       const samples = []
-      let accum = 0
-      let nextSample = 100
+      let accum = 0, nextSample = 100
 
       for (let i = 1; i < path.length; i++) {
-        accum += spherical.computeDistanceBetween(path[i - 1], path[i]) / 1000 // metros a km
+        accum += spherical.computeDistanceBetween(path[i - 1], path[i]) / 1000
         if (accum >= nextSample && accum < totalKm - 50) {
           samples.push(path[i])
           nextSample += 100
         }
       }
 
-      if (!samples.length) {
-        setSuggestedCities([])
-        return
-      }
+      if (!samples.length) { setSuggestedCities([]); return }
 
-      // Reverse geocoding de cada punto para encontrar la ciudad
       const geocoder = new window.google.maps.Geocoder()
       const skip = [norm(origen), norm(destino)]
       const cities = []
@@ -138,22 +135,18 @@ const PublishTrip = () => {
               else reject(status)
             })
           )
-
-          // Buscar la ciudad en los address_components del primer resultado
           let cityName = null
           for (const result of results) {
             const comp = result.address_components?.find(c => c.types.includes('locality'))
             if (comp) { cityName = comp.long_name; break }
           }
-
           if (cityName && !skip.includes(norm(cityName)) && !cities.some(c => norm(c) === norm(cityName))) {
             cities.push(cityName)
           }
         } catch (status) {
-          console.warn('Geocoder failed for point:', pt.toString(), 'status:', status)
+          console.warn('Geocoder failed:', status)
         }
       }
-
       setSuggestedCities(cities)
     } catch (err) {
       console.error('findSuggestions error:', err)
@@ -161,6 +154,53 @@ const PublishTrip = () => {
     } finally {
       setLoadingSuggestions(false)
     }
+  }
+
+  // --- Default pickup points ---
+
+  const fetchDefaultPickups = async () => {
+    setLoadingPickups(true)
+    const cities = [origen, ...stops.filter(s => s.trim()), destino]
+    const service = new window.google.maps.places.PlacesService(document.createElement('div'))
+    const points = {}
+
+    for (let i = 0; i < cities.length; i++) {
+      const city = cities[i]
+      if (pickupPoints[city]) { points[city] = pickupPoints[city]; continue }
+
+      const leg = routeData.legs[Math.min(i, routeData.legs.length - 1)]
+      const cityLatLng = i < routeData.legs.length
+        ? { lat: leg.startLat, lng: leg.startLng }
+        : { lat: leg.endLat, lng: leg.endLng }
+
+      try {
+        const result = await new Promise((resolve, reject) => {
+          service.findPlaceFromQuery({
+            query: `estación de autobuses ${city}`,
+            fields: ['formatted_address', 'geometry', 'name'],
+            locationBias: new window.google.maps.LatLng(cityLatLng.lat, cityLatLng.lng),
+          }, (results, status) => {
+            if (status === 'OK' && results?.length) resolve(results[0])
+            else reject(status)
+          })
+        })
+        points[city] = {
+          address: result.formatted_address || result.name,
+          lat: result.geometry.location.lat(),
+          lng: result.geometry.location.lng(),
+          name: result.name,
+        }
+      } catch {
+        points[city] = {
+          address: `Centro de ${city}`,
+          lat: cityLatLng.lat, lng: cityLatLng.lng,
+          name: `Centro de ${city}`,
+        }
+      }
+    }
+
+    setPickupPoints(points)
+    setLoadingPickups(false)
   }
 
   // --- Step navigation ---
@@ -181,6 +221,15 @@ const PublishTrip = () => {
     } catch { /* error already set */ }
   }
 
+  const goToStep3 = async () => {
+    if (!routeData) return
+    const prices = segmentPrices.map(p => parseFloat(p) || 0)
+    if (prices.some(p => p <= 0)) { setError('Introduce un precio válido en cada tramo'); return }
+    setError('')
+    await fetchDefaultPickups()
+    setStep(3)
+  }
+
   // --- Stop management ---
 
   const addSuggested = async (city) => {
@@ -198,7 +247,7 @@ const PublishTrip = () => {
   const addManual = () => { setStops(prev => [...prev, '']); setNeedsRecalc(true) }
   const updateStopVal = (i, val) => { setStops(prev => prev.map((s, idx) => idx === i ? val : s)); setNeedsRecalc(true) }
 
-  // --- Map rendering ---
+  // --- Map rendering (step 2) ---
 
   useEffect(() => {
     if (!routeData || !mapRef.current || !window.google?.maps) return
@@ -208,26 +257,96 @@ const PublishTrip = () => {
     rendererRef.current.setDirections(routeData.directionsResult)
   }, [routeData])
 
+  // --- Pickup modal map ---
+
+  useEffect(() => {
+    if (!pickupModalCity || !modalMapRef.current || !window.google?.maps) return
+
+    const point = pickupPoints[pickupModalCity]
+    if (!point) return
+    const center = { lat: point.lat, lng: point.lng }
+    setTempPickup(point)
+
+    const map = new window.google.maps.Map(modalMapRef.current, {
+      center, zoom: 15, disableDefaultUI: true, zoomControl: true,
+    })
+
+    const marker = new window.google.maps.Marker({ map, position: center, draggable: true })
+    const geocoder = new window.google.maps.Geocoder()
+
+    const updateFromLatLng = (latLng) => {
+      marker.setPosition(latLng)
+      map.panTo(latLng)
+      geocoder.geocode({ location: latLng }, (results, status) => {
+        const addr = status === 'OK' && results?.[0] ? results[0].formatted_address : ''
+        setTempPickup({ address: addr, lat: latLng.lat(), lng: latLng.lng(), name: addr })
+      })
+    }
+
+    map.addListener('click', e => updateFromLatLng(e.latLng))
+    marker.addListener('dragend', e => updateFromLatLng(e.latLng))
+
+    if (modalSearchRef.current) {
+      const autocomplete = new window.google.maps.places.Autocomplete(modalSearchRef.current, {
+        componentRestrictions: { country: 'es' },
+        fields: ['formatted_address', 'geometry', 'name'],
+      })
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace()
+        if (place.geometry) {
+          const loc = place.geometry.location
+          marker.setPosition(loc)
+          map.setCenter(loc)
+          map.setZoom(16)
+          setTempPickup({
+            address: place.formatted_address || place.name,
+            lat: loc.lat(), lng: loc.lng(),
+            name: place.name || place.formatted_address,
+          })
+        }
+      })
+    }
+  }, [pickupModalCity])
+
   // --- Submit ---
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     if (!routeData) return
     const prices = segmentPrices.map(p => parseFloat(p) || 0)
-    if (prices.some(p => p <= 0)) { setError('Introduce un precio válido en cada tramo'); return }
+    const cities = [origen, ...stops.filter(s => s.trim()), destino]
 
     setError('')
     setLoading(true)
     try {
       let distAcum = 0, precioAcum = 0
       const paradas = routeData.legs.map((leg, i) => {
-        const p = { ciudad: leg.start, lat: leg.startLat, lng: leg.startLng, orden: i, distancia_desde_origen_km: distAcum, precio_desde_origen: precioAcum }
+        const city = cities[i]
+        const pp = pickupPoints[city]
+        const p = {
+          ciudad: leg.start,
+          lat: pp?.lat ?? leg.startLat,
+          lng: pp?.lng ?? leg.startLng,
+          pickup_address: pp?.address ?? null,
+          orden: i,
+          distancia_desde_origen_km: distAcum,
+          precio_desde_origen: precioAcum,
+        }
         distAcum += leg.distanceKm
         precioAcum = Math.round((precioAcum + prices[i]) * 100) / 100
         return p
       })
       const last = routeData.legs.at(-1)
-      paradas.push({ ciudad: last.end, lat: last.endLat, lng: last.endLng, orden: routeData.legs.length, distancia_desde_origen_km: distAcum, precio_desde_origen: precioAcum })
+      const lastCity = cities[cities.length - 1]
+      const lastPp = pickupPoints[lastCity]
+      paradas.push({
+        ciudad: last.end,
+        lat: lastPp?.lat ?? last.endLat,
+        lng: lastPp?.lng ?? last.endLng,
+        pickup_address: lastPp?.address ?? null,
+        orden: routeData.legs.length,
+        distancia_desde_origen_km: distAcum,
+        precio_desde_origen: precioAcum,
+      })
 
       const { trip } = await api.post('/trips', {
         ...form,
@@ -252,6 +371,7 @@ const PublishTrip = () => {
 
   const totalPrice = segmentPrices.reduce((s, p) => s + (parseFloat(p) || 0), 0)
   const availableSuggestions = suggestedCities.filter(c => !stops.some(s => norm(s) === norm(c)))
+  const allCities = [origen, ...stops.filter(s => s.trim()), destino]
 
   return (
     <div className="tripform-page">
@@ -259,7 +379,7 @@ const PublishTrip = () => {
         <div className="tripform-topbar">
           {step === 1
             ? <Link to="/" className="back-link">← Volver al inicio</Link>
-            : <button type="button" className="back-link-btn" onClick={() => setStep(1)}>← Volver al paso 1</button>
+            : <button type="button" className="back-link-btn" onClick={() => setStep(step - 1)}>← Volver al paso {step - 1}</button>
           }
         </div>
 
@@ -268,6 +388,8 @@ const PublishTrip = () => {
           <div className={`step-num ${step >= 1 ? 'active' : ''}`}>1</div>
           <div className={`step-line ${step >= 2 ? 'active' : ''}`} />
           <div className={`step-num ${step >= 2 ? 'active' : ''}`}>2</div>
+          <div className={`step-line ${step >= 3 ? 'active' : ''}`} />
+          <div className={`step-num ${step >= 3 ? 'active' : ''}`}>3</div>
         </div>
 
         {/* ========== STEP 1 ========== */}
@@ -328,10 +450,9 @@ const PublishTrip = () => {
 
         {/* ========== STEP 2 ========== */}
         {step === 2 && (
-          <form onSubmit={handleSubmit}>
+          <>
             <h2>Personaliza tu ruta</h2>
 
-            {/* Map + summary */}
             {routeData && (
               <div className="route-preview">
                 <div ref={mapRef} className="trip-map" />
@@ -343,7 +464,6 @@ const PublishTrip = () => {
               </div>
             )}
 
-            {/* Suggested cities */}
             {(loadingSuggestions || availableSuggestions.length > 0) && (
               <div className="suggestions-section">
                 <p className="suggestions-title">Ciudades de paso sugeridas</p>
@@ -362,7 +482,6 @@ const PublishTrip = () => {
               </div>
             )}
 
-            {/* Route stops */}
             <div className="route-section step2-stops">
               <div className="route-stop">
                 <div className="route-dot route-dot-origin" />
@@ -400,7 +519,6 @@ const PublishTrip = () => {
               </button>
             )}
 
-            {/* Segment prices */}
             {routeData && (
               <div className="segments-list step2-segments">
                 <p className="segments-title">Precio por plaza en cada tramo</p>
@@ -424,13 +542,84 @@ const PublishTrip = () => {
 
             {error && <p className="msg-error">{error}</p>}
 
-            <button type="submit" className="btn-primary" disabled={loading || !routeData || calculando}
-              style={{ marginTop: '1.25rem' }}>
+            <button type="button" className="btn-primary" onClick={goToStep3}
+              disabled={!routeData || calculando} style={{ marginTop: '1.25rem' }}>
+              Siguiente →
+            </button>
+          </>
+        )}
+
+        {/* ========== STEP 3 ========== */}
+        {step === 3 && (
+          <>
+            <h2>Puntos de recogida</h2>
+            <p className="pickup-subtitle">Indica dónde recoges o dejas pasajeros en cada ciudad</p>
+
+            {loadingPickups ? (
+              <p className="suggestions-loading">Buscando puntos sugeridos...</p>
+            ) : (
+              <div className="pickup-list">
+                {allCities.map((city, i) => (
+                  <div key={city} className="pickup-row">
+                    <div className="pickup-city-header">
+                      <div className={`route-dot ${i === 0 ? 'route-dot-origin' : i === allCities.length - 1 ? 'route-dot-dest' : 'route-dot-stop'}`}
+                        style={{ margin: 0 }} />
+                      <span className="pickup-city-name">{city}</span>
+                    </div>
+                    <div className="pickup-point-info">
+                      <span className="pickup-address">
+                        {pickupPoints[city]?.name || pickupPoints[city]?.address || 'Sin definir'}
+                      </span>
+                      <button type="button" className="btn-edit-pickup"
+                        onClick={() => setPickupModalCity(city)}>
+                        Cambiar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {error && <p className="msg-error">{error}</p>}
+
+            <button type="button" className="btn-primary" onClick={handleSubmit}
+              disabled={loading} style={{ marginTop: '0.5rem' }}>
               {loading ? 'Publicando...' : 'Publicar viaje'}
             </button>
-          </form>
+          </>
         )}
       </div>
+
+      {/* ========== PICKUP MAP MODAL ========== */}
+      {pickupModalCity && (
+        <div className="pickup-modal-overlay" onClick={() => setPickupModalCity(null)}>
+          <div className="pickup-modal" onClick={e => e.stopPropagation()}>
+            <div className="pickup-modal-header">
+              <h3>Punto en {pickupModalCity}</h3>
+              <button type="button" className="btn-close-modal" onClick={() => setPickupModalCity(null)}>✕</button>
+            </div>
+
+            <div className="pickup-modal-search">
+              <input ref={modalSearchRef} placeholder="Buscar dirección..." />
+            </div>
+
+            <div ref={modalMapRef} className="pickup-modal-map" />
+
+            <div className="pickup-modal-selected">
+              {tempPickup?.address || 'Toca el mapa o busca una dirección'}
+            </div>
+
+            <button type="button" className="btn-primary" onClick={() => {
+              if (tempPickup) {
+                setPickupPoints(prev => ({ ...prev, [pickupModalCity]: tempPickup }))
+              }
+              setPickupModalCity(null)
+            }}>
+              Confirmar punto
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

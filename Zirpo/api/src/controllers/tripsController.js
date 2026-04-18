@@ -168,9 +168,9 @@ export const createTrip = async (req, res) => {
     if (paradas && paradas.length > 0) {
       for (const p of paradas) {
         await pool.query(`
-          INSERT INTO paradas (trip_id, ciudad, lat, lng, orden, distancia_desde_origen_km, precio_desde_origen)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [tripId, p.ciudad, p.lat ?? null, p.lng ?? null, p.orden, p.distancia_desde_origen_km ?? 0, p.precio_desde_origen ?? 0])
+          INSERT INTO paradas (trip_id, ciudad, lat, lng, orden, distancia_desde_origen_km, precio_desde_origen, pickup_address)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [tripId, p.ciudad, p.lat ?? null, p.lng ?? null, p.orden, p.distancia_desde_origen_km ?? 0, p.precio_desde_origen ?? 0, p.pickup_address ?? null])
       }
     }
 

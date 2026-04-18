@@ -114,6 +114,11 @@ const createTables = async () => {
       )
     `)
 
+    // Añadir pickup_address a paradas
+    await conn.query(`
+      ALTER TABLE paradas ADD COLUMN IF NOT EXISTS pickup_address VARCHAR(255) DEFAULT NULL
+    `).catch(() => {})
+
     console.log('Tablas creadas/actualizadas correctamente')
   } catch (err) {
     console.error('Error en migración:', err.message)
