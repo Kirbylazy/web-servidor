@@ -51,7 +51,11 @@ const PublishTrip = () => {
     setError('')
     await loadGoogleMapsScript(apiKey)
     const service = new window.google.maps.DirectionsService()
-    const wp = waypoints.filter(s => s.trim()).map(s => ({ location: `${s}, España`, stopover: true }))
+    const filledWaypoints = waypoints.filter(s => s.trim())
+    const wp = filledWaypoints.map(s => ({ location: `${s}, España`, stopover: true }))
+
+    // Nombres de ciudad en orden: origen → paradas → destino
+    const cityNames = [origen, ...filledWaypoints, destino]
 
     return new Promise((resolve, reject) => {
       service.route({
@@ -63,9 +67,9 @@ const PublishTrip = () => {
         setCalculando(false)
         if (status !== 'OK') { setError('No se pudo calcular la ruta.'); reject(status); return }
 
-        const legs = result.routes[0].legs.map(leg => ({
-          start: leg.start_address.split(',')[0].trim(),
-          end: leg.end_address.split(',')[0].trim(),
+        const legs = result.routes[0].legs.map((leg, i) => ({
+          start: cityNames[i],
+          end: cityNames[i + 1],
           startLat: leg.start_location.lat(),
           startLng: leg.start_location.lng(),
           endLat: leg.end_location.lat(),
