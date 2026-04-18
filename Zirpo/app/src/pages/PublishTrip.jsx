@@ -7,30 +7,6 @@ import './TripForm.css'
 
 // --- Utilities ---
 
-function decodePolyline(encoded) {
-  const points = []
-  let index = 0, lat = 0, lng = 0
-  while (index < encoded.length) {
-    let b, shift = 0, result = 0
-    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
-    lat += (result & 1) ? ~(result >> 1) : (result >> 1)
-    shift = 0; result = 0
-    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
-    lng += (result & 1) ? ~(result >> 1) : (result >> 1)
-    points.push({ lat: lat / 1e5, lng: lng / 1e5 })
-  }
-  return points
-}
-
-function haversine(a, b) {
-  const toRad = x => x * Math.PI / 180
-  const dLat = toRad(b.lat - a.lat)
-  const dLng = toRad(b.lng - a.lng)
-  const h = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2
-  return 2 * 6371 * Math.asin(Math.sqrt(h))
-}
-
 function distributePrices(legs, generalPrice) {
   const totalKm = legs.reduce((s, l) => s + l.distanceKm, 0)
   if (!totalKm) return legs.map(() => '0')
@@ -125,34 +101,60 @@ const PublishTrip = () => {
   const findSuggestions = async (polyline, totalKm) => {
     setLoadingSuggestions(true)
     try {
-      const points = decodePolyline(polyline)
-      const samples = []
-      let accum = 0, next = 100
+      // Usar la librería geometry de Google Maps para decodificar la polyline
+      const path = window.google.maps.geometry.encoding.decodePath(polyline)
+      const spherical = window.google.maps.geometry.spherical
 
-      for (let i = 1; i < points.length; i++) {
-        accum += haversine(points[i - 1], points[i])
-        if (accum >= next && accum < totalKm - 50) {
-          samples.push(points[i])
-          next += 100
+      // Muestrear puntos cada ~100km a lo largo de la ruta (con 50km de margen en los extremos)
+      const samples = []
+      let accum = 0
+      let nextSample = 100
+
+      for (let i = 1; i < path.length; i++) {
+        accum += spherical.computeDistanceBetween(path[i - 1], path[i]) / 1000 // metros a km
+        if (accum >= nextSample && accum < totalKm - 50) {
+          samples.push(path[i])
+          nextSample += 100
         }
       }
 
+      if (!samples.length) {
+        setSuggestedCities([])
+        return
+      }
+
+      // Reverse geocoding de cada punto para encontrar la ciudad
       const geocoder = new window.google.maps.Geocoder()
       const skip = [norm(origen), norm(destino)]
       const cities = []
 
       for (const pt of samples) {
-        const results = await new Promise(r =>
-          geocoder.geocode({ location: pt }, (res, st) => r(st === 'OK' ? res : []))
-        )
-        const loc = results.find(r => r.types.includes('locality'))
-        const name = loc?.address_components.find(c => c.types.includes('locality'))?.long_name
-        if (name && !skip.includes(norm(name)) && !cities.some(c => norm(c) === norm(name))) {
-          cities.push(name)
+        try {
+          const results = await new Promise((resolve, reject) =>
+            geocoder.geocode({ location: pt }, (res, status) => {
+              if (status === 'OK' && res?.length) resolve(res)
+              else reject(status)
+            })
+          )
+
+          // Buscar la ciudad en los address_components del primer resultado
+          let cityName = null
+          for (const result of results) {
+            const comp = result.address_components?.find(c => c.types.includes('locality'))
+            if (comp) { cityName = comp.long_name; break }
+          }
+
+          if (cityName && !skip.includes(norm(cityName)) && !cities.some(c => norm(c) === norm(cityName))) {
+            cities.push(cityName)
+          }
+        } catch (status) {
+          console.warn('Geocoder failed for point:', pt.toString(), 'status:', status)
         }
       }
+
       setSuggestedCities(cities)
-    } catch {
+    } catch (err) {
+      console.error('findSuggestions error:', err)
       setSuggestedCities([])
     } finally {
       setLoadingSuggestions(false)
