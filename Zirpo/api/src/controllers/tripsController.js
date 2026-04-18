@@ -29,41 +29,16 @@ async function calcularRuta(origen, destino) {
 export const getTrips = async (req, res) => {
   const { origen, destino, fecha } = req.query
   try {
-    const hasSearch = origen && destino
-
-    // Calcula precio, ciudad origen y ciudad destino del tramo buscado
-    const extraFields = hasSearch
-      ? `,
-          COALESCE(
-            (SELECT pd.precio_desde_origen - po.precio_desde_origen
-             FROM paradas po JOIN paradas pd ON pd.trip_id = po.trip_id
-             WHERE po.trip_id = t.id AND po.ciudad LIKE ? AND pd.ciudad LIKE ? AND po.orden < pd.orden
-             LIMIT 1),
-            t.precio_asiento
-          ) AS precio_tramo,
-          COALESCE(
-            (SELECT po.ciudad FROM paradas po WHERE po.trip_id = t.id AND po.ciudad LIKE ? ORDER BY po.orden LIMIT 1),
-            t.origen
-          ) AS tramo_origen,
-          COALESCE(
-            (SELECT pd.ciudad FROM paradas pd WHERE pd.trip_id = t.id AND pd.ciudad LIKE ? ORDER BY pd.orden LIMIT 1),
-            t.destino
-          ) AS tramo_destino`
-      : ', t.precio_asiento AS precio_tramo, t.origen AS tramo_origen, t.destino AS tramo_destino'
-
     let sql = `
       SELECT t.*, u.nombre AS conductor_nombre, u.apellidos AS conductor_apellidos,
              u.foto AS conductor_foto, u.valoracion_media AS conductor_valoracion,
              v.marca, v.modelo, v.color, v.aire_acondicionado, v.musica, v.maletero_grande
-             ${extraFields}
       FROM trips t
       JOIN users u ON t.conductor_id = u.id
       LEFT JOIN vehicles v ON v.user_id = t.conductor_id
       WHERE t.estado = 'activo' AND t.asientos_disponibles > 0 AND t.fecha >= CURDATE()
     `
-    const params = hasSearch
-      ? [`%${origen}%`, `%${destino}%`, `%${origen}%`, `%${destino}%`]
-      : []
+    const params = []
 
     if (origen && destino) {
       sql += ` AND (
@@ -90,6 +65,22 @@ export const getTrips = async (req, res) => {
     sql += ' ORDER BY t.fecha ASC, t.hora ASC'
 
     const [rows] = await pool.query(sql, params)
+
+    // Adjuntar paradas a cada viaje para que el frontend calcule el tramo buscado
+    if (rows.length > 0) {
+      const tripIds = rows.map(t => t.id)
+      const [allParadas] = await pool.query(
+        `SELECT * FROM paradas WHERE trip_id IN (${tripIds.map(() => '?').join(',')}) ORDER BY orden`,
+        tripIds
+      )
+      const byTrip = {}
+      allParadas.forEach(p => {
+        if (!byTrip[p.trip_id]) byTrip[p.trip_id] = []
+        byTrip[p.trip_id].push(p)
+      })
+      rows.forEach(t => { t.paradas = byTrip[t.id] || [] })
+    }
+
     res.json({ trips: rows })
   } catch (err) {
     console.error(err)

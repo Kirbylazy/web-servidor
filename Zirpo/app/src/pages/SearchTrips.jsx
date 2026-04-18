@@ -4,6 +4,33 @@ import { api } from '../services/api'
 import CityAutocomplete from '../components/CityAutocomplete'
 import './SearchTrips.css'
 
+// Normaliza texto: minúsculas y sin acentos para comparar
+const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+
+// Calcula el tramo relevante de un viaje según la búsqueda
+function getTramo(trip, searchOrigen, searchDestino) {
+  const paradas = trip.paradas || []
+  if (!paradas.length || !searchOrigen || !searchDestino) {
+    return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento }
+  }
+
+  const nOrigen = norm(searchOrigen)
+  const nDestino = norm(searchDestino)
+
+  const po = paradas.find(p => norm(p.ciudad).includes(nOrigen))
+  const pd = paradas.find(p => norm(p.ciudad).includes(nDestino))
+
+  if (po && pd && po.orden < pd.orden) {
+    return {
+      origen: po.ciudad,
+      destino: pd.ciudad,
+      precio: parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen)
+    }
+  }
+
+  return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento }
+}
+
 const SearchTrips = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [form, setForm] = useState({
@@ -59,7 +86,7 @@ const SearchTrips = () => {
         <CityAutocomplete name="destino" value={form.destino} placeholder="Destino"
           onChange={e => { const v = e.target.value; setForm(prev => ({ ...prev, destino: v })) }} />
         <input type="date" value={form.fecha}
-          onChange={e => setForm({ ...form, fecha: e.target.value })} />
+          onChange={e => setForm(prev => ({ ...prev, fecha: e.target.value })) } />
         <button type="submit" className="btn-search">Buscar</button>
       </form>
 
@@ -70,30 +97,33 @@ const SearchTrips = () => {
           <p className="search-status">No hay viajes disponibles con esos criterios.</p>
         )}
 
-        {trips.map(trip => (
-          <Link to={`/trips/${trip.id}`} key={trip.id} className="trip-card">
-            <div className="trip-card-header">
-              <div className="trip-route">
-                <span className="trip-city">{trip.tramo_origen}</span>
-                <span className="trip-arrow">→</span>
-                <span className="trip-city">{trip.tramo_destino}</span>
+        {trips.map(trip => {
+          const tramo = getTramo(trip, form.origen, form.destino)
+          return (
+            <Link to={`/trips/${trip.id}`} key={trip.id} className="trip-card">
+              <div className="trip-card-header">
+                <div className="trip-route">
+                  <span className="trip-city">{tramo.origen}</span>
+                  <span className="trip-arrow">→</span>
+                  <span className="trip-city">{tramo.destino}</span>
+                </div>
+                <span className="trip-price">{Number(tramo.precio).toFixed(2)} €</span>
               </div>
-              <span className="trip-price">{Number(trip.precio_tramo).toFixed(2)} €</span>
-            </div>
-            <div className="trip-card-meta">
-              <span>{formatDate(trip.fecha)} · {formatTime(trip.hora)}</span>
-              <span>{trip.asientos_disponibles} plaza{trip.asientos_disponibles !== 1 ? 's' : ''}</span>
-            </div>
-            <div className="trip-card-driver">
-              {trip.conductor_foto
-                ? <img src={trip.conductor_foto} alt="" className="driver-avatar" />
-                : <div className="driver-avatar-placeholder">{trip.conductor_nombre?.[0]}</div>
-              }
-              <span>{trip.conductor_nombre} {trip.conductor_apellidos}</span>
-              {trip.marca && <span className="trip-car">· {trip.marca} {trip.modelo}</span>}
-            </div>
-          </Link>
-        ))}
+              <div className="trip-card-meta">
+                <span>{formatDate(trip.fecha)} · {formatTime(trip.hora)}</span>
+                <span>{trip.asientos_disponibles} plaza{trip.asientos_disponibles !== 1 ? 's' : ''}</span>
+              </div>
+              <div className="trip-card-driver">
+                {trip.conductor_foto
+                  ? <img src={trip.conductor_foto} alt="" className="driver-avatar" />
+                  : <div className="driver-avatar-placeholder">{trip.conductor_nombre?.[0]}</div>
+                }
+                <span>{trip.conductor_nombre} {trip.conductor_apellidos}</span>
+                {trip.marca && <span className="trip-car">· {trip.marca} {trip.modelo}</span>}
+              </div>
+            </Link>
+          )
+        })}
       </div>
     </div>
   )
