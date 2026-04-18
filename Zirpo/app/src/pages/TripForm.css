@@ -1,6 +1,6 @@
 .tripform-page {
   min-height: 100vh;
-  background: #f0f4f8;
+  background: var(--bg);
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -8,12 +8,12 @@
 }
 
 .tripform-card {
-  background: white;
-  border-radius: 16px;
+  background: var(--white);
+  border-radius: var(--radius-xl);
   padding: 2rem;
   width: 100%;
   max-width: 560px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: var(--shadow-md);
 }
 
 .tripform-topbar {
@@ -23,61 +23,64 @@
 .tripform-card h2 {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
   margin-bottom: 1.5rem;
 }
 
-.form-group {
+.tripform-card .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
   margin-bottom: 1rem;
 }
 
-.form-group label {
+.tripform-card .form-group label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text);
 }
 
-.form-group input, .form-group textarea {
+.tripform-card .form-group input,
+.tripform-card .form-group textarea {
   padding: 0.75rem 1rem;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   font-family: inherit;
-  background: #ffffff;
-  color: #1e293b;
+  background: var(--white);
+  color: var(--text-dark);
 }
 
-.form-group input:focus, .form-group textarea:focus {
-  border-color: #2563eb;
+.tripform-card .form-group input:focus,
+.tripform-card .form-group textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.form-row {
+.tripform-card .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.back-link {
-  color: #2563eb;
+.tripform-card .back-link {
+  color: var(--blue);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
 }
 
-.back-link:hover { text-decoration: underline; }
+.tripform-card .back-link:hover { text-decoration: underline; }
 
-.btn-primary {
+.tripform-card .btn-primary {
   width: 100%;
   padding: 0.85rem;
-  background: #2563eb;
+  background: var(--blue);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -85,11 +88,11 @@
   transition: background 0.2s;
 }
 
-.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.tripform-card .btn-primary:hover:not(:disabled) { background: var(--blue-hover); }
+.tripform-card .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.msg-error { color: #dc2626; font-size: 0.875rem; margin-bottom: 0.5rem; }
-.msg-ok { color: #16a34a; font-size: 0.875rem; margin-bottom: 0.5rem; }
+.msg-error { color: var(--red); font-size: 0.875rem; margin-bottom: 0.5rem; }
+.msg-ok { color: var(--green); font-size: 0.875rem; margin-bottom: 0.5rem; }
 
 /* Sección de ruta con paradas */
 .route-section {
@@ -98,7 +101,7 @@
   gap: 0.25rem;
   margin-bottom: 1rem;
   padding-left: 0.5rem;
-  border-left: 2px solid #e2e8f0;
+  border-left: 2px solid var(--border);
 }
 
 .route-stop {
@@ -117,15 +120,15 @@
   margin-left: -0.875rem;
 }
 
-.route-dot-origin { background: #16a34a; }
+.route-dot-origin { background: var(--green); }
 .route-dot-stop   { background: #f59e0b; }
-.route-dot-dest   { background: #dc2626; }
+.route-dot-dest   { background: var(--red); }
 
 .btn-add-stop {
   background: none;
   border: 1.5px dashed #cbd5e1;
-  border-radius: 8px;
-  color: #64748b;
+  border-radius: var(--radius);
+  color: var(--text-muted);
   font-size: 0.85rem;
   padding: 0.5rem 1rem;
   cursor: pointer;
@@ -133,12 +136,12 @@
   transition: border-color 0.2s, color 0.2s;
 }
 
-.btn-add-stop:hover { border-color: #2563eb; color: #2563eb; }
+.btn-add-stop:hover { border-color: var(--blue); color: var(--blue); }
 
 .btn-remove-stop {
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--text-faint);
   font-size: 1rem;
   cursor: pointer;
   padding: 0 0.25rem;
@@ -146,15 +149,15 @@
   line-height: 1;
 }
 
-.btn-remove-stop:hover { color: #dc2626; }
+.btn-remove-stop:hover { color: var(--red); }
 
 .btn-calculate {
   width: 100%;
   padding: 0.8rem;
-  background: #0f172a;
+  background: var(--text-dark);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -162,13 +165,13 @@
   transition: background 0.2s;
 }
 
-.btn-calculate:hover:not(:disabled) { background: #1e293b; }
+.btn-calculate:hover:not(:disabled) { background: #334155; }
 .btn-calculate:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Preview de ruta */
 .route-preview {
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   margin-bottom: 1.25rem;
 }
@@ -180,13 +183,13 @@
   background: #f8fafc;
   font-size: 0.875rem;
   color: #475569;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border);
 }
 
 .total-price {
   margin-left: auto;
   font-weight: 700;
-  color: #2563eb;
+  color: var(--blue);
 }
 
 .segments-list {
@@ -196,7 +199,7 @@
 .segments-title {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 0.75rem;
@@ -208,7 +211,7 @@
   align-items: center;
   gap: 1rem;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-light);
 }
 
 .segment-row:last-child { border-bottom: none; }
@@ -222,12 +225,12 @@
 .segment-cities {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #1e293b;
+  color: var(--text-dark);
 }
 
 .segment-meta {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-faint);
 }
 
 .segment-price-input {
@@ -240,28 +243,28 @@
 .segment-price-input input {
   width: 70px;
   padding: 0.4rem 0.5rem;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 0.9rem;
   text-align: right;
-  background: #ffffff;
-  color: #1e293b;
+  background: var(--white);
+  color: var(--text-dark);
   outline: none;
 }
 
-.segment-price-input input:focus { border-color: #2563eb; }
-.segment-price-input span { font-size: 0.85rem; color: #64748b; }
+.segment-price-input input:focus { border-color: var(--blue); }
+.segment-price-input span { font-size: 0.85rem; color: var(--text-muted); }
 
 .btn-recalculate {
   width: 100%;
   padding: 0.6rem;
   background: none;
   border: none;
-  border-top: 1px solid #e2e8f0;
-  color: #64748b;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
   font-size: 0.8rem;
   cursor: pointer;
   transition: color 0.2s;
 }
 
-.btn-recalculate:hover { color: #2563eb; }
+.btn-recalculate:hover { color: var(--blue); }

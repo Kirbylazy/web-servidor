@@ -1,26 +1,29 @@
 .search-page {
   min-height: 100vh;
-  background: #f0f4f8;
+  background: var(--bg);
 }
 
 .search-topbar {
-  background: white;
+  background: var(--white);
   padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .search-topbar h2 {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-dark);
   margin: 0;
 }
 
 .back-link {
-  color: #2563eb;
+  color: var(--blue);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
@@ -32,8 +35,8 @@
   display: flex;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
 
@@ -41,28 +44,33 @@
   flex: 1;
   min-width: 130px;
   padding: 0.6rem 0.9rem;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
   font-size: 0.9rem;
   outline: none;
-  background: #ffffff;
-  color: #1e293b;
+  background: var(--white);
+  color: var(--text-dark);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.search-filters input:focus { border-color: #2563eb; }
+.search-filters input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
 
 .btn-search {
   padding: 0.6rem 1.25rem;
-  background: #2563eb;
+  background: var(--blue);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius);
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
-.btn-search:hover { background: #1d4ed8; }
+.btn-search:hover { background: var(--blue-hover); }
 
 .search-results {
   max-width: 680px;
@@ -75,24 +83,25 @@
 
 .search-status {
   text-align: center;
-  color: #64748b;
+  color: var(--text-muted);
   padding: 2rem;
 }
 
 .trip-card {
-  background: white;
-  border-radius: 12px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: var(--shadow-sm);
   transition: box-shadow 0.2s, transform 0.15s;
   display: block;
 }
 
 .trip-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-1px);
+  text-decoration: none;
 }
 
 .trip-card-header {
@@ -111,22 +120,22 @@
 .trip-city {
   font-weight: 700;
   font-size: 1rem;
-  color: #1e293b;
+  color: var(--text-dark);
 }
 
-.trip-arrow { color: #94a3b8; }
+.trip-arrow { color: var(--text-faint); }
 
 .trip-price {
   font-size: 1.2rem;
   font-weight: 800;
-  color: #2563eb;
+  color: var(--blue);
 }
 
 .trip-card-meta {
   display: flex;
   gap: 1rem;
   font-size: 0.875rem;
-  color: #64748b;
+  color: var(--text-muted);
   margin-bottom: 0.75rem;
 }
 
@@ -135,7 +144,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--text);
 }
 
 .driver-avatar {
@@ -149,7 +158,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #2563eb;
+  background: var(--blue);
   color: white;
   display: flex;
   align-items: center;
@@ -158,4 +167,4 @@
   font-weight: 700;
 }
 
-.trip-car { color: #94a3b8; }
+.trip-car { color: var(--text-faint); }
