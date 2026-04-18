@@ -177,8 +177,8 @@ export const createTrip = async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM trips WHERE id = ?', [tripId])
     res.status(201).json({ trip: rows[0] })
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: 'Error interno del servidor' })
+    console.error('createTrip error:', err)
+    res.status(500).json({ error: err.message || 'Error interno del servidor' })
   }
 }
 

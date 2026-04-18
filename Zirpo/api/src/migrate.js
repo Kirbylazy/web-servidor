@@ -90,6 +90,7 @@ const createTables = async () => {
         orden TINYINT NOT NULL,
         distancia_desde_origen_km INT DEFAULT 0,
         precio_desde_origen DECIMAL(6,2) DEFAULT 0,
+        pickup_address VARCHAR(255) DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE
       )
@@ -114,10 +115,10 @@ const createTables = async () => {
       )
     `)
 
-    // Añadir pickup_address a paradas
+    // Añadir pickup_address a paradas (para tablas ya existentes)
     await conn.query(`
       ALTER TABLE paradas ADD COLUMN IF NOT EXISTS pickup_address VARCHAR(255) DEFAULT NULL
-    `).catch(() => {})
+    `).catch(e => console.log('pickup_address ya existe o no se pudo añadir:', e.message))
 
     console.log('Tablas creadas/actualizadas correctamente')
   } catch (err) {
