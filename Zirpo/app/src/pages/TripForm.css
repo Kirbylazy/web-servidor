@@ -268,3 +268,140 @@
 }
 
 .btn-recalculate:hover { color: var(--blue); }
+
+/* Step indicator */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.step-num {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--border);
+  color: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.step-num.active {
+  background: var(--blue);
+  color: white;
+}
+
+.step-indicator .step-line {
+  width: 60px;
+  height: 2px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+
+.step-indicator .step-line.active {
+  background: var(--blue);
+}
+
+/* Back link button (step 2) */
+.back-link-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--blue);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.back-link-btn:hover { text-decoration: underline; }
+
+/* Suggested cities */
+.suggestions-section {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.suggestions-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+.suggestions-loading {
+  font-size: 0.875rem;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.suggestions-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.suggestion-chip {
+  padding: 0.4rem 0.9rem;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.suggestion-chip:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.suggestion-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Stop city label (step 2 read-only) */
+.stop-city-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  padding: 0.65rem 0;
+  flex: 1;
+}
+
+/* Step 2 stops section spacing */
+.step2-stops {
+  margin: 1rem 0;
+}
+
+.step2-stops .route-dot {
+  margin-bottom: 0.65rem;
+}
+
+.step2-stops .btn-remove-stop {
+  margin-bottom: 0.65rem;
+}
+
+/* Step 2 segments */
+.step2-segments {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
