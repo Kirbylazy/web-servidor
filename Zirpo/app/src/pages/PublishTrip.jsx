@@ -7,13 +7,12 @@ import './TripForm.css'
 
 // --- Utilities ---
 
-function distributePrices(legs, generalPrice) {
-  const totalKm = legs.reduce((s, l) => s + l.distanceKm, 0)
-  if (!totalKm) return legs.map(() => '0')
-  const prices = legs.map(leg => Math.round(generalPrice * (leg.distanceKm / totalKm) * 2) / 2)
-  const sumRest = prices.slice(0, -1).reduce((s, p) => s + p, 0)
-  prices[prices.length - 1] = Math.round((generalPrice - sumRest) * 2) / 2
-  return prices.map(String)
+// Precio sugerido por tramo: 60% del baremo DGT (0,19€/km) asumiendo 3 pasajeros
+function calcDefaultPrices(legs) {
+  return legs.map(leg => {
+    const price = leg.distanceKm * 0.19 / 3 * 0.6
+    return String(Math.round(price * 2) / 2) // redondeo a 0,50€
+  })
 }
 
 const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
@@ -30,7 +29,7 @@ const PublishTrip = () => {
   const [origen, setOrigen] = useState('')
   const [destino, setDestino] = useState('')
   const [form, setForm] = useState({
-    fecha: '', hora: '', asientos_totales: 1, descripcion: '', precio_general: ''
+    fecha: '', hora: '', asientos_totales: 1, descripcion: ''
   })
 
   const [routeData, setRouteData] = useState(null)
@@ -44,7 +43,6 @@ const PublishTrip = () => {
   const [loading, setLoading] = useState(false)
 
   const handle = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
-  const generalPrice = parseFloat(form.precio_general) || 0
 
   // --- Route calculation ---
 
@@ -91,7 +89,7 @@ const PublishTrip = () => {
     try {
       const data = await calcRoute(waypoints)
       setRouteData(data)
-      setSegmentPrices(distributePrices(data.legs, generalPrice))
+      setSegmentPrices(calcDefaultPrices(data.legs))
       setNeedsRecalc(false)
     } catch { /* error already set */ }
   }
@@ -164,7 +162,7 @@ const PublishTrip = () => {
   // --- Step navigation ---
 
   const goToStep2 = async () => {
-    if (!origen || !destino || !form.fecha || !form.hora || !form.precio_general) return
+    if (!origen || !destino || !form.fecha || !form.hora) return
     setError('')
     setStops([])
     setSuggestedCities([])
@@ -173,7 +171,7 @@ const PublishTrip = () => {
     try {
       const data = await calcRoute([])
       setRouteData(data)
-      setSegmentPrices(distributePrices(data.legs, generalPrice))
+      setSegmentPrices(calcDefaultPrices(data.legs))
       setStep(2)
       findSuggestions(data.polyline, data.totalDistanceKm)
     } catch { /* error already set */ }
@@ -227,9 +225,8 @@ const PublishTrip = () => {
       const last = routeData.legs.at(-1)
       paradas.push({ ciudad: last.end, lat: last.endLat, lng: last.endLng, orden: routeData.legs.length, distancia_desde_origen_km: distAcum, precio_desde_origen: precioAcum })
 
-      const { precio_general, ...formData } = form
       const { trip } = await api.post('/trips', {
-        ...formData,
+        ...form,
         origen, destino,
         precio_asiento: precioAcum,
         paradas,
@@ -304,17 +301,10 @@ const PublishTrip = () => {
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label>Plazas disponibles</label>
-                <input type="number" name="asientos_totales" min="1" max="8"
-                  value={form.asientos_totales} onChange={handle} required />
-              </div>
-              <div className="form-group">
-                <label>Precio por plaza (€)</label>
-                <input type="number" name="precio_general" min="0" step="0.50"
-                  value={form.precio_general} onChange={handle} placeholder="Ej: 25" required />
-              </div>
+            <div className="form-group">
+              <label>Plazas disponibles</label>
+              <input type="number" name="asientos_totales" min="1" max="8"
+                value={form.asientos_totales} onChange={handle} required />
             </div>
 
             <div className="form-group">
@@ -326,7 +316,7 @@ const PublishTrip = () => {
             {error && <p className="msg-error">{error}</p>}
 
             <button type="button" className="btn-primary" onClick={goToStep2}
-              disabled={!origen || !destino || !form.fecha || !form.hora || !form.precio_general || calculando}>
+              disabled={!origen || !destino || !form.fecha || !form.hora || calculando}>
               {calculando ? 'Calculando ruta...' : 'Siguiente →'}
             </button>
           </>
