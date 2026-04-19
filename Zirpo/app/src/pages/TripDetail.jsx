@@ -232,11 +232,7 @@ const TripDetail = () => {
 
         {/* Acción del pasajero */}
         {!isConductor && trip.estado === 'activo' && (
-          !user ? (
-            <Link to="/login" className="btn-book" style={{ textAlign: 'center' }}>
-              Inicia sesión para reservar · {Number(tramo.precio).toFixed(2)} €
-            </Link>
-          ) : myBooking ? (
+          myBooking ? (
             <div className="booking-status">
               <span className={`status-badge status-${myBooking.estado}`}>
                 {myBooking.estado === 'pendiente' ? '⏳ Reserva pendiente de confirmación'

@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import bcrypt from 'bcrypt'
 import pool from './db.js'
 
 const createTables = async () => {
@@ -119,6 +120,23 @@ const createTables = async () => {
     await conn.query(`
       ALTER TABLE paradas ADD COLUMN IF NOT EXISTS pickup_address VARCHAR(255) DEFAULT NULL
     `).catch(e => console.log('pickup_address ya existe o no se pudo añadir:', e.message))
+
+    // Seed: cuentas de test
+    const testUsers = [
+      { nombre: 'Conductor', apellidos: 'Test', email: 'conductor@test.com' },
+      { nombre: 'Pasajero', apellidos: 'Test', email: 'pasajero@test.com' },
+    ]
+    const hash = await bcrypt.hash('password', 12)
+    for (const u of testUsers) {
+      const [existing] = await conn.query('SELECT id FROM users WHERE email = ?', [u.email])
+      if (!existing.length) {
+        await conn.query(
+          'INSERT INTO users (nombre, apellidos, email, password) VALUES (?, ?, ?, ?)',
+          [u.nombre, u.apellidos, u.email, hash]
+        )
+        console.log(`Usuario test creado: ${u.email}`)
+      }
+    }
 
     console.log('Tablas creadas/actualizadas correctamente')
   } catch (err) {
