@@ -3,7 +3,7 @@ import pool from '../db.js'
 export const getMessages = async (req, res) => {
   try {
     const { tripId } = req.params
-    const { since } = req.query
+    const { after_id } = req.query
 
     const [trips] = await pool.query('SELECT conductor_id FROM trips WHERE id = ?', [tripId])
     if (!trips.length) return res.status(404).json({ error: 'Viaje no encontrado' })
@@ -26,9 +26,9 @@ export const getMessages = async (req, res) => {
     `
     const params = [tripId]
 
-    if (since) {
-      sql += ' AND m.created_at > ?'
-      params.push(since)
+    if (after_id) {
+      sql += ' AND m.id > ?'
+      params.push(parseInt(after_id))
     }
 
     sql += ' ORDER BY m.created_at ASC'

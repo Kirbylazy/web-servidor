@@ -12,14 +12,14 @@ const Chat = () => {
   const [trip, setTrip] = useState(null)
   const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
-  const lastTimestamp = useRef(null)
+  const lastId = useRef(0)
 
   useEffect(() => {
     api.get(`/trips/${tripId}`).then(data => setTrip(data.trip)).catch(() => {})
     api.get(`/messages/${tripId}`).then(data => {
       setMessages(data.messages)
       if (data.messages.length) {
-        lastTimestamp.current = data.messages[data.messages.length - 1].created_at
+        lastId.current = data.messages[data.messages.length - 1].id
       }
     }).catch(() => {})
   }, [tripId])
@@ -27,11 +27,10 @@ const Chat = () => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const since = lastTimestamp.current ? `?since=${encodeURIComponent(lastTimestamp.current)}` : ''
-        const data = await api.get(`/messages/${tripId}${since}`)
+        const data = await api.get(`/messages/${tripId}?after_id=${lastId.current}`)
         if (data.messages.length) {
           setMessages(prev => [...prev, ...data.messages])
-          lastTimestamp.current = data.messages[data.messages.length - 1].created_at
+          lastId.current = data.messages[data.messages.length - 1].id
         }
       } catch { /* silenciar errores de polling */ }
     }, 4000)
@@ -48,7 +47,7 @@ const Chat = () => {
     try {
       const data = await api.post('/messages', { trip_id: parseInt(tripId), contenido: text.trim() })
       setMessages(prev => [...prev, data.message])
-      lastTimestamp.current = data.message.created_at
+      lastId.current = data.message.id
       setText('')
     } catch { /* error silenciado */ }
     finally { setSending(false) }
