@@ -240,14 +240,11 @@ const TripDetail = () => {
           <div className="booking-status">
             <span className={`status-badge status-${myBooking.estado}`}>
               {myBooking.estado === 'pendiente' ? '⏳ Reserva pendiente de confirmación'
-                : myBooking.estado === 'confirmada' ? '✅ Reserva confirmada'
-                : '❌ Reserva cancelada'}
+                : '✅ Reserva confirmada'}
             </span>
-            {myBooking.estado !== 'cancelada' && (
-              <button className="btn-cancel" onClick={() => handleBookingStatus(myBooking.id, 'cancelada')}>
-                Cancelar reserva
-              </button>
-            )}
+            <button className="btn-cancel" onClick={() => handleBookingStatus(myBooking.id, 'cancelada')}>
+              Cancelar reserva
+            </button>
           </div>
         )}
         {!isConductor && trip.estado === 'activo' && !myBooking && trip.asientos_disponibles === 0 && (

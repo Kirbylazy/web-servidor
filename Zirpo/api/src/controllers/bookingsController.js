@@ -65,15 +65,22 @@ export const updateBookingStatus = async (req, res) => {
     if (!esConductor && !esPasajero) return res.status(403).json({ error: 'No autorizado' })
     if (estado === 'confirmada' && !esConductor) return res.status(403).json({ error: 'Solo el conductor puede confirmar' })
 
-    await pool.query('UPDATE bookings SET estado = ? WHERE id = ?', [estado, req.params.id])
-
     if (estado === 'confirmada' && booking.estado === 'pendiente') {
+      await pool.query('UPDATE bookings SET estado = ? WHERE id = ?', [estado, req.params.id])
       await pool.query('UPDATE trips SET asientos_disponibles = asientos_disponibles - 1 WHERE id = ?', [booking.trip_id])
-    }
-    if (estado === 'cancelada' && booking.estado === 'confirmada') {
-      await pool.query('UPDATE trips SET asientos_disponibles = asientos_disponibles + 1 WHERE id = ?', [booking.trip_id])
+      const [updated] = await pool.query('SELECT * FROM bookings WHERE id = ?', [req.params.id])
+      return res.json({ booking: updated[0] })
     }
 
+    if (estado === 'cancelada') {
+      if (booking.estado === 'confirmada') {
+        await pool.query('UPDATE trips SET asientos_disponibles = asientos_disponibles + 1 WHERE id = ?', [booking.trip_id])
+      }
+      await pool.query('DELETE FROM bookings WHERE id = ?', [req.params.id])
+      return res.json({ message: 'Reserva cancelada' })
+    }
+
+    await pool.query('UPDATE bookings SET estado = ? WHERE id = ?', [estado, req.params.id])
     const [updated] = await pool.query('SELECT * FROM bookings WHERE id = ?', [req.params.id])
     res.json({ booking: updated[0] })
   } catch (err) {
