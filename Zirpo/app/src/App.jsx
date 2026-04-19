@@ -9,6 +9,7 @@ import PublishTrip from './pages/PublishTrip'
 import SearchTrips from './pages/SearchTrips'
 import TripDetail from './pages/TripDetail'
 import MyTrips from './pages/MyTrips'
+import Chat from './pages/Chat'
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <Route path="/search" element={<ProtectedRoute><SearchTrips /></ProtectedRoute>} />
           <Route path="/trips/:id" element={<ProtectedRoute><TripDetail /></ProtectedRoute>} />
           <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
+          <Route path="/chat/:tripId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

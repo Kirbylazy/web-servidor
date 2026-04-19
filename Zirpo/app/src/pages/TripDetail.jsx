@@ -263,6 +263,12 @@ const TripDetail = () => {
         ) : null}
 
         {/* Panel del conductor */}
+        {isConductor && (
+          <button className="btn-chat" style={{ width: '100%', marginBottom: '1rem' }}
+            onClick={() => navigate(`/chat/${trip.id}`)}>
+            Chat del viaje
+          </button>
+        )}
         {isConductor && bookings.length > 0 && (
           <div className="conductor-bookings">
             <h3>Solicitudes de reserva</h3>

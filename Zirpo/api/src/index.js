@@ -50,6 +50,18 @@ cron.schedule('0 * * * *', async () => {
   }
 })
 
+// Borrar mensajes con más de 1 mes de antigüedad (cada día a las 3:00)
+cron.schedule('0 3 * * *', async () => {
+  try {
+    const [result] = await pool.query(
+      "DELETE FROM messages WHERE created_at < DATE_SUB(NOW(), INTERVAL 1 MONTH)"
+    )
+    if (result.affectedRows > 0) console.log(`Cron: ${result.affectedRows} mensaje(s) antiguos eliminados`)
+  } catch (err) {
+    console.error('Cron cleanup messages error:', err.message)
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`Zirpo API corriendo en http://localhost:${PORT}`)
 })

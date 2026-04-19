@@ -121,6 +121,19 @@ const createTables = async () => {
       ALTER TABLE paradas ADD COLUMN IF NOT EXISTS pickup_address VARCHAR(255) DEFAULT NULL
     `).catch(e => console.log('pickup_address ya existe o no se pudo añadir:', e.message))
 
+    await conn.query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        trip_id INT NOT NULL,
+        sender_id INT NOT NULL,
+        contenido TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE CASCADE,
+        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+        INDEX idx_trip_created (trip_id, created_at)
+      )
+    `)
+
     // Seed: cuentas de test
     const testUsers = [
       { nombre: 'Conductor', apellidos: 'Test', email: 'conductor@test.com' },
