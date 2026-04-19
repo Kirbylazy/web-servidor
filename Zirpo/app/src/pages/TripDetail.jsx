@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { loadGoogleMapsScript } from '../utils/googleMaps'
@@ -46,8 +46,11 @@ function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoL
   return <div ref={mapRef} className="trip-map" />
 }
 
+const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+
 const TripDetail = () => {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [trip, setTrip] = useState(null)
@@ -56,6 +59,9 @@ const TripDetail = () => {
   const [loading, setLoading] = useState(true)
   const [booking, setBooking] = useState(false)
   const [msg, setMsg] = useState('')
+
+  const tramoOrigen = searchParams.get('tramo_origen')
+  const tramoDestino = searchParams.get('tramo_destino')
 
   useEffect(() => { fetchTrip() }, [id])
 
@@ -72,8 +78,28 @@ const TripDetail = () => {
     }
   }
 
-  const myBooking = bookings.find(b => b.pasajero_id === user.id)
-  const isConductor = trip?.conductor_id === user.id
+  // Calcular el tramo que buscó el pasajero
+  const getTramo = () => {
+    if (!tramoOrigen || !tramoDestino || !paradas.length) {
+      return { origen: trip?.origen, destino: trip?.destino, precio: trip?.precio_asiento }
+    }
+    const nOrigen = norm(tramoOrigen)
+    const nDestino = norm(tramoDestino)
+    const po = paradas.find(p => norm(p.ciudad).includes(nOrigen))
+    const pd = paradas.find(p => norm(p.ciudad).includes(nDestino))
+    if (po && pd && po.orden < pd.orden) {
+      return {
+        origen: po.ciudad,
+        destino: pd.ciudad,
+        precio: parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen)
+      }
+    }
+    return { origen: trip?.origen, destino: trip?.destino, precio: trip?.precio_asiento }
+  }
+
+  const tramo = trip ? getTramo() : {}
+  const myBooking = bookings.find(b => b.pasajero_id === user?.id)
+  const isConductor = trip?.conductor_id === user?.id
 
   const handleBook = async () => {
     setBooking(true)
@@ -113,12 +139,12 @@ const TripDetail = () => {
         <div className="detail-route">
           <div className="detail-city">
             <span className="city-label">Origen</span>
-            <span className="city-name">{trip.origen}</span>
+            <span className="city-name">{tramo.origen}</span>
           </div>
           <span className="detail-arrow">→</span>
           <div className="detail-city detail-city-right">
             <span className="city-label">Destino</span>
-            <span className="city-name">{trip.destino}</span>
+            <span className="city-name">{tramo.destino}</span>
           </div>
         </div>
 
@@ -137,7 +163,7 @@ const TripDetail = () => {
           </div>
           <div className="detail-meta-item">
             <span className="meta-label">Precio</span>
-            <span className="detail-price">{Number(trip.precio_asiento).toFixed(2)} €/plaza</span>
+            <span className="detail-price">{Number(tramo.precio).toFixed(2)} €/plaza</span>
           </div>
         </div>
 
@@ -206,7 +232,11 @@ const TripDetail = () => {
 
         {/* Acción del pasajero */}
         {!isConductor && trip.estado === 'activo' && (
-          myBooking ? (
+          !user ? (
+            <Link to="/login" className="btn-book" style={{ textAlign: 'center' }}>
+              Inicia sesión para reservar · {Number(tramo.precio).toFixed(2)} €
+            </Link>
+          ) : myBooking ? (
             <div className="booking-status">
               <span className={`status-badge status-${myBooking.estado}`}>
                 {myBooking.estado === 'pendiente' ? '⏳ Reserva pendiente de confirmación'
@@ -221,7 +251,7 @@ const TripDetail = () => {
             </div>
           ) : trip.asientos_disponibles > 0 ? (
             <button className="btn-book" onClick={handleBook} disabled={booking}>
-              {booking ? 'Solicitando...' : `Reservar plaza · ${Number(trip.precio_asiento).toFixed(2)} €`}
+              {booking ? 'Solicitando...' : `Reservar plaza · ${Number(tramo.precio).toFixed(2)} €`}
             </button>
           ) : (
             <p className="no-seats">No quedan plazas disponibles</p>

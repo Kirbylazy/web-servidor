@@ -100,7 +100,7 @@ const SearchTrips = () => {
         {trips.map(trip => {
           const tramo = getTramo(trip, form.origen, form.destino)
           return (
-            <Link to={`/trips/${trip.id}`} key={trip.id} className="trip-card">
+            <Link to={`/trips/${trip.id}?tramo_origen=${encodeURIComponent(form.origen)}&tramo_destino=${encodeURIComponent(form.destino)}`} key={trip.id} className="trip-card">
               <div className="trip-card-header">
                 <div className="trip-route">
                   <span className="trip-city">{tramo.origen}</span>
