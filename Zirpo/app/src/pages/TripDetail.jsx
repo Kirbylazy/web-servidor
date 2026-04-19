@@ -146,12 +146,41 @@ const TripDetail = () => {
             <span className="city-label">Destino</span>
             <span className="city-name">{tramo.destino}</span>
           </div>
-          {!isConductor && trip.estado === 'activo' && !myBooking && trip.asientos_disponibles > 0 && (
-            <button className="btn-book-top" onClick={handleBook} disabled={booking}>
-              {booking ? '...' : 'Reservar'}
-            </button>
-          )}
         </div>
+
+        {/* Sección de acciones del pasajero */}
+        {!isConductor && trip.estado === 'activo' && (
+          <div className="detail-actions">
+            {myBooking ? (
+              <>
+                <span className={`status-badge status-${myBooking.estado}`}>
+                  {myBooking.estado === 'pendiente' ? '⏳ Pendiente de confirmación'
+                    : '✅ Reserva confirmada'}
+                </span>
+                <div className="detail-actions-buttons">
+                  <button className="btn-chat" onClick={() => navigate(`/chat/${trip.id}`)}>
+                    Chatear
+                  </button>
+                  <button className="btn-cancel-action" onClick={() => handleBookingStatus(myBooking.id, 'cancelada')}>
+                    Cancelar reserva
+                  </button>
+                </div>
+              </>
+            ) : trip.asientos_disponibles > 0 ? (
+              <div className="detail-actions-buttons">
+                <button className="btn-book-action" onClick={handleBook} disabled={booking}>
+                  {booking ? 'Solicitando...' : 'Reservar'}
+                </button>
+                <button className="btn-chat" onClick={() => navigate(`/chat/${trip.id}`)}>
+                  Chatear
+                </button>
+              </div>
+            ) : (
+              <p className="no-seats">No quedan plazas disponibles</p>
+            )}
+            {msg && <p className={msg.includes('¡') ? 'msg-ok' : 'msg-error'}>{msg}</p>}
+          </div>
+        )}
 
         <div className="detail-meta">
           <div className="detail-meta-item">
@@ -232,24 +261,6 @@ const TripDetail = () => {
             {trip.maletero_grande && <span>🧳 Maletero grande</span>}
           </div>
         ) : null}
-
-        {msg && <p className={msg.includes('¡') ? 'msg-ok' : 'msg-error'}>{msg}</p>}
-
-        {/* Estado de reserva del pasajero */}
-        {!isConductor && trip.estado === 'activo' && myBooking && (
-          <div className="booking-status">
-            <span className={`status-badge status-${myBooking.estado}`}>
-              {myBooking.estado === 'pendiente' ? '⏳ Reserva pendiente de confirmación'
-                : '✅ Reserva confirmada'}
-            </span>
-            <button className="btn-cancel" onClick={() => handleBookingStatus(myBooking.id, 'cancelada')}>
-              Cancelar reserva
-            </button>
-          </div>
-        )}
-        {!isConductor && trip.estado === 'activo' && !myBooking && trip.asientos_disponibles === 0 && (
-          <p className="no-seats">No quedan plazas disponibles</p>
-        )}
 
         {/* Panel del conductor */}
         {isConductor && bookings.length > 0 && (

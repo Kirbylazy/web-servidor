@@ -53,10 +53,24 @@
 .city-name { font-size: 1.4rem; font-weight: 800; color: var(--text-dark); }
 .detail-arrow { font-size: 1.5rem; color: #cbd5e1; }
 
-.detail-route { flex-wrap: wrap; }
+/* Sección de acciones */
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
 
-.btn-book-top {
-  padding: 0.6rem 1.5rem;
+.detail-actions-buttons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-book-action {
+  flex: 1;
+  padding: 0.7rem 1.25rem;
   background: var(--blue);
   color: white;
   border: none;
@@ -64,11 +78,38 @@
   font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
-  margin-left: auto;
   transition: background 0.2s;
 }
-.btn-book-top:hover:not(:disabled) { background: var(--blue-hover); }
-.btn-book-top:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-book-action:hover:not(:disabled) { background: var(--blue-hover); }
+.btn-book-action:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-chat {
+  flex: 1;
+  padding: 0.7rem 1.25rem;
+  background: white;
+  color: var(--blue);
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-chat:hover { background: #eff6ff; }
+
+.btn-cancel-action {
+  flex: 1;
+  padding: 0.7rem 1.25rem;
+  background: white;
+  color: var(--red);
+  border: 2px solid var(--red);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-cancel-action:hover { background: var(--red-bg); }
 
 /* Meta */
 .detail-meta {
