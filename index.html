@@ -25,14 +25,14 @@
 
 <!-- HERO -->
 <section id="hero">
-    <div class="pixel-grid"></div>
+    <div class="synth-grid"></div>
     <div class="hero-inner">
         <div class="hero-text">
             <div class="badge">// TÉCNICO SUPERIOR EN DESARROLLO DE APLICACIONES WEB · 2026</div>
             <h1>DARIO <span>AGUILAR</span><br>RODRIGUEZ</h1>
             <div class="role">DESARROLLADOR WEB<span class="cursor">_</span></div>
             <p class="tagline">Frontend · Backend · Bases de datos · Despliegue</p>
-            <div>
+            <div class="hero-btns">
                 <a href="#proyectos" class="btn">VER PROYECTOS</a>
                 <a href="#contacto" class="btn btn-outline">CONTACTO</a>
             </div>
@@ -85,7 +85,6 @@
 <section id="skills">
     <h2 class="section-title">&gt; HABILIDADES_TÉCNICAS</h2>
     <div class="skills-grid">
-
         <div class="skill-category fade-in">
             <div class="skill-cat-title">◈ FRONTEND</div>
             <div class="skill-list">
@@ -99,7 +98,6 @@
                 <span class="skill-item">Accesibilidad Web</span>
             </div>
         </div>
-
         <div class="skill-category fade-in">
             <div class="skill-cat-title">◈ BACKEND</div>
             <div class="skill-list">
@@ -111,7 +109,6 @@
                 <span class="skill-item">Aplicaciones híbridas</span>
             </div>
         </div>
-
         <div class="skill-category fade-in">
             <div class="skill-cat-title">◈ BASES DE DATOS</div>
             <div class="skill-list">
@@ -122,9 +119,8 @@
                 <span class="skill-item">XML / XQuery</span>
             </div>
         </div>
-
         <div class="skill-category fade-in">
-            <div class="skill-cat-title">◈ DESPLIEGUE & SISTEMAS</div>
+            <div class="skill-cat-title">◈ DESPLIEGUE &amp; SISTEMAS</div>
             <div class="skill-list">
                 <span class="skill-item">Linux</span>
                 <span class="skill-item">Apache / Nginx</span>
@@ -134,9 +130,8 @@
                 <span class="skill-item">Raspberry Pi</span>
             </div>
         </div>
-
         <div class="skill-category fade-in">
-            <div class="skill-cat-title">◈ HERRAMIENTAS & METODOLOGÍA</div>
+            <div class="skill-cat-title">◈ HERRAMIENTAS &amp; METODOLOGÍA</div>
             <div class="skill-list">
                 <span class="skill-item">Git / GitHub</span>
                 <span class="skill-item">Webhooks / CI</span>
@@ -146,7 +141,6 @@
                 <span class="skill-item">Documentación técnica</span>
             </div>
         </div>
-
         <div class="skill-category fade-in">
             <div class="skill-cat-title">◈ ACTITUDES</div>
             <div class="skill-list">
@@ -157,7 +151,6 @@
                 <span class="skill-item">Iniciativa propia</span>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -192,7 +185,6 @@
 <section id="formacion">
     <h2 class="section-title">&gt; FORMACIÓN</h2>
     <div class="edu-grid">
-
         <div class="edu-card featured fade-in">
             <span class="icon">💻</span>
             <div class="degree">
@@ -213,7 +205,6 @@
                 <span class="module">Sistemas informáticos</span>
             </div>
         </div>
-
         <div class="edu-card fade-in">
             <span class="icon">⚙</span>
             <div class="degree">G.S. MECATRÓNICA INDUSTRIAL</div>
@@ -221,7 +212,6 @@
             <div class="year">2021 – 2023</div>
             <div class="edu-desc">Formación técnica con fuerte componente en electrónica, sistemas de control y programación industrial. Base analítica que complementa el perfil de desarrollo.</div>
         </div>
-
     </div>
 </section>
 
@@ -230,7 +220,6 @@
 <div class="section-wrap">
     <h2 class="section-title">&gt; PROYECTOS</h2>
     <div class="projects-grid">
-
         <a href="/poker-sencillo/index.php" class="project-card fade-in">
             <div class="project-langs">
                 <span class="project-lang">PHP</span>
@@ -241,7 +230,6 @@
             <p>Juego de poker completo desarrollado en PHP. Implementa lógica de manos, baraja completa, gestión de jugadores y ciclo de partida. Desplegado en servidor propio sobre Raspberry Pi con Apache.</p>
             <div class="arrow">VER PROYECTO →</div>
         </a>
-
         <a href="/Zirpo/" class="project-card fade-in">
             <div class="project-langs">
                 <span class="project-lang">REACT</span>
@@ -252,7 +240,6 @@
             <p>App de carpooling para compartir gastos de viaje. Publicación de viajes con Google Maps, paradas intermedias, precios por tramo y puntos de recogida. Desplegada en Raspberry Pi.</p>
             <div class="arrow">VER PROYECTO →</div>
         </a>
-
         <div class="project-card fade-in" style="border-style: dashed; cursor: default;">
             <div class="project-langs">
                 <span class="project-lang" style="border-color:var(--text-dim); color:var(--text-dim);">EN DESARROLLO</span>
@@ -261,7 +248,6 @@
             <p style="color: var(--text-dim);">Más proyectos en camino. Esta sección se irá actualizando conforme avance en el ciclo y desarrolle nuevas aplicaciones.</p>
             <div class="arrow" style="color: var(--text-dim);">PRÓXIMAMENTE →</div>
         </div>
-
     </div>
 </div>
 </div>
@@ -318,7 +304,6 @@
             if (el.isIntersecting) el.target.classList.add('visible');
         });
     }, { threshold: 0.1 });
-
     document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 </script>
 
