@@ -11,6 +11,7 @@ const Chat = () => {
   const [text, setText] = useState('')
   const [trip, setTrip] = useState(null)
   const [sending, setSending] = useState(false)
+  const [error, setError] = useState('')
   const bottomRef = useRef(null)
   const lastId = useRef(0)
 
@@ -44,13 +45,16 @@ const Chat = () => {
   const handleSend = async () => {
     if (!text.trim() || sending) return
     setSending(true)
+    setError('')
     try {
       const data = await api.post('/messages', { trip_id: parseInt(tripId), contenido: text.trim() })
       setMessages(prev => [...prev, data.message])
       lastId.current = data.message.id
       setText('')
-    } catch { /* error silenciado */ }
-    finally { setSending(false) }
+    } catch (err) {
+      setError(err.message)
+      setTimeout(() => setError(''), 4000)
+    } finally { setSending(false) }
   }
 
   const handleKeyDown = e => {
@@ -96,6 +100,7 @@ const Chat = () => {
         <div ref={bottomRef} />
       </div>
 
+      {error && <div className="chat-error">{error}</div>}
       <div className="chat-input-bar">
         <input
           value={text}
