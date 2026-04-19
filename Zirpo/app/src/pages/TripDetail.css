@@ -53,6 +53,23 @@
 .city-name { font-size: 1.4rem; font-weight: 800; color: var(--text-dark); }
 .detail-arrow { font-size: 1.5rem; color: #cbd5e1; }
 
+.detail-route { flex-wrap: wrap; }
+
+.btn-book-top {
+  padding: 0.6rem 1.5rem;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: auto;
+  transition: background 0.2s;
+}
+.btn-book-top:hover:not(:disabled) { background: var(--blue-hover); }
+.btn-book-top:disabled { opacity: 0.6; cursor: not-allowed; }
+
 /* Meta */
 .detail-meta {
   display: grid;

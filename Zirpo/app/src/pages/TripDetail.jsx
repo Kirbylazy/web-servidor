@@ -146,6 +146,11 @@ const TripDetail = () => {
             <span className="city-label">Destino</span>
             <span className="city-name">{tramo.destino}</span>
           </div>
+          {!isConductor && trip.estado === 'activo' && !myBooking && trip.asientos_disponibles > 0 && (
+            <button className="btn-book-top" onClick={handleBook} disabled={booking}>
+              {booking ? '...' : 'Reservar'}
+            </button>
+          )}
         </div>
 
         <div className="detail-meta">
@@ -230,28 +235,23 @@ const TripDetail = () => {
 
         {msg && <p className={msg.includes('¡') ? 'msg-ok' : 'msg-error'}>{msg}</p>}
 
-        {/* Acción del pasajero */}
-        {!isConductor && trip.estado === 'activo' && (
-          myBooking ? (
-            <div className="booking-status">
-              <span className={`status-badge status-${myBooking.estado}`}>
-                {myBooking.estado === 'pendiente' ? '⏳ Reserva pendiente de confirmación'
-                  : myBooking.estado === 'confirmada' ? '✅ Reserva confirmada'
-                  : '❌ Reserva cancelada'}
-              </span>
-              {myBooking.estado !== 'cancelada' && (
-                <button className="btn-cancel" onClick={() => handleBookingStatus(myBooking.id, 'cancelada')}>
-                  Cancelar reserva
-                </button>
-              )}
-            </div>
-          ) : trip.asientos_disponibles > 0 ? (
-            <button className="btn-book" onClick={handleBook} disabled={booking}>
-              {booking ? 'Solicitando...' : `Reservar plaza · ${Number(tramo.precio).toFixed(2)} €`}
-            </button>
-          ) : (
-            <p className="no-seats">No quedan plazas disponibles</p>
-          )
+        {/* Estado de reserva del pasajero */}
+        {!isConductor && trip.estado === 'activo' && myBooking && (
+          <div className="booking-status">
+            <span className={`status-badge status-${myBooking.estado}`}>
+              {myBooking.estado === 'pendiente' ? '⏳ Reserva pendiente de confirmación'
+                : myBooking.estado === 'confirmada' ? '✅ Reserva confirmada'
+                : '❌ Reserva cancelada'}
+            </span>
+            {myBooking.estado !== 'cancelada' && (
+              <button className="btn-cancel" onClick={() => handleBookingStatus(myBooking.id, 'cancelada')}>
+                Cancelar reserva
+              </button>
+            )}
+          </div>
+        )}
+        {!isConductor && trip.estado === 'activo' && !myBooking && trip.asientos_disponibles === 0 && (
+          <p className="no-seats">No quedan plazas disponibles</p>
         )}
 
         {/* Panel del conductor */}
