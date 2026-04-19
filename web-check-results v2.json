@@ -1,0 +1,382 @@
+{
+  "ssl": {
+    "subject": {
+      "CN": "darioaguilarrodriguez.com"
+    },
+    "issuer": {
+      "C": "US",
+      "O": "Google Trust Services",
+      "CN": "WE1"
+    },
+    "subjectaltname": "DNS:darioaguilarrodriguez.com, DNS:*.darioaguilarrodriguez.com",
+    "infoAccess": {
+      "OCSP - URI": [
+        "http://o.pki.goog/s/we1/ly8"
+      ],
+      "CA Issuers - URI": [
+        "http://i.pki.goog/we1.crt"
+      ]
+    },
+    "ca": false,
+    "bits": 256,
+    "pubkey": {
+      "type": "Buffer",
+      "data": [
+        4,
+        33,
+        179,
+        70,
+        246,
+        29,
+        19,
+        46,
+        203,
+        46,
+        8,
+        176,
+        13,
+        212,
+        188,
+        170,
+        226,
+        211,
+        204,
+        137,
+        92,
+        37,
+        169,
+        3,
+        197,
+        150,
+        79,
+        237,
+        101,
+        93,
+        175,
+        195,
+        146,
+        107,
+        237,
+        89,
+        23,
+        201,
+        62,
+        44,
+        65,
+        91,
+        176,
+        228,
+        150,
+        94,
+        60,
+        221,
+        102,
+        252,
+        146,
+        157,
+        246,
+        212,
+        222,
+        229,
+        124,
+        104,
+        29,
+        189,
+        130,
+        17,
+        242,
+        227,
+        47
+      ]
+    },
+    "asn1Curve": "prime256v1",
+    "nistCurve": "P-256",
+    "valid_from": "Feb 11 18:11:46 2026 GMT",
+    "valid_to": "May 12 19:09:24 2026 GMT",
+    "fingerprint": "CB:B6:8F:6A:EA:54:CE:6C:2F:B3:8C:B2:31:63:ED:C5:92:D6:E2:18",
+    "fingerprint256": "16:F2:0C:2E:72:6C:8B:2D:9B:B2:58:85:A3:C3:77:97:AA:BB:3A:D6:72:49:71:CE:1E:EA:7F:87:55:77:55:2D",
+    "fingerprint512": "F0:38:E7:66:11:6D:3D:09:7D:1A:95:5B:35:72:1A:CD:EA:79:36:47:5B:34:1D:0B:A7:19:6B:93:00:2B:49:5A:04:4B:AD:B3:00:96:40:25:73:4E:ED:AA:5A:D4:35:09:45:2F:2C:54:38:FC:A0:43:11:4B:3D:D1:B0:E8:94:19",
+    "ext_key_usage": [
+      "1.3.6.1.5.5.7.3.1"
+    ],
+    "serialNumber": "972F88F93E15ACA2132458A0F29012C3"
+  },
+  "domain": {
+    "internicData": {
+      "Domain_Name": "DARIOAGUILARRODRIGUEZ.COM",
+      "Registry_Domain_ID": "3047855771_DOMAIN_COM-VRSN",
+      "Registrar_WHOIS_Server": "whois.cloudflare.com",
+      "Registrar_URL": "http://www.cloudflare.com",
+      "Updated_Date": "2025-12-14T18:36:34Z",
+      "Creation_Date": "2025-12-14T18:36:29Z",
+      "Registry_Expiry_Date": "2026-12-14T18:36:29Z",
+      "Registrar": "Cloudflare, Inc.",
+      "Registrar_IANA_ID": "1910",
+      "Registrar_Abuse_Contact_Email": "registrar-abuse@cloudflare.com",
+      "Registrar_Abuse_Contact_Phone": "+1.6503198930",
+      "Domain_Status": "clientTransferProhibited https://icann.org/epp#clientTransferProhibited",
+      "Name_Server": "NELCI.NS.CLOUDFLARE.COM",
+      "DNSSEC": "unsigned",
+      "URL_of_the_ICANN_Whois_Inaccuracy_Complaint_Form": "https://www.icann.org/wicf/",
+      "_Last_update_of_whois_database": "2026-04-08T09:30:33Z <<< ",
+      "For_more_information_on_Whois_status_codes_please_visit_https": "//icann.org/epp ",
+      "NOTICE": "The expiration date displayed in this record is the date the registrar's sponsorship of the domain name registration in the registry is currently set to expire. This date does not necessarily reflect the expiration date of the domain name registrant's agreement with the sponsoring registrar.  Users may consult the sponsoring registrar's Whois database to view the registrar's reported date of expiration for this registration. ",
+      "TERMS_OF_USE": "You are not authorized to access or query our Whois database through the use of electronic processes that are high-volume and automated except as reasonably necessary to register domain names or modify existing registrations; the Data in VeriSign Global Registry Services' (\"VeriSign\") Whois database is provided by VeriSign for information purposes only, and to assist persons in obtaining information about or related to a domain name registration record. VeriSign does not guarantee its accuracy. By submitting a Whois query, you agree to abide",
+      "by_the_following_terms_of_use": "You agree that you may use this Data only for lawful purposes and that under no circumstances will you use this Data",
+      "to": "(1) allow, enable, or otherwise support the transmission of mass unsolicited, commercial advertising or solicitations via e-mail, telephone, or facsimile; or (2) enable high volume, automated, electronic processes that apply to VeriSign (or its computer systems). The compilation, repackaging, dissemination or other use of this Data is expressly prohibited without the prior written consent of VeriSign. You agree not to use electronic processes that are automated and high-volume to access or query the Whois database except as reasonably necessary to register domain names or modify existing registrations. VeriSign reserves the right to restrict your access to the Whois database in its sole discretion to ensure operational stability.  VeriSign may restrict or terminate your access to the Whois database for failure to abide by these terms of use. VeriSign reserves the right to modify these terms at any time.  The Registry database contains ONLY .COM, .NET, .EDU domains and Registrars. "
+    },
+    "whoisData": null
+  },
+  "headers": {
+    "date": "Wed, 08 Apr 2026 09:30:46 GMT",
+    "content-type": "text/html; charset=UTF-8",
+    "transfer-encoding": "chunked",
+    "connection": "close",
+    "accept-ch": "Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platform, UA",
+    "cf-mitigated": "challenge",
+    "critical-ch": "Sec-CH-UA-Bitness, Sec-CH-UA-Arch, Sec-CH-UA-Full-Version, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Platform, Sec-CH-UA, UA-Bitness, UA-Arch, UA-Full-Version, UA-Mobile, UA-Model, UA-Platform-Version, UA-Platform, UA",
+    "cross-origin-embedder-policy": "require-corp",
+    "cross-origin-opener-policy": "same-origin",
+    "cross-origin-resource-policy": "same-origin",
+    "origin-agent-cluster": "?1",
+    "permissions-policy": "accelerometer=(),browsing-topics=(),camera=(),clipboard-read=(),clipboard-write=(),geolocation=(),gyroscope=(),hid=(),interest-cohort=(),magnetometer=(),microphone=(),payment=(),publickey-credentials-get=(),screen-wake-lock=(),serial=(),sync-xhr=(),usb=()",
+    "referrer-policy": "same-origin",
+    "server-timing": "chlray;desc=\"9e904157aaab76e1\"",
+    "x-content-type-options": "nosniff",
+    "x-frame-options": "SAMEORIGIN",
+    "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=qD%2FaPtKKNty%2FwxqUEJfT16XRexF9YBBQPj4vgyGgaLTjqVy%2FolaPOdZttc6LIgm76aUv3QA6N%2FMZaF2Q2SYSNW0rTRO5OyqSY6uAOpNL9w9U%2Bse2ZaJqiMVK06ERaYl66TwGzKLS3tK3l8YQ\"}]}",
+    "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+    "server": "cloudflare",
+    "cf-ray": "9e904157aaab76e1-LHR",
+    "alt-svc": "h3=\":443\"; ma=86400"
+  },
+  "dns": {
+    "A": {
+      "address": "172.67.208.73",
+      "family": 4
+    },
+    "AAAA": [
+      "172.67.208.73",
+      "104.21.23.15"
+    ],
+    "MX": [
+      "2606:4700:3031::ac43:d049",
+      "2606:4700:3033::6815:170f"
+    ],
+    "TXT": [],
+    "NS": [],
+    "CNAME": [
+      "brian.ns.cloudflare.com",
+      "nelci.ns.cloudflare.com"
+    ],
+    "SOA": [],
+    "SRV": {
+      "nsname": "brian.ns.cloudflare.com",
+      "hostmaster": "dns.cloudflare.com",
+      "serial": 2400799760,
+      "refresh": 10000,
+      "retry": 2400,
+      "expire": 604800,
+      "minttl": 1800
+    },
+    "PTR": []
+  },
+  "http-security": "{\"error\":\"Request failed with status code 403\"}",
+  "social-tags": "{\"error\":\"Failed fetching data\"}",
+  "security-txt": {
+    "isPresent": false
+  },
+  "firewall": "{\"error\":\"Request failed with status code 403\"}",
+  "dnssec": {
+    "DNSKEY": {
+      "isFound": false,
+      "answer": null,
+      "response": {
+        "Status": 3,
+        "TC": false,
+        "RD": true,
+        "RA": true,
+        "AD": true,
+        "CD": false,
+        "Question": [
+          {
+            "name": "https://darioaguilarrodriguez.com/.",
+            "type": 48
+          }
+        ],
+        "Authority": [
+          {
+            "name": ".",
+            "type": 6,
+            "TTL": 85983,
+            "data": "a.root-servers.net. nstld.verisign-grs.com. 2026040800 1800 900 604800 86400"
+          }
+        ]
+      }
+    },
+    "DS": {
+      "isFound": false,
+      "answer": null,
+      "response": {
+        "Status": 3,
+        "TC": false,
+        "RD": true,
+        "RA": true,
+        "AD": true,
+        "CD": false,
+        "Question": [
+          {
+            "name": "https://darioaguilarrodriguez.com/.",
+            "type": 43
+          }
+        ],
+        "Authority": [
+          {
+            "name": ".",
+            "type": 6,
+            "TTL": 86400,
+            "data": "a.root-servers.net. nstld.verisign-grs.com. 2026040800 1800 900 604800 86400"
+          }
+        ],
+        "Comment": "Response from 2001:7fe::53."
+      }
+    },
+    "RRSIG": {
+      "isFound": false,
+      "answer": null,
+      "response": {
+        "Status": 3,
+        "TC": false,
+        "RD": true,
+        "RA": true,
+        "AD": true,
+        "CD": false,
+        "Question": [
+          {
+            "name": "https://darioaguilarrodriguez.com/.",
+            "type": 46
+          }
+        ],
+        "Authority": [
+          {
+            "name": ".",
+            "type": 6,
+            "TTL": 86397,
+            "data": "a.root-servers.net. nstld.verisign-grs.com. 2026040800 1800 900 604800 86400"
+          }
+        ]
+      }
+    }
+  },
+  "hsts": {
+    "message": "Site does not serve any HSTS headers.",
+    "compatible": false,
+    "hstsHeader": null
+  },
+  "threats": {
+    "urlHaus": {
+      "error": "Request to URLHaus failed, Request failed with status code 401"
+    },
+    "phishTank": {
+      "url0": {
+        "url": "https://darioaguilarrodriguez.com/",
+        "in_database": "false"
+      }
+    },
+    "cloudmersive": {
+      "error": "Request to Cloudmersive failed: Request failed with status code 401"
+    },
+    "safeBrowsing": {
+      "error": "GOOGLE_CLOUD_API_KEY is required for the Google Safe Browsing check"
+    }
+  },
+  "block-lists": {
+    "blocklists": [
+      {
+        "server": "AdGuard",
+        "serverIp": "176.103.130.130",
+        "isBlocked": false
+      },
+      {
+        "server": "AdGuard Family",
+        "serverIp": "176.103.130.132",
+        "isBlocked": false
+      },
+      {
+        "server": "CleanBrowsing Adult",
+        "serverIp": "185.228.168.10",
+        "isBlocked": false
+      },
+      {
+        "server": "CleanBrowsing Family",
+        "serverIp": "185.228.168.168",
+        "isBlocked": false
+      },
+      {
+        "server": "CleanBrowsing Security",
+        "serverIp": "185.228.168.9",
+        "isBlocked": false
+      },
+      {
+        "server": "CloudFlare",
+        "serverIp": "1.1.1.1",
+        "isBlocked": false
+      },
+      {
+        "server": "CloudFlare Family",
+        "serverIp": "1.1.1.3",
+        "isBlocked": false
+      },
+      {
+        "server": "Comodo Secure",
+        "serverIp": "8.26.56.26",
+        "isBlocked": false
+      },
+      {
+        "server": "Google DNS",
+        "serverIp": "8.8.8.8",
+        "isBlocked": false
+      },
+      {
+        "server": "Neustar Family",
+        "serverIp": "156.154.70.3",
+        "isBlocked": false
+      },
+      {
+        "server": "Neustar Protection",
+        "serverIp": "156.154.70.2",
+        "isBlocked": false
+      },
+      {
+        "server": "Norton Family",
+        "serverIp": "199.85.126.20",
+        "isBlocked": false
+      },
+      {
+        "server": "OpenDNS",
+        "serverIp": "208.67.222.222",
+        "isBlocked": false
+      },
+      {
+        "server": "OpenDNS Family",
+        "serverIp": "208.67.222.123",
+        "isBlocked": false
+      },
+      {
+        "server": "Quad9",
+        "serverIp": "9.9.9.9",
+        "isBlocked": false
+      },
+      {
+        "server": "Yandex Family",
+        "serverIp": "77.88.8.7",
+        "isBlocked": false
+      },
+      {
+        "server": "Yandex Safe",
+        "serverIp": "77.88.8.88",
+        "isBlocked": false
+      }
+    ]
+  }
+}
