@@ -60,21 +60,26 @@ const PublishTrip = () => {
     const service = new window.google.maps.DirectionsService()
     const filledWaypoints = waypoints.filter(s => s.trim())
     const wp = filledWaypoints.map(s => ({ location: `${s}, España`, stopover: true }))
-    const cityNames = [origen, ...filledWaypoints, destino]
 
     return new Promise((resolve, reject) => {
       service.route({
         origin: `${origen}, España`,
         destination: `${destino}, España`,
         waypoints: wp,
+        optimizeWaypoints: true,
         travelMode: window.google.maps.TravelMode.DRIVING,
       }, (result, status) => {
         setCalculando(false)
         if (status !== 'OK') { setError('No se pudo calcular la ruta.'); reject(status); return }
 
+        // Reordenar paradas según el orden óptimo de Google
+        const waypointOrder = result.routes[0].waypoint_order || []
+        const reorderedStops = waypointOrder.map(i => filledWaypoints[i])
+        const orderedCityNames = [origen, ...reorderedStops, destino]
+
         const legs = result.routes[0].legs.map((leg, i) => ({
-          start: cityNames[i],
-          end: cityNames[i + 1],
+          start: orderedCityNames[i],
+          end: orderedCityNames[i + 1],
           startLat: leg.start_location.lat(),
           startLng: leg.start_location.lng(),
           endLat: leg.end_location.lat(),
@@ -89,6 +94,7 @@ const PublishTrip = () => {
           totalDistanceKm: legs.reduce((s, l) => s + l.distanceKm, 0),
           totalDurationMin: legs.reduce((s, l) => s + l.durationMin, 0),
           directionsResult: result,
+          reorderedStops,
         })
       })
     })
@@ -99,6 +105,7 @@ const PublishTrip = () => {
       const data = await calcRoute(waypoints)
       setRouteData(data)
       setSegmentPrices(calcDefaultPrices(data.legs))
+      setStops(data.reorderedStops)
       setNeedsRecalc(false)
     } catch { /* error already set */ }
   }
@@ -111,13 +118,14 @@ const PublishTrip = () => {
       const path = window.google.maps.geometry.encoding.decodePath(polyline)
       const spherical = window.google.maps.geometry.spherical
       const samples = []
-      let accum = 0, nextSample = 100
+      const interval = Math.max(50, Math.min(100, totalKm / 6))
+      let accum = 0, nextSample = interval
 
       for (let i = 1; i < path.length; i++) {
         accum += spherical.computeDistanceBetween(path[i - 1], path[i]) / 1000
-        if (accum >= nextSample && accum < totalKm - 50) {
+        if (accum >= nextSample && accum < totalKm - 30) {
           samples.push(path[i])
-          nextSample += 100
+          nextSample += interval
         }
       }
 
@@ -137,7 +145,9 @@ const PublishTrip = () => {
           )
           let cityName = null
           for (const result of results) {
-            const comp = result.address_components?.find(c => c.types.includes('locality'))
+            const comp = result.address_components?.find(c =>
+              c.types.includes('locality') || c.types.includes('administrative_area_level_4')
+            )
             if (comp) { cityName = comp.long_name; break }
           }
           if (cityName && !skip.includes(norm(cityName)) && !cities.some(c => norm(c) === norm(cityName))) {
