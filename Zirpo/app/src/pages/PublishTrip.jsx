@@ -90,7 +90,7 @@ const PublishTrip = () => {
 
         resolve({
           legs,
-          polyline: result.routes[0].overview_polyline.points,
+          polyline: result.routes[0].overview_polyline,
           totalDistanceKm: legs.reduce((s, l) => s + l.distanceKm, 0),
           totalDurationMin: legs.reduce((s, l) => s + l.durationMin, 0),
           directionsResult: result,
@@ -112,10 +112,10 @@ const PublishTrip = () => {
 
   // --- Suggested cities ---
 
-  const findSuggestions = async (polyline, totalKm) => {
+  const findSuggestions = async (directionsResult, totalKm) => {
     setLoadingSuggestions(true)
     try {
-      const path = window.google.maps.geometry.encoding.decodePath(polyline)
+      const path = directionsResult.routes[0].overview_path
       const spherical = window.google.maps.geometry.spherical
       const samples = []
       const interval = Math.max(50, Math.min(100, totalKm / 6))
@@ -227,7 +227,7 @@ const PublishTrip = () => {
       setRouteData(data)
       setSegmentPrices(calcDefaultPrices(data.legs))
       setStep(2)
-      findSuggestions(data.polyline, data.totalDistanceKm)
+      findSuggestions(data.directionsResult, data.totalDistanceKm)
     } catch { /* error already set */ }
   }
 
