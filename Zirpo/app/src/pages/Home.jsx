@@ -1,11 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { useAuth } from '../context/AuthContext'
 import CityAutocomplete from '../components/CityAutocomplete'
 import './Home.css'
 
 const Home = () => {
-  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [search, setSearch] = useState({ origen: '', destino: '', fecha: '' })
 
@@ -17,20 +15,6 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <header className="home-header">
-        <h1>Zirpo</h1>
-        <div className="header-user">
-          <Link to="/profile" className="header-profile">
-            {user.foto
-              ? <img src={user.foto} alt="perfil" className="header-avatar" />
-              : <div className="header-avatar-placeholder">{user.nombre?.[0]?.toUpperCase()}</div>
-            }
-            <span>{user.nombre}</span>
-          </Link>
-          <button onClick={logout} className="btn-logout">Cerrar sesión</button>
-        </div>
-      </header>
-
       <main className="home-main">
         <section className="hero">
           <h2>¿A dónde vas?</h2>

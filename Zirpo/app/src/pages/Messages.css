@@ -1,0 +1,108 @@
+.messages-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.messages-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+}
+
+.messages-loading {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 0;
+}
+
+.messages-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+.messages-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+.messages-empty p { margin: 0.25rem 0; }
+.messages-empty-hint { font-size: 0.85rem; color: var(--text-faint); }
+
+/* Conversation list */
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.messages-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border-light);
+}
+.messages-item:last-child { border-bottom: none; }
+.messages-item:hover { background: #f8fafc; text-decoration: none; }
+
+.messages-avatar-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.messages-avatar-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.messages-item-body { flex: 1; min-width: 0; }
+
+.messages-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.15rem;
+}
+
+.messages-item-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-dark);
+}
+
+.messages-item-time {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+  flex-shrink: 0;
+}
+
+.messages-item-route {
+  font-size: 0.8rem;
+  color: var(--blue);
+  font-weight: 500;
+  margin-bottom: 0.15rem;
+}
+
+.messages-item-preview {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

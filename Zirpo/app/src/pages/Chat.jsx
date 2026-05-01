@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -24,6 +24,18 @@ const Chat = () => {
       }
     }).catch(() => {})
   }, [tripId])
+
+  // Determine the name of the other person in the chat
+  const interlocutor = useMemo(() => {
+    if (!trip) return null
+    // If I'm the conductor, show first passenger name from messages
+    if (trip.conductor_id === user.id) {
+      const otherMsg = messages.find(m => m.sender_id !== user.id)
+      return otherMsg?.sender_nombre || null
+    }
+    // If I'm a passenger, show conductor name
+    return trip.conductor_nombre || null
+  }, [trip, messages, user.id])
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -75,6 +87,7 @@ const Chat = () => {
       <div className="chat-topbar">
         <Link to={`/trips/${tripId}`} className="back-link">←</Link>
         <div className="chat-topbar-info">
+          {interlocutor && <span className="chat-interlocutor">{interlocutor}</span>}
           {trip && <span className="chat-trip-route">{trip.origen} → {trip.destino}</span>}
         </div>
       </div>

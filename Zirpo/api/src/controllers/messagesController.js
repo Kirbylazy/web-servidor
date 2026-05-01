@@ -63,6 +63,52 @@ function filtrarMensaje(texto) {
   return { blocked: false, text: censurarPalabras(texto) }
 }
 
+export const getConversations = async (req, res) => {
+  try {
+    const userId = req.user.id
+
+    const [rows] = await pool.query(`
+      SELECT
+        t.id AS trip_id,
+        t.origen,
+        t.destino,
+        m_last.contenido AS last_message,
+        m_last.created_at AS last_message_at,
+        CASE
+          WHEN t.conductor_id = ? THEN other_user.nombre
+          ELSE conductor.nombre
+        END AS other_nombre,
+        CASE
+          WHEN t.conductor_id = ? THEN other_user.foto
+          ELSE conductor.foto
+        END AS other_foto
+      FROM trips t
+      JOIN (
+        SELECT trip_id, MAX(id) AS max_id
+        FROM messages
+        GROUP BY trip_id
+      ) latest ON latest.trip_id = t.id
+      JOIN messages m_last ON m_last.id = latest.max_id
+      JOIN users conductor ON conductor.id = t.conductor_id
+      LEFT JOIN (
+        SELECT b.trip_id, u.nombre, u.foto
+        FROM bookings b
+        JOIN users u ON u.id = b.pasajero_id
+        WHERE b.pasajero_id != ?
+        GROUP BY b.trip_id, u.nombre, u.foto
+      ) other_user ON other_user.trip_id = t.id
+      WHERE t.conductor_id = ?
+         OR t.id IN (SELECT trip_id FROM bookings WHERE pasajero_id = ?)
+      ORDER BY m_last.created_at DESC
+    `, [userId, userId, userId, userId, userId])
+
+    res.json({ conversations: rows })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Error interno del servidor' })
+  }
+}
+
 export const getMessages = async (req, res) => {
   try {
     const { tripId } = req.params

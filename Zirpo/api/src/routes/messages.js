@@ -1,9 +1,10 @@
 import { Router } from 'express'
-import { getMessages, sendMessage } from '../controllers/messagesController.js'
+import { getConversations, getMessages, sendMessage } from '../controllers/messagesController.js'
 import authenticate from '../middleware/auth.js'
 
 const router = Router()
 
+router.get('/conversations', authenticate, getConversations)
 router.get('/:tripId', authenticate, getMessages)
 router.post('/', authenticate, sendMessage)
 
