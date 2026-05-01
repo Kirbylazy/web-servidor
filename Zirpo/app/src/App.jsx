@@ -34,7 +34,7 @@ const App = () => {
           <Route path="/trips/:id" element={<ProtectedWithNav><TripDetail /></ProtectedWithNav>} />
           <Route path="/my-trips" element={<ProtectedWithNav><MyTrips /></ProtectedWithNav>} />
           <Route path="/messages" element={<ProtectedWithNav><Messages /></ProtectedWithNav>} />
-          <Route path="/chat/:tripId" element={<ProtectedWithNav><Chat /></ProtectedWithNav>} />
+          <Route path="/chat/:tripId/:passengerId" element={<ProtectedWithNav><Chat /></ProtectedWithNav>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

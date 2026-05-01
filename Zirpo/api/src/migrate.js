@@ -134,6 +134,14 @@ const createTables = async () => {
       )
     `)
 
+    // Añadir passenger_id a messages para chats privados conductor-pasajero
+    await conn.query(`
+      ALTER TABLE messages ADD COLUMN IF NOT EXISTS passenger_id INT DEFAULT NULL
+    `).catch(() => {})
+    await conn.query(`
+      ALTER TABLE messages ADD INDEX IF NOT EXISTS idx_trip_passenger (trip_id, passenger_id)
+    `).catch(() => {})
+
     // Seed: cuentas de test
     const testUsers = [
       { nombre: 'Conductor', apellidos: 'Test', email: 'conductor@test.com' },

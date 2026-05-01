@@ -41,7 +41,7 @@ const Messages = () => {
       ) : (
         <div className="messages-list">
           {conversations.map(conv => (
-            <Link to={`/chat/${conv.trip_id}`} key={conv.trip_id} className="messages-item">
+            <Link to={`/chat/${conv.trip_id}/${conv.passenger_id}`} key={`${conv.trip_id}-${conv.passenger_id}`} className="messages-item">
               <div className="messages-item-avatar">
                 {conv.other_foto
                   ? <img src={conv.other_foto} alt="" className="messages-avatar-img" />

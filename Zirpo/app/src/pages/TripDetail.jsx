@@ -158,7 +158,7 @@ const TripDetail = () => {
                     : '✅ Reserva confirmada'}
                 </span>
                 <div className="detail-actions-buttons">
-                  <button className="btn-chat" onClick={() => navigate(`/chat/${trip.id}`)}>
+                  <button className="btn-chat" onClick={() => navigate(`/chat/${trip.id}/${user.id}`)}>
                     Chatear
                   </button>
                   <button className="btn-cancel-action" onClick={() => handleBookingStatus(myBooking.id, 'cancelada')}>
@@ -170,9 +170,6 @@ const TripDetail = () => {
               <div className="detail-actions-buttons">
                 <button className="btn-book-action" onClick={handleBook} disabled={booking}>
                   {booking ? 'Solicitando...' : 'Reservar'}
-                </button>
-                <button className="btn-chat" onClick={() => navigate(`/chat/${trip.id}`)}>
-                  Chatear
                 </button>
               </div>
             ) : (
@@ -263,12 +260,6 @@ const TripDetail = () => {
         ) : null}
 
         {/* Panel del conductor */}
-        {isConductor && (
-          <button className="btn-chat" style={{ width: '100%', marginBottom: '1rem' }}
-            onClick={() => navigate(`/chat/${trip.id}`)}>
-            Chat del viaje
-          </button>
-        )}
         {isConductor && bookings.length > 0 && (
           <div className="conductor-bookings">
             <h3>Solicitudes de reserva</h3>
@@ -282,12 +273,17 @@ const TripDetail = () => {
                   <span>{b.pasajero_nombre}</span>
                 </div>
                 <span className={`status-badge status-${b.estado}`}>{b.estado}</span>
-                {b.estado === 'pendiente' && (
-                  <div className="booking-actions">
-                    <button className="btn-confirm" onClick={() => handleBookingStatus(b.id, 'confirmada')}>✓ Aceptar</button>
-                    <button className="btn-reject" onClick={() => handleBookingStatus(b.id, 'cancelada')}>✗ Rechazar</button>
-                  </div>
-                )}
+                <div className="booking-actions">
+                  {b.estado === 'pendiente' && (
+                    <>
+                      <button className="btn-confirm" onClick={() => handleBookingStatus(b.id, 'confirmada')}>✓ Aceptar</button>
+                      <button className="btn-reject" onClick={() => handleBookingStatus(b.id, 'cancelada')}>✗ Rechazar</button>
+                    </>
+                  )}
+                  <button className="btn-chat" onClick={() => navigate(`/chat/${trip.id}/${b.pasajero_id}`)}>
+                    💬 Chat
+                  </button>
+                </div>
               </div>
             ))}
           </div>

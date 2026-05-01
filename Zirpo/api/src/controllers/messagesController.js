@@ -67,40 +67,36 @@ export const getConversations = async (req, res) => {
   try {
     const userId = req.user.id
 
+    // Get all conversations grouped by (trip_id, passenger_id)
     const [rows] = await pool.query(`
       SELECT
         t.id AS trip_id,
+        m.passenger_id,
         t.origen,
         t.destino,
         m_last.contenido AS last_message,
         m_last.created_at AS last_message_at,
         CASE
-          WHEN t.conductor_id = ? THEN other_user.nombre
+          WHEN t.conductor_id = ? THEN pasajero.nombre
           ELSE conductor.nombre
         END AS other_nombre,
         CASE
-          WHEN t.conductor_id = ? THEN other_user.foto
+          WHEN t.conductor_id = ? THEN pasajero.foto
           ELSE conductor.foto
         END AS other_foto
-      FROM trips t
-      JOIN (
-        SELECT trip_id, MAX(id) AS max_id
+      FROM (
+        SELECT trip_id, passenger_id, MAX(id) AS max_id
         FROM messages
-        GROUP BY trip_id
-      ) latest ON latest.trip_id = t.id
-      JOIN messages m_last ON m_last.id = latest.max_id
+        WHERE passenger_id IS NOT NULL
+        GROUP BY trip_id, passenger_id
+      ) m
+      JOIN messages m_last ON m_last.id = m.max_id
+      JOIN trips t ON t.id = m.trip_id
       JOIN users conductor ON conductor.id = t.conductor_id
-      LEFT JOIN (
-        SELECT b.trip_id, u.nombre, u.foto
-        FROM bookings b
-        JOIN users u ON u.id = b.pasajero_id
-        WHERE b.pasajero_id != ?
-        GROUP BY b.trip_id, u.nombre, u.foto
-      ) other_user ON other_user.trip_id = t.id
-      WHERE t.conductor_id = ?
-         OR t.id IN (SELECT trip_id FROM bookings WHERE pasajero_id = ?)
+      JOIN users pasajero ON pasajero.id = m.passenger_id
+      WHERE t.conductor_id = ? OR m.passenger_id = ?
       ORDER BY m_last.created_at DESC
-    `, [userId, userId, userId, userId, userId])
+    `, [userId, userId, userId, userId])
 
     res.json({ conversations: rows })
   } catch (err) {
@@ -111,29 +107,27 @@ export const getConversations = async (req, res) => {
 
 export const getMessages = async (req, res) => {
   try {
-    const { tripId } = req.params
+    const { tripId, passengerId } = req.params
     const { after_id } = req.query
 
     const [trips] = await pool.query('SELECT conductor_id FROM trips WHERE id = ?', [tripId])
     if (!trips.length) return res.status(404).json({ error: 'Viaje no encontrado' })
 
+    // Only the conductor or the specific passenger can read this conversation
     const isConductor = trips[0].conductor_id === req.user.id
-    if (!isConductor) {
-      const [bookings] = await pool.query(
-        'SELECT id FROM bookings WHERE trip_id = ? AND pasajero_id = ?',
-        [tripId, req.user.id]
-      )
-      if (!bookings.length) return res.status(403).json({ error: 'No autorizado' })
+    const isPassenger = parseInt(passengerId) === req.user.id
+    if (!isConductor && !isPassenger) {
+      return res.status(403).json({ error: 'No autorizado' })
     }
 
     let sql = `
-      SELECT m.id, m.trip_id, m.sender_id, m.contenido, m.created_at,
+      SELECT m.id, m.trip_id, m.passenger_id, m.sender_id, m.contenido, m.created_at,
              u.nombre AS sender_nombre, u.foto AS sender_foto
       FROM messages m
       JOIN users u ON m.sender_id = u.id
-      WHERE m.trip_id = ?
+      WHERE m.trip_id = ? AND m.passenger_id = ?
     `
-    const params = [tripId]
+    const params = [tripId, passengerId]
 
     if (after_id) {
       sql += ' AND m.id > ?'
@@ -151,9 +145,9 @@ export const getMessages = async (req, res) => {
 }
 
 export const sendMessage = async (req, res) => {
-  const { trip_id, contenido } = req.body
-  if (!trip_id || !contenido?.trim()) {
-    return res.status(400).json({ error: 'trip_id y contenido son obligatorios' })
+  const { trip_id, passenger_id, contenido } = req.body
+  if (!trip_id || !passenger_id || !contenido?.trim()) {
+    return res.status(400).json({ error: 'trip_id, passenger_id y contenido son obligatorios' })
   }
   if (contenido.length > 1000) {
     return res.status(400).json({ error: 'Mensaje demasiado largo (máx. 1000 caracteres)' })
@@ -163,13 +157,11 @@ export const sendMessage = async (req, res) => {
     const [trips] = await pool.query('SELECT conductor_id FROM trips WHERE id = ?', [trip_id])
     if (!trips.length) return res.status(404).json({ error: 'Viaje no encontrado' })
 
+    // Only the conductor or the specific passenger can send in this conversation
     const isConductor = trips[0].conductor_id === req.user.id
-    if (!isConductor) {
-      const [bookings] = await pool.query(
-        'SELECT id FROM bookings WHERE trip_id = ? AND pasajero_id = ?',
-        [trip_id, req.user.id]
-      )
-      if (!bookings.length) return res.status(403).json({ error: 'No autorizado' })
+    const isPassenger = parseInt(passenger_id) === req.user.id
+    if (!isConductor && !isPassenger) {
+      return res.status(403).json({ error: 'No autorizado' })
     }
 
     const filtro = filtrarMensaje(contenido.trim())
@@ -178,8 +170,8 @@ export const sendMessage = async (req, res) => {
     }
 
     const [result] = await pool.query(
-      'INSERT INTO messages (trip_id, sender_id, contenido) VALUES (?, ?, ?)',
-      [trip_id, req.user.id, filtro.text]
+      'INSERT INTO messages (trip_id, sender_id, passenger_id, contenido) VALUES (?, ?, ?, ?)',
+      [trip_id, req.user.id, passenger_id, filtro.text]
     )
 
     const [rows] = await pool.query(`
