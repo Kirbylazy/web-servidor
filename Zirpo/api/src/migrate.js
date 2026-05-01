@@ -146,6 +146,9 @@ const createTables = async () => {
     const testUsers = [
       { nombre: 'Conductor', apellidos: 'Test', email: 'conductor@test.com' },
       { nombre: 'Pasajero', apellidos: 'Test', email: 'pasajero@test.com' },
+      { nombre: 'Pasajero1', apellidos: 'Test', email: 'pasajero1@test.com' },
+      { nombre: 'Pasajero2', apellidos: 'Test', email: 'pasajero2@test.com' },
+      { nombre: 'Pasajero3', apellidos: 'Test', email: 'pasajero3@test.com' },
     ]
     const hash = await bcrypt.hash('password', 12)
     for (const u of testUsers) {
