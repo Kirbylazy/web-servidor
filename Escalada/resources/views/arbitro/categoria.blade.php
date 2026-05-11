@@ -277,7 +277,7 @@
                                 try {
                                     data = JSON.parse(text);
                                 } catch (parseErr) {
-                                    this.msg = 'HTTP ' + resp.status + ' → URL: ' + url + ' | Resp: ' + text.substring(0, 150);
+                                    this.msg = 'HTTP ' + resp.status + ' → URL: ' + url + ' | APP_URL: {{ config("app.url") }}';
                                     this.msgType = 'danger';
                                     this.loading = false;
                                     return;
