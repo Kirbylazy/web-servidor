@@ -259,7 +259,7 @@
 
                             try {
                                 {{-- PATCH AJAX a arbitro.validar_licencia (URL relativa para evitar CORS) --}}
-                                const url = '{{ route('arbitro.validar_licencia', $ins->id, false) }}';
+                                const url = '{{ (parse_url(config("app.url"), PHP_URL_PATH) ?? "") . route("arbitro.validar_licencia", $ins->id, false) }}';
                                 const resp = await fetch(url, {
                                     method: 'POST',
                                     headers: {
