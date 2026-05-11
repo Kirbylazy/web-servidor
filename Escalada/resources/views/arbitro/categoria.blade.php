@@ -277,7 +277,7 @@
                                 try {
                                     data = JSON.parse(text);
                                 } catch (parseErr) {
-                                    this.msg = 'Error del servidor (HTTP ' + resp.status + '): ' + text.substring(0, 200);
+                                    this.msg = 'HTTP ' + resp.status + ' → URL: ' + url + ' | Resp: ' + text.substring(0, 150);
                                     this.msgType = 'danger';
                                     this.loading = false;
                                     return;
