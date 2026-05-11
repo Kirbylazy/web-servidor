@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -35,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Forzar la URL raíz desde APP_URL para que route() incluya
+        // el prefijo /escalada en entornos con subdirectorio.
+        URL::forceRootUrl(config('app.url'));
     }
 }
