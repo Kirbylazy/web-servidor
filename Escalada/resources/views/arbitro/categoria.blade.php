@@ -261,11 +261,12 @@
                                 {{-- PATCH AJAX a arbitro.validar_licencia (URL relativa para evitar CORS) --}}
                                 const url = '{{ route('arbitro.validar_licencia', $ins->id, false) }}';
                                 const resp = await fetch(url, {
-                                    method: 'PATCH',
+                                    method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
                                         'Accept': 'application/json',
                                         'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                        'X-HTTP-Method-Override': 'PATCH',
                                     },
                                     body: JSON.stringify({ tipo, decision, motivo: motivo || null })
                                 });
