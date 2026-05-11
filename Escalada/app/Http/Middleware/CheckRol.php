@@ -49,6 +49,9 @@ class CheckRol
 
         // Denegar acceso si: no hay usuario autenticado, o su nivel es insuficiente
         if (!$request->user() || $userNivel < $minRequerido) {
+            if ($request->expectsJson()) {
+                abort(403, 'No tienes permiso para acceder a esa sección.');
+            }
             return redirect()->route('dashboard')
                 ->with('error', 'No tienes permiso para acceder a esa sección.');
         }

@@ -357,7 +357,11 @@ class ArbitroController extends Controller
      */
     private function checkArbitro(Competicion $competicion): void
     {
-        if ($competicion->arbitro_id !== auth()->id()) {
+        $user = auth()->user();
+        if ($user->isAdmin()) {
+            return;
+        }
+        if ((int) $competicion->arbitro_id !== (int) $user->id) {
             abort(403, 'No eres el árbitro asignado a esta competición.');
         }
     }

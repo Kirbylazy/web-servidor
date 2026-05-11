@@ -258,8 +258,9 @@
                             this.msg = '';
 
                             try {
-                                {{-- PATCH AJAX a arbitro.validar_licencia --}}
-                                const resp = await fetch('{{ route('arbitro.validar_licencia', $ins->id) }}', {
+                                {{-- PATCH AJAX a arbitro.validar_licencia (URL relativa para evitar CORS) --}}
+                                const url = '{{ route('arbitro.validar_licencia', $ins->id, false) }}';
+                                const resp = await fetch(url, {
                                     method: 'PATCH',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -268,9 +269,20 @@
                                     },
                                     body: JSON.stringify({ tipo, decision, motivo: motivo || null })
                                 });
-                                const data = await resp.json();
 
-                                if (data.success) {
+                                {{-- Leer respuesta como texto primero para debug --}}
+                                const text = await resp.text();
+                                let data;
+                                try {
+                                    data = JSON.parse(text);
+                                } catch (parseErr) {
+                                    this.msg = 'Error del servidor (HTTP ' + resp.status + '): ' + text.substring(0, 200);
+                                    this.msgType = 'danger';
+                                    this.loading = false;
+                                    return;
+                                }
+
+                                if (resp.ok && data.success) {
                                     {{-- Actualizar estado local sin recargar la página --}}
                                     if (tipo === 'licencia') {
                                         this.licEstado   = decision;
@@ -286,11 +298,11 @@
                                     this.msg     = data.message;
                                     this.msgType = 'success';
                                 } else {
-                                    this.msg     = 'Error al guardar.';
+                                    this.msg     = data.message || ('Error HTTP ' + resp.status);
                                     this.msgType = 'danger';
                                 }
                             } catch (e) {
-                                this.msg     = 'Error de conexión.';
+                                this.msg     = 'Error de red: ' + e.message;
                                 this.msgType = 'danger';
                             }
 
