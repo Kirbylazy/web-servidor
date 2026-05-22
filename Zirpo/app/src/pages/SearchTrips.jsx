@@ -8,10 +8,22 @@ import './SearchTrips.css'
 const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
 
 // Calcula el tramo relevante de un viaje según la búsqueda
+function getPickupTime(trip, parada) {
+  if (!trip.hora || !trip.duracion_min || !trip.distancia_km) return trip.hora
+  const distKm = parseFloat(parada.distancia_desde_origen_km) || 0
+  const fraction = trip.distancia_km > 0 ? distKm / trip.distancia_km : 0
+  const etaMin = Math.round(trip.duracion_min * fraction)
+  const [h, m] = trip.hora.split(':').map(Number)
+  const totalMin = h * 60 + m + etaMin
+  const hh = String(Math.floor(totalMin / 60) % 24).padStart(2, '0')
+  const mm = String(totalMin % 60).padStart(2, '0')
+  return `${hh}:${mm}`
+}
+
 function getTramo(trip, searchOrigen, searchDestino) {
   const paradas = trip.paradas || []
   if (!paradas.length || !searchOrigen || !searchDestino) {
-    return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento, plazas: trip.asientos_disponibles }
+    return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento, plazas: trip.asientos_disponibles, hora: trip.hora }
   }
 
   const nOrigen = norm(searchOrigen)
@@ -21,7 +33,6 @@ function getTramo(trip, searchOrigen, searchDestino) {
   const pd = paradas.find(p => norm(p.ciudad).includes(nDestino))
 
   if (po && pd && po.orden < pd.orden) {
-    // Calculate min available seats across segments of this tramo
     let minPlazas = trip.asientos_totales
     for (let i = po.orden; i < pd.orden; i++) {
       const seg = paradas.find(p => p.orden === i)
@@ -33,11 +44,12 @@ function getTramo(trip, searchOrigen, searchDestino) {
       origen: po.ciudad,
       destino: pd.ciudad,
       precio: parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen),
-      plazas: minPlazas
+      plazas: minPlazas,
+      hora: getPickupTime(trip, po)
     }
   }
 
-  return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento, plazas: trip.asientos_disponibles }
+  return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento, plazas: trip.asientos_disponibles, hora: trip.hora }
 }
 
 const SearchTrips = () => {
@@ -128,7 +140,7 @@ const SearchTrips = () => {
                 <span className="trip-price">{Number(tramo.precio).toFixed(2)} €</span>
               </div>
               <div className="trip-card-meta">
-                <span>{formatDate(trip.fecha)} · {formatTime(trip.hora)}</span>
+                <span>{formatDate(trip.fecha)} · {formatTime(tramo.hora)}</span>
                 <span>{tramo.plazas} plaza{tramo.plazas !== 1 ? 's' : ''}</span>
               </div>
               <div className="trip-card-driver">
