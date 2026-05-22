@@ -19,7 +19,7 @@ function deploy() {
 
   try {
     const cmds = [
-      `cd ${PROJECT_DIR} && sudo git pull`,
+      `cd ${PROJECT_DIR} && sudo git fetch origin && sudo git reset --hard origin/main`,
       `cd ${PROJECT_DIR}/app && sudo npm install --omit=dev && sudo npm run build`,
       `pm2 restart zirpo-api`
     ]
