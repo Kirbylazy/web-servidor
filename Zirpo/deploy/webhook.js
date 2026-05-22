@@ -4,7 +4,7 @@ import { execSync } from 'child_process'
 
 const PORT = process.env.WEBHOOK_PORT || 9000
 const SECRET = process.env.WEBHOOK_SECRET || ''
-const PROJECT_DIR = process.env.PROJECT_DIR || '/var/www/Zirpo'
+const PROJECT_DIR = process.env.PROJECT_DIR || '/mnt/m2/www/default/Zirpo'
 
 function verifySignature(payload, signature) {
   if (!SECRET) return true
