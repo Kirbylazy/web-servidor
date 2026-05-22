@@ -252,6 +252,23 @@ const TripDetail = () => {
 
   const formatDate = d => new Date(d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
   const formatTime = t => t.slice(0, 5)
+  const formatDuration = min => {
+    const h = Math.floor(min / 60)
+    const m = min % 60
+    return h > 0 ? `${h}h ${m}min` : `${m}min`
+  }
+
+  // Calculate estimated arrival time for a parada based on distance proportion
+  const getEstimatedTime = (parada) => {
+    if (!trip?.hora || !trip?.duracion_min || !trip?.distancia_km || !parada.distancia_desde_origen_km) return null
+    const fraction = parseFloat(parada.distancia_desde_origen_km) / trip.distancia_km
+    const etaMin = Math.round(trip.duracion_min * fraction)
+    const [h, m] = trip.hora.split(':').map(Number)
+    const totalMin = h * 60 + m + etaMin
+    const hh = String(Math.floor(totalMin / 60) % 24).padStart(2, '0')
+    const mm = String(totalMin % 60).padStart(2, '0')
+    return `${hh}:${mm}`
+  }
 
   if (loading) return <div className="trip-detail-page"><p className="loading">Cargando...</p></div>
 
@@ -335,6 +352,13 @@ const TripDetail = () => {
           </div>
         </div>
 
+        {(trip.distancia_km || trip.duracion_min) && (
+          <div className="detail-route-info">
+            {trip.distancia_km && <span>{trip.distancia_km} km</span>}
+            {trip.duracion_min && <span>{formatDuration(trip.duracion_min)}</span>}
+          </div>
+        )}
+
         <TripMap
           polyline={trip.ruta_polyline}
           paradas={paradas}
@@ -361,8 +385,13 @@ const TripDetail = () => {
                       </span>
                     )}
                   </div>
-                  {esFirst && <span className="parada-tag">{tramo.isPartial ? 'Subida' : 'Salida'}</span>}
-                  {esFinal && <span className="parada-tag">{tramo.isPartial ? 'Bajada' : 'Llegada'}</span>}
+                  <div className="parada-time-tag">
+                    {esFirst && <span className="parada-tag">{tramo.isPartial ? 'Subida' : 'Salida'}</span>}
+                    {esFinal && <span className="parada-tag">{tramo.isPartial ? 'Bajada' : 'Llegada'}</span>}
+                    <span className="parada-hora">
+                      {esFirst && !tramo.isPartial ? formatTime(trip.hora) : getEstimatedTime(p) || formatTime(trip.hora)}
+                    </span>
+                  </div>
                 </div>
               )
             })}

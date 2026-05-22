@@ -599,7 +599,7 @@ const PublishTrip = () => {
                   <div key={i} className="segment-row">
                     <div className="segment-info">
                       <span className="segment-cities">{leg.start} → {leg.end}</span>
-                      <span className="segment-meta">{leg.distanceKm} km · {leg.durationMin} min</span>
+                      <span className="segment-meta">{leg.distanceKm} km · {leg.durationMin >= 60 ? `${Math.floor(leg.durationMin / 60)}h ${leg.durationMin % 60}min` : `${leg.durationMin}min`}</span>
                     </div>
                     <div className="segment-price-input">
                       <input type="number" min="0" step="0.5"

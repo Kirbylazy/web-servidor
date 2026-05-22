@@ -387,12 +387,26 @@
   color: var(--text-muted);
 }
 
+.parada-time-tag {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
 .parada-tag {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-faint);
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+.parada-hora {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--blue);
 }
 
 /* ETA Banner */
