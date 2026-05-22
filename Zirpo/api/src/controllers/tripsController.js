@@ -43,6 +43,8 @@ async function calcularRuta(origen, destino) {
 export const getTrips = async (req, res) => {
   const { origen, destino, fecha } = req.query
   try {
+    // No filtrar por asientos_disponibles globalmente — la disponibilidad
+    // se comprueba por tramo después de calcular la ocupación por segmento
     let sql = `
       SELECT t.*, u.nombre AS conductor_nombre, u.apellidos AS conductor_apellidos,
              u.foto AS conductor_foto, u.valoracion_media AS conductor_valoracion,
@@ -50,7 +52,7 @@ export const getTrips = async (req, res) => {
       FROM trips t
       JOIN users u ON t.conductor_id = u.id
       LEFT JOIN vehicles v ON v.user_id = t.conductor_id
-      WHERE t.estado = 'activo' AND t.asientos_disponibles > 0 AND t.fecha >= CURDATE()
+      WHERE t.estado = 'activo' AND t.fecha >= CURDATE()
     `
     const params = []
 
@@ -80,6 +82,14 @@ export const getTrips = async (req, res) => {
 
     const [rows] = await pool.query(sql, params)
 
+    const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+    const getOrden = (paradas, ciudad) => {
+      if (!ciudad) return null
+      const n = norm(ciudad)
+      const p = paradas.find(p => norm(p.ciudad).includes(n) || n.includes(norm(p.ciudad)))
+      return p ? p.orden : null
+    }
+
     // Adjuntar paradas con disponibilidad por segmento
     if (rows.length > 0) {
       const tripIds = rows.map(t => t.id)
@@ -102,14 +112,6 @@ export const getTrips = async (req, res) => {
         bookingsByTrip[b.trip_id].push(b)
       })
 
-      const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
-      const getOrden = (paradas, ciudad) => {
-        if (!ciudad) return null
-        const n = norm(ciudad)
-        const p = paradas.find(p => norm(p.ciudad).includes(n) || n.includes(norm(p.ciudad)))
-        return p ? p.orden : null
-      }
-
       rows.forEach(t => {
         const paradas = paradasByTrip[t.id] || []
         const tripBookings = bookingsByTrip[t.id] || []
@@ -131,7 +133,30 @@ export const getTrips = async (req, res) => {
       })
     }
 
-    res.json({ trips: rows })
+    // Filtrar viajes sin plazas en el tramo buscado
+    const filtered = rows.filter(t => {
+      const paradas = t.paradas || []
+      if (paradas.length < 2) return t.asientos_disponibles > 0
+
+      if (origen && destino) {
+        const sO = getOrden(paradas, origen)
+        const sD = getOrden(paradas, destino)
+        if (sO !== null && sD !== null && sO < sD) {
+          for (let s = sO; s < sD; s++) {
+            const seg = paradas[s]
+            if (seg?.asientos_disponibles_segmento !== undefined && seg.asientos_disponibles_segmento <= 0) {
+              return false
+            }
+          }
+          return true
+        }
+      }
+
+      // Sin tramo especifico: comprobar que al menos un segmento tiene plazas
+      return paradas.some(p => p.asientos_disponibles_segmento === undefined || p.asientos_disponibles_segmento > 0)
+    })
+
+    res.json({ trips: filtered })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Error interno del servidor' })
