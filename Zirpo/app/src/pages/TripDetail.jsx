@@ -101,7 +101,7 @@ const TripDetail = () => {
 
   const tramo = trip ? getTramo() : {}
   const myBooking = bookings.find(b => b.pasajero_id === user?.id)
-  const isConductor = trip?.conductor_id === user?.id
+  const isConductor = String(trip?.conductor_id) === String(user?.id)
 
   const handleBook = async () => {
     setBooking(true)
@@ -260,7 +260,7 @@ const TripDetail = () => {
           </div>
         ) : null}
 
-        {isConductor && (trip.estado === 'activo' || trip.estado === 'en_ruta') && (
+        {isConductor && trip.estado !== 'cancelado' && (
           <button className="btn-book-action" onClick={() => navigate(`/live/${trip.id}`)}
             style={{ width: '100%', marginBottom: '1rem' }}>
             {trip.estado === 'en_ruta' ? 'Ver viaje en curso' : 'Iniciar viaje'}
