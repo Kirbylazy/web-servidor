@@ -1,25 +1,47 @@
 import pool from '../db.js'
 
-const GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY
+const NOMINATIM_URL = 'https://nominatim.openstreetmap.org'
+const OSRM_URL = 'https://router.project-osrm.org'
+
+async function geocodeCity(city) {
+  const params = new URLSearchParams({
+    q: city + ', España',
+    format: 'json',
+    limit: '1',
+    countrycodes: 'es',
+  })
+  const res = await fetch(`${NOMINATIM_URL}/search?${params}`, {
+    headers: { 'User-Agent': 'Zirpo-API' },
+  })
+  const data = await res.json()
+  if (!data.length) return null
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+}
 
 async function calcularRuta(origen, destino) {
-  if (!GOOGLE_MAPS_KEY) return null
   try {
-    const url = `https://maps.googleapis.com/maps/api/directions/json?` +
-      `origin=${encodeURIComponent(origen)}&destination=${encodeURIComponent(destino)}` +
-      `&mode=driving&language=es&key=${GOOGLE_MAPS_KEY}`
-    const res = await fetch(url)
+    const [origenGeo, destinoGeo] = await Promise.all([
+      geocodeCity(origen),
+      geocodeCity(destino),
+    ])
+    if (!origenGeo || !destinoGeo) return null
+
+    const coords = `${origenGeo.lng},${origenGeo.lat};${destinoGeo.lng},${destinoGeo.lat}`
+    const res = await fetch(
+      `${OSRM_URL}/route/v1/driving/${coords}?overview=full&geometries=polyline`
+    )
     const data = await res.json()
-    if (data.status !== 'OK') return null
-    const leg = data.routes[0].legs[0]
+    if (data.code !== 'Ok' || !data.routes?.length) return null
+
+    const route = data.routes[0]
     return {
-      origen_lat: leg.start_location.lat,
-      origen_lng: leg.start_location.lng,
-      destino_lat: leg.end_location.lat,
-      destino_lng: leg.end_location.lng,
-      distancia_km: Math.round(leg.distance.value / 1000),
-      duracion_min: Math.round(leg.duration.value / 60),
-      ruta_polyline: data.routes[0].overview_polyline.points,
+      origen_lat: origenGeo.lat,
+      origen_lng: origenGeo.lng,
+      destino_lat: destinoGeo.lat,
+      destino_lng: destinoGeo.lng,
+      distancia_km: Math.round(route.distance / 1000),
+      duracion_min: Math.round(route.duration / 60),
+      ruta_polyline: route.geometry,
     }
   } catch {
     return null

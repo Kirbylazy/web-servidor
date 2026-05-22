@@ -2,47 +2,50 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { loadGoogleMapsScript } from '../utils/googleMaps'
+import { createMap, addPolyline, fitBoundsToPoints, L } from '../utils/mapService'
 import './TripDetail.css'
 
 function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoLng }) {
   const mapRef = useRef(null)
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  const mapInstanceRef = useRef(null)
 
   useEffect(() => {
-    if (!apiKey || !mapRef.current || !origenLat) return
+    if (!mapRef.current || !origenLat) return
 
-    loadGoogleMapsScript(apiKey).then(() => {
-      const map = new window.google.maps.Map(mapRef.current, {
-        disableDefaultUI: true,
-        zoomControl: true,
-      })
+    // Clean up previous map
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove()
+      mapInstanceRef.current = null
+    }
 
-      // Marcadores para cada parada si existen, si no solo origen y destino
-      const points = paradas?.length > 0
-        ? paradas.map(p => ({ lat: parseFloat(p.lat), lng: parseFloat(p.lng), label: p.ciudad }))
-        : [
-            { lat: parseFloat(origenLat), lng: parseFloat(origenLng), label: 'Origen' },
-            { lat: parseFloat(destinoLat), lng: parseFloat(destinoLng), label: 'Destino' },
-          ]
+    const map = createMap(mapRef.current)
+    mapInstanceRef.current = map
 
-      points.forEach(p => new window.google.maps.Marker({ position: p, map, title: p.label }))
+    const points = paradas?.length > 0
+      ? paradas.map(p => ({ lat: parseFloat(p.lat), lng: parseFloat(p.lng), label: p.ciudad }))
+      : [
+          { lat: parseFloat(origenLat), lng: parseFloat(origenLng), label: 'Origen' },
+          { lat: parseFloat(destinoLat), lng: parseFloat(destinoLng), label: 'Destino' },
+        ]
 
-      if (polyline) {
-        const decoded = window.google.maps.geometry.encoding.decodePath(polyline)
-        new window.google.maps.Polyline({ path: decoded, map, strokeColor: '#4F46E5', strokeWeight: 4 })
-        const bounds = new window.google.maps.LatLngBounds()
-        decoded.forEach(p => bounds.extend(p))
-        map.fitBounds(bounds, 40)
-      } else {
-        const bounds = new window.google.maps.LatLngBounds()
-        points.forEach(p => bounds.extend(p))
-        map.fitBounds(bounds, 40)
+    points.forEach(p => L.marker([p.lat, p.lng]).addTo(map).bindTooltip(p.label))
+
+    if (polyline) {
+      const pl = addPolyline(map, polyline)
+      map.fitBounds(pl.getBounds(), { padding: [40, 40] })
+    } else {
+      fitBoundsToPoints(map, points)
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
       }
-    })
+    }
   }, [polyline, origenLat, paradas])
 
-  if (!apiKey || !origenLat) return null
+  if (!origenLat) return null
   return <div ref={mapRef} className="trip-map" />
 }
 
@@ -78,7 +81,6 @@ const TripDetail = () => {
     }
   }
 
-  // Calcular el tramo que buscó el pasajero
   const getTramo = () => {
     if (!tramoOrigen || !tramoDestino || !paradas.length) {
       return { origen: trip?.origen, destino: trip?.destino, precio: trip?.precio_asiento }
@@ -107,7 +109,7 @@ const TripDetail = () => {
     try {
       await api.post('/bookings', { trip_id: trip.id })
       await fetchTrip()
-      setMsg('¡Reserva solicitada! El conductor te confirmará pronto.')
+      setMsg('Reserva solicitada! El conductor te confirmara pronto.')
     } catch (err) {
       setMsg(err.message)
     } finally {
@@ -148,7 +150,6 @@ const TripDetail = () => {
           </div>
         </div>
 
-        {/* Sección de acciones del pasajero */}
         {!isConductor && trip.estado === 'activo' && (
           <div className="detail-actions">
             {myBooking ? (
@@ -175,7 +176,7 @@ const TripDetail = () => {
             ) : (
               <p className="no-seats">No quedan plazas disponibles</p>
             )}
-            {msg && <p className={msg.includes('¡') ? 'msg-ok' : 'msg-error'}>{msg}</p>}
+            {msg && <p className={msg.includes('!') ? 'msg-ok' : 'msg-error'}>{msg}</p>}
           </div>
         )}
 
@@ -259,7 +260,6 @@ const TripDetail = () => {
           </div>
         ) : null}
 
-        {/* Panel del conductor */}
         {isConductor && bookings.length > 0 && (
           <div className="conductor-bookings">
             <h3>Solicitudes de reserva</h3>

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { api } from '../services/api'
 import CityAutocomplete from '../components/CityAutocomplete'
-import { loadGoogleMapsScript } from '../utils/googleMaps'
+import { createMap, calcRoute, geocodeCity, reverseGeocode, searchAddress, addPolyline, fitBoundsToPoints, decodePolyline, L } from '../utils/mapService'
 import './TripForm.css'
 
 // --- Utilities ---
@@ -21,10 +21,10 @@ const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, 
 const PublishTrip = () => {
   const navigate = useNavigate()
   const mapRef = useRef(null)
-  const rendererRef = useRef(null)
+  const mapInstanceRef = useRef(null)
   const modalMapRef = useRef(null)
+  const modalMapInstanceRef = useRef(null)
   const modalSearchRef = useRef(null)
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
   const [step, setStep] = useState(1)
   const [origen, setOrigen] = useState('')
@@ -51,111 +51,101 @@ const PublishTrip = () => {
 
   const handle = e => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
 
-  // --- Route calculation ---
+  // --- Route calculation via OSRM ---
 
-  const calcRoute = async (waypoints) => {
+  const doCalcRoute = async (waypoints) => {
     setCalculando(true)
     setError('')
-    await loadGoogleMapsScript(apiKey)
-    const service = new window.google.maps.DirectionsService()
-    const filledWaypoints = waypoints.filter(s => s.trim())
-    const wp = filledWaypoints.map(s => ({ location: `${s}, España`, stopover: true }))
+    try {
+      // Geocode all city names to get lat/lng
+      const origenGeo = await geocodeCity(origen)
+      const destinoGeo = await geocodeCity(destino)
+      const waypointGeos = []
+      for (const wp of waypoints.filter(s => s.trim())) {
+        waypointGeos.push(await geocodeCity(wp))
+      }
 
-    return new Promise((resolve, reject) => {
-      service.route({
-        origin: `${origen}, España`,
-        destination: `${destino}, España`,
-        waypoints: wp,
-        optimizeWaypoints: true,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      }, (result, status) => {
-        setCalculando(false)
-        if (status !== 'OK') { setError('No se pudo calcular la ruta.'); reject(status); return }
+      const allPoints = [origenGeo, ...waypointGeos, destinoGeo]
+      const result = await calcRoute(allPoints)
 
-        // Reordenar paradas según el orden óptimo de Google
-        const waypointOrder = result.routes[0].waypoint_order || []
-        const reorderedStops = waypointOrder.map(i => filledWaypoints[i])
-        const orderedCityNames = [origen, ...reorderedStops, destino]
+      const orderedCityNames = [origen, ...waypoints.filter(s => s.trim()), destino]
 
-        const legs = result.routes[0].legs.map((leg, i) => ({
-          start: orderedCityNames[i],
-          end: orderedCityNames[i + 1],
-          startLat: leg.start_location.lat(),
-          startLng: leg.start_location.lng(),
-          endLat: leg.end_location.lat(),
-          endLng: leg.end_location.lng(),
-          distanceKm: Math.round(leg.distance.value / 1000),
-          durationMin: Math.round(leg.duration.value / 60),
-        }))
+      const legs = result.legs.map((leg, i) => ({
+        ...leg,
+        start: orderedCityNames[i],
+        end: orderedCityNames[i + 1],
+      }))
 
-        resolve({
-          legs,
-          polyline: result.routes[0].overview_polyline,
-          totalDistanceKm: legs.reduce((s, l) => s + l.distanceKm, 0),
-          totalDurationMin: legs.reduce((s, l) => s + l.durationMin, 0),
-          directionsResult: result,
-          reorderedStops,
-        })
-      })
-    })
+      return {
+        legs,
+        polyline: result.polyline,
+        totalDistanceKm: result.totalDistanceKm,
+        totalDurationMin: result.totalDurationMin,
+        waypoints: allPoints,
+      }
+    } catch (err) {
+      setError('No se pudo calcular la ruta: ' + err.message)
+      throw err
+    } finally {
+      setCalculando(false)
+    }
   }
 
   const updateRoute = async (waypoints) => {
     try {
-      const data = await calcRoute(waypoints)
+      const data = await doCalcRoute(waypoints)
       setRouteData(data)
       setSegmentPrices(calcDefaultPrices(data.legs))
-      setStops(data.reorderedStops)
+      setStops(waypoints.filter(s => s.trim()))
       setNeedsRecalc(false)
     } catch { /* error already set */ }
   }
 
-  // --- Suggested cities ---
+  // --- Suggested cities along route ---
 
-  const findSuggestions = async (directionsResult, totalKm) => {
+  const findSuggestions = async (routeResult) => {
     setLoadingSuggestions(true)
     try {
-      const path = directionsResult.routes[0].overview_path
-      const spherical = window.google.maps.geometry.spherical
+      // Sample points along the route to find intermediate cities
+      const { polyline, totalDistanceKm } = routeResult
+      const path = decodePolyline(polyline)
+
+      if (path.length < 10) { setSuggestedCities([]); return }
+
+      const interval = Math.max(50, Math.min(100, totalDistanceKm / 6))
       const samples = []
-      const interval = Math.max(50, Math.min(100, totalKm / 6))
       let accum = 0, nextSample = interval
 
       for (let i = 1; i < path.length; i++) {
-        accum += spherical.computeDistanceBetween(path[i - 1], path[i]) / 1000
-        if (accum >= nextSample && accum < totalKm - 30) {
-          samples.push(path[i])
+        const [lat1, lng1] = path[i - 1]
+        const [lat2, lng2] = path[i]
+        // Simple haversine approximation in km
+        const dLat = (lat2 - lat1) * Math.PI / 180
+        const dLng = (lng2 - lng1) * Math.PI / 180
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+        const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        accum += dist
+        if (accum >= nextSample && accum < totalDistanceKm - 30) {
+          samples.push({ lat: lat2, lng: lng2 })
           nextSample += interval
         }
       }
 
       if (!samples.length) { setSuggestedCities([]); return }
 
-      const geocoder = new window.google.maps.Geocoder()
       const skip = [norm(origen), norm(destino)]
       const cities = []
 
       for (const pt of samples) {
         try {
-          const results = await new Promise((resolve, reject) =>
-            geocoder.geocode({ location: pt }, (res, status) => {
-              if (status === 'OK' && res?.length) resolve(res)
-              else reject(status)
-            })
-          )
-          let cityName = null
-          for (const result of results) {
-            const comp = result.address_components?.find(c =>
-              c.types.includes('locality') || c.types.includes('administrative_area_level_4')
-            )
-            if (comp) { cityName = comp.long_name; break }
-          }
+          const result = await reverseGeocode(pt.lat, pt.lng)
+          const cityName = result.city
           if (cityName && !skip.includes(norm(cityName)) && !cities.some(c => norm(c) === norm(cityName))) {
             cities.push(cityName)
           }
-        } catch (status) {
-          console.warn('Geocoder failed:', status)
-        }
+        } catch { /* skip this sample */ }
+        // Respect Nominatim rate limit (1 req/s)
+        await new Promise(r => setTimeout(r, 1100))
       }
       setSuggestedCities(cities)
     } catch (err) {
@@ -171,7 +161,6 @@ const PublishTrip = () => {
   const fetchDefaultPickups = async () => {
     setLoadingPickups(true)
     const cities = [origen, ...stops.filter(s => s.trim()), destino]
-    const service = new window.google.maps.places.PlacesService(document.createElement('div'))
     const points = {}
 
     for (let i = 0; i < cities.length; i++) {
@@ -184,21 +173,16 @@ const PublishTrip = () => {
         : { lat: leg.endLat, lng: leg.endLng }
 
       try {
-        const result = await new Promise((resolve, reject) => {
-          service.findPlaceFromQuery({
-            query: `estación de autobuses ${city}`,
-            fields: ['formatted_address', 'geometry', 'name'],
-            locationBias: new window.google.maps.LatLng(cityLatLng.lat, cityLatLng.lng),
-          }, (results, status) => {
-            if (status === 'OK' && results?.length) resolve(results[0])
-            else reject(status)
-          })
-        })
-        points[city] = {
-          address: result.formatted_address || result.name,
-          lat: result.geometry.location.lat(),
-          lng: result.geometry.location.lng(),
-          name: result.name,
+        const results = await searchAddress(`estación de autobuses ${city}`, cityLatLng.lat, cityLatLng.lng)
+        if (results.length > 0) {
+          points[city] = {
+            address: results[0].address,
+            lat: results[0].lat,
+            lng: results[0].lng,
+            name: results[0].name,
+          }
+        } else {
+          throw new Error('no results')
         }
       } catch {
         points[city] = {
@@ -207,6 +191,8 @@ const PublishTrip = () => {
           name: `Centro de ${city}`,
         }
       }
+      // Respect Nominatim rate limit
+      await new Promise(r => setTimeout(r, 1100))
     }
 
     setPickupPoints(points)
@@ -223,11 +209,11 @@ const PublishTrip = () => {
     setNeedsRecalc(false)
 
     try {
-      const data = await calcRoute([])
+      const data = await doCalcRoute([])
       setRouteData(data)
       setSegmentPrices(calcDefaultPrices(data.legs))
       setStep(2)
-      findSuggestions(data.directionsResult, data.totalDistanceKm)
+      findSuggestions(data)
     } catch { /* error already set */ }
   }
 
@@ -257,64 +243,124 @@ const PublishTrip = () => {
   const addManual = () => { setStops(prev => [...prev, '']); setNeedsRecalc(true) }
   const updateStopVal = (i, val) => { setStops(prev => prev.map((s, idx) => idx === i ? val : s)); setNeedsRecalc(true) }
 
-  // --- Map rendering (step 2) ---
+  // --- Map rendering (step 2) with Leaflet ---
 
   useEffect(() => {
-    if (!routeData || !mapRef.current || !window.google?.maps) return
-    const map = new window.google.maps.Map(mapRef.current, { disableDefaultUI: true, zoomControl: true })
-    if (rendererRef.current) rendererRef.current.setMap(null)
-    rendererRef.current = new window.google.maps.DirectionsRenderer({ map })
-    rendererRef.current.setDirections(routeData.directionsResult)
+    if (!routeData || !mapRef.current) return
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove()
+      mapInstanceRef.current = null
+    }
+
+    const map = createMap(mapRef.current)
+    mapInstanceRef.current = map
+
+    if (routeData.polyline) {
+      const pl = addPolyline(map, routeData.polyline)
+      map.fitBounds(pl.getBounds(), { padding: [40, 40] })
+    }
+
+    // Add markers for each waypoint
+    if (routeData.waypoints) {
+      const orderedNames = [origen, ...stops.filter(s => s.trim()), destino]
+      routeData.waypoints.forEach((wp, i) => {
+        L.marker([wp.lat, wp.lng]).addTo(map).bindTooltip(orderedNames[i] || '')
+      })
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+    }
   }, [routeData])
 
-  // --- Pickup modal map ---
+  // --- Pickup modal map with Leaflet ---
 
   useEffect(() => {
-    if (!pickupModalCity || !modalMapRef.current || !window.google?.maps) return
+    if (!pickupModalCity || !modalMapRef.current) return
 
     const point = pickupPoints[pickupModalCity]
     if (!point) return
     const center = { lat: point.lat, lng: point.lng }
     setTempPickup(point)
 
-    const map = new window.google.maps.Map(modalMapRef.current, {
-      center, zoom: 15, disableDefaultUI: true, zoomControl: true,
+    if (modalMapInstanceRef.current) {
+      modalMapInstanceRef.current.remove()
+      modalMapInstanceRef.current = null
+    }
+
+    const map = createMap(modalMapRef.current, { center: [center.lat, center.lng], zoom: 15 })
+    modalMapInstanceRef.current = map
+
+    const marker = L.marker([center.lat, center.lng], { draggable: true }).addTo(map)
+
+    const updateFromLatLng = async (lat, lng) => {
+      marker.setLatLng([lat, lng])
+      map.panTo([lat, lng])
+      try {
+        const result = await reverseGeocode(lat, lng)
+        setTempPickup({ address: result.address, lat, lng, name: result.address })
+      } catch {
+        setTempPickup({ address: '', lat, lng, name: '' })
+      }
+    }
+
+    map.on('click', (e) => updateFromLatLng(e.latlng.lat, e.latlng.lng))
+    marker.on('dragend', (e) => {
+      const pos = e.target.getLatLng()
+      updateFromLatLng(pos.lat, pos.lng)
     })
 
-    const marker = new window.google.maps.Marker({ map, position: center, draggable: true })
-    const geocoder = new window.google.maps.Geocoder()
+    // Search in modal
+    let searchTimer = null
+    const searchInput = modalSearchRef.current
+    if (searchInput) {
+      const resultsDiv = document.createElement('ul')
+      resultsDiv.className = 'city-suggestions'
+      resultsDiv.style.position = 'absolute'
+      resultsDiv.style.top = '100%'
+      resultsDiv.style.left = '0'
+      resultsDiv.style.right = '0'
+      resultsDiv.style.zIndex = '10001'
+      searchInput.parentElement.style.position = 'relative'
+      searchInput.parentElement.appendChild(resultsDiv)
 
-    const updateFromLatLng = (latLng) => {
-      marker.setPosition(latLng)
-      map.panTo(latLng)
-      geocoder.geocode({ location: latLng }, (results, status) => {
-        const addr = status === 'OK' && results?.[0] ? results[0].formatted_address : ''
-        setTempPickup({ address: addr, lat: latLng.lat(), lng: latLng.lng(), name: addr })
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimer)
+        const q = e.target.value
+        if (q.length < 3) { resultsDiv.innerHTML = ''; return }
+        searchTimer = setTimeout(async () => {
+          const results = await searchAddress(q, center.lat, center.lng)
+          resultsDiv.innerHTML = results.map((r, i) =>
+            `<li class="city-suggestion-item" data-idx="${i}">${r.name}<br><small style="color:#64748b">${r.address}</small></li>`
+          ).join('')
+          resultsDiv.querySelectorAll('li').forEach(li => {
+            li.addEventListener('mousedown', () => {
+              const idx = parseInt(li.dataset.idx)
+              const r = results[idx]
+              marker.setLatLng([r.lat, r.lng])
+              map.setView([r.lat, r.lng], 16)
+              setTempPickup({ address: r.address, lat: r.lat, lng: r.lng, name: r.name })
+              resultsDiv.innerHTML = ''
+              searchInput.value = r.name
+            })
+          })
+        }, 500)
+      })
+
+      searchInput.addEventListener('blur', () => {
+        setTimeout(() => { resultsDiv.innerHTML = '' }, 200)
       })
     }
 
-    map.addListener('click', e => updateFromLatLng(e.latLng))
-    marker.addListener('dragend', e => updateFromLatLng(e.latLng))
-
-    if (modalSearchRef.current) {
-      const autocomplete = new window.google.maps.places.Autocomplete(modalSearchRef.current, {
-        componentRestrictions: { country: 'es' },
-        fields: ['formatted_address', 'geometry', 'name'],
-      })
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
-        if (place.geometry) {
-          const loc = place.geometry.location
-          marker.setPosition(loc)
-          map.setCenter(loc)
-          map.setZoom(16)
-          setTempPickup({
-            address: place.formatted_address || place.name,
-            lat: loc.lat(), lng: loc.lng(),
-            name: place.name || place.formatted_address,
-          })
-        }
-      })
+    return () => {
+      if (modalMapInstanceRef.current) {
+        modalMapInstanceRef.current.remove()
+        modalMapInstanceRef.current = null
+      }
     }
   }, [pickupModalCity])
 
