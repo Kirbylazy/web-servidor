@@ -75,6 +75,31 @@ export async function searchAddress(query, lat, lng) {
 
 // --- GraphHopper routing (puerto 8080) ---
 
+function haversineDist(lat1, lng1, lat2, lng2) {
+  const toRad = v => v * Math.PI / 180
+  const dLat = toRad(lat2 - lat1)
+  const dLng = toRad(lng2 - lng1)
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function closestPathIndex(path, lat, lng) {
+  let best = 0, bestDist = Infinity
+  for (let i = 0; i < path.length; i++) {
+    const d = (path[i][0] - lat) ** 2 + (path[i][1] - lng) ** 2
+    if (d < bestDist) { bestDist = d; best = i }
+  }
+  return best
+}
+
+function pathDistanceKm(path, fromIdx, toIdx) {
+  let dist = 0
+  for (let i = fromIdx; i < toIdx; i++) {
+    dist += haversineDist(path[i][0], path[i][1], path[i + 1][0], path[i + 1][1])
+  }
+  return Math.round(dist)
+}
+
 export async function calcRoute(waypoints) {
   if (waypoints.length < 2) throw new Error('Se necesitan al menos 2 puntos')
 
@@ -87,13 +112,9 @@ export async function calcRoute(waypoints) {
   if (!data.paths?.length) throw new Error('No se pudo calcular la ruta')
 
   const path = data.paths[0]
-
-  // GraphHopper with multiple waypoints returns snapped_waypoints and legs info
-  // We calculate legs from the instructions or approximate from total
   const totalDistanceKm = Math.round(path.distance / 1000)
   const totalDurationMin = Math.round(path.time / 60000)
 
-  // If we have waypoint indices, split into legs
   let legs
   if (path.legs && path.legs.length) {
     legs = path.legs.map((leg, i) => ({
@@ -114,21 +135,31 @@ export async function calcRoute(waypoints) {
       endLng: waypoints[1].lng,
     }]
   } else {
-    // Approximate: distribute evenly (fallback)
-    const n = waypoints.length - 1
-    legs = Array.from({ length: n }, (_, i) => ({
-      distanceKm: Math.round(totalDistanceKm / n),
-      durationMin: Math.round(totalDurationMin / n),
-      startLat: waypoints[i].lat,
-      startLng: waypoints[i].lng,
-      endLat: waypoints[i + 1].lat,
-      endLng: waypoints[i + 1].lng,
-    }))
+    // Calculate real distances per leg using the polyline
+    const decoded = decodePolyline(path.points)
+    const wpIndices = waypoints.map(w => closestPathIndex(decoded, w.lat, w.lng))
+    // Ensure indices are monotonically increasing
+    for (let i = 1; i < wpIndices.length; i++) {
+      if (wpIndices[i] <= wpIndices[i - 1]) wpIndices[i] = wpIndices[i - 1] + 1
+    }
+
+    legs = []
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const distKm = pathDistanceKm(decoded, wpIndices[i], wpIndices[i + 1])
+      legs.push({
+        distanceKm: distKm,
+        durationMin: totalDurationMin > 0 ? Math.round(totalDurationMin * (distKm / totalDistanceKm)) : 0,
+        startLat: waypoints[i].lat,
+        startLng: waypoints[i].lng,
+        endLat: waypoints[i + 1].lat,
+        endLng: waypoints[i + 1].lng,
+      })
+    }
   }
 
   return {
     legs,
-    polyline: path.points, // encoded polyline
+    polyline: path.points,
     totalDistanceKm,
     totalDurationMin,
   }
