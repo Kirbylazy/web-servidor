@@ -38,9 +38,15 @@ function EtaBadge({ tripId, origen }) {
     }
   }, [tripId, origen])
 
+  const fmtEta = (m) => {
+    const h = Math.floor(m / 60)
+    const mins = m % 60
+    return h > 0 ? `${h}h ${mins}min` : `${mins}min`
+  }
+
   if (eta === null) return <span className="eta-live">En ruta...</span>
   if (eta === 0) return <span className="eta-live eta-arrived">Ha llegado</span>
-  return <span className="eta-live">{eta} min</span>
+  return <span className="eta-live">{fmtEta(eta)}</span>
 }
 
 const MyTrips = () => {

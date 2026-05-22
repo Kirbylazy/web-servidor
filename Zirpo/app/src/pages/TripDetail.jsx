@@ -296,7 +296,7 @@ const TripDetail = () => {
           <div className="eta-banner-text">
             {etaMin === 0
               ? <span className="eta-arrived">El conductor ha llegado</span>
-              : <><span className="eta-minutes">{etaMin}</span> min para que llegue el conductor</>
+              : <><span className="eta-minutes">{formatDuration(etaMin)}</span> para que llegue el conductor</>
             }
           </div>
         </div>
@@ -351,8 +351,8 @@ const TripDetail = () => {
             <span>{formatDate(trip.fecha)}</span>
           </div>
           <div className="detail-meta-item">
-            <span className="meta-label">Hora</span>
-            <span>{formatTime(trip.hora)}</span>
+            <span className="meta-label">Hora recogida</span>
+            <span>{tramo.isPartial ? getEstimatedTime(paradas.find(p => norm(p.ciudad).includes(norm(tramo.origen)) || norm(tramo.origen).includes(norm(p.ciudad))) || {}) : formatTime(trip.hora)}</span>
           </div>
           <div className="detail-meta-item">
             <span className="meta-label">Plazas</span>
