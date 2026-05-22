@@ -3,19 +3,27 @@ import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { createMap, addPolyline, fitBoundsToPoints, L } from '../utils/mapService'
+import { createMap, addPolyline, decodePolyline, fitBoundsToPoints, L } from '../utils/mapService'
 import './TripDetail.css'
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/Zirpo/api', '') || 'http://localhost:3000'
 
-function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoLng }) {
+function closestIndex(path, lat, lng) {
+  let best = 0, bestDist = Infinity
+  for (let i = 0; i < path.length; i++) {
+    const d = (path[i][0] - lat) ** 2 + (path[i][1] - lng) ** 2
+    if (d < bestDist) { bestDist = d; best = i }
+  }
+  return best
+}
+
+function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoLng, tramoOrigen, tramoDestino }) {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
 
   useEffect(() => {
     if (!mapRef.current || !origenLat) return
 
-    // Clean up previous map
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove()
       mapInstanceRef.current = null
@@ -24,8 +32,31 @@ function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoL
     const map = createMap(mapRef.current)
     mapInstanceRef.current = map
 
-    const points = paradas?.length > 0
-      ? paradas.map(p => ({ lat: parseFloat(p.lat), lng: parseFloat(p.lng), label: p.ciudad }))
+    // Determine which paradas to show
+    let visibleParadas = paradas?.length > 0 ? paradas : null
+    let slicedPath = null
+
+    if (tramoOrigen && tramoDestino && paradas?.length > 0) {
+      const nO = norm(tramoOrigen)
+      const nD = norm(tramoDestino)
+      const idxO = paradas.findIndex(p => norm(p.ciudad).includes(nO) || nO.includes(norm(p.ciudad)))
+      const idxD = paradas.findIndex(p => norm(p.ciudad).includes(nD) || nD.includes(norm(p.ciudad)))
+      if (idxO !== -1 && idxD !== -1 && idxO < idxD) {
+        visibleParadas = paradas.slice(idxO, idxD + 1)
+        // Slice polyline to this segment
+        if (polyline) {
+          const fullPath = decodePolyline(polyline)
+          const pO = visibleParadas[0]
+          const pD = visibleParadas[visibleParadas.length - 1]
+          const startIdx = closestIndex(fullPath, parseFloat(pO.lat), parseFloat(pO.lng))
+          const endIdx = closestIndex(fullPath, parseFloat(pD.lat), parseFloat(pD.lng))
+          slicedPath = fullPath.slice(Math.min(startIdx, endIdx), Math.max(startIdx, endIdx) + 1)
+        }
+      }
+    }
+
+    const points = visibleParadas
+      ? visibleParadas.map(p => ({ lat: parseFloat(p.lat), lng: parseFloat(p.lng), label: p.ciudad }))
       : [
           { lat: parseFloat(origenLat), lng: parseFloat(origenLng), label: 'Origen' },
           { lat: parseFloat(destinoLat), lng: parseFloat(destinoLng), label: 'Destino' },
@@ -33,7 +64,10 @@ function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoL
 
     points.forEach(p => L.marker([p.lat, p.lng]).addTo(map).bindTooltip(p.label))
 
-    if (polyline) {
+    if (slicedPath && slicedPath.length > 1) {
+      const pl = L.polyline(slicedPath, { color: '#2563eb', weight: 5, opacity: 0.8 }).addTo(map)
+      map.fitBounds(pl.getBounds(), { padding: [40, 40] })
+    } else if (polyline) {
       const pl = addPolyline(map, polyline)
       map.fitBounds(pl.getBounds(), { padding: [40, 40] })
     } else {
@@ -46,7 +80,7 @@ function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoL
         mapInstanceRef.current = null
       }
     }
-  }, [polyline, origenLat, paradas])
+  }, [polyline, origenLat, paradas, tramoOrigen, tramoDestino])
 
   if (!origenLat) return null
   return <div ref={mapRef} className="trip-map" />
@@ -151,7 +185,11 @@ const TripDetail = () => {
     setBooking(true)
     setMsg('')
     try {
-      await api.post('/bookings', { trip_id: trip.id })
+      await api.post('/bookings', {
+        trip_id: trip.id,
+        tramo_origen: tramo.origen !== trip.origen ? tramo.origen : undefined,
+        tramo_destino: tramo.destino !== trip.destino ? tramo.destino : undefined,
+      })
       await fetchTrip()
       setMsg('Reserva solicitada! El conductor te confirmara pronto.')
     } catch (err) {
@@ -267,6 +305,8 @@ const TripDetail = () => {
           paradas={paradas}
           origenLat={trip.origen_lat} origenLng={trip.origen_lng}
           destinoLat={trip.destino_lat} destinoLng={trip.destino_lng}
+          tramoOrigen={tramo.origen !== trip.origen ? tramo.origen : null}
+          tramoDestino={tramo.destino !== trip.destino ? tramo.destino : null}
         />
 
         {paradas.length > 1 && (

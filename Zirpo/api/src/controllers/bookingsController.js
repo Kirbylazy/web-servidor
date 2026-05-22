@@ -3,7 +3,10 @@ import pool from '../db.js'
 export const getBookings = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT b.*, t.origen, t.destino, t.fecha, t.hora, t.precio_asiento,
+      SELECT b.*,
+             COALESCE(b.tramo_origen, t.origen) AS origen,
+             COALESCE(b.tramo_destino, t.destino) AS destino,
+             t.fecha, t.hora, t.precio_asiento,
              t.estado AS trip_estado,
              u.nombre AS conductor_nombre, u.foto AS conductor_foto
       FROM bookings b
@@ -20,7 +23,7 @@ export const getBookings = async (req, res) => {
 }
 
 export const createBooking = async (req, res) => {
-  const { trip_id } = req.body
+  const { trip_id, tramo_origen, tramo_destino } = req.body
   if (!trip_id) return res.status(400).json({ error: 'trip_id es obligatorio' })
 
   try {
@@ -32,8 +35,8 @@ export const createBooking = async (req, res) => {
     if (trip.conductor_id === req.user.id) return res.status(400).json({ error: 'No puedes reservar tu propio viaje' })
 
     const [result] = await pool.query(
-      'INSERT INTO bookings (trip_id, pasajero_id) VALUES (?, ?)',
-      [trip_id, req.user.id]
+      'INSERT INTO bookings (trip_id, pasajero_id, tramo_origen, tramo_destino) VALUES (?, ?, ?, ?)',
+      [trip_id, req.user.id, tramo_origen || null, tramo_destino || null]
     )
 
     const [rows] = await pool.query('SELECT * FROM bookings WHERE id = ?', [result.insertId])
