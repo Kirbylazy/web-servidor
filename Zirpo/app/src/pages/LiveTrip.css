@@ -274,3 +274,28 @@
   color: var(--green);
   font-size: 1rem;
 }
+
+/* Finish trip button */
+.sim-controls .btn-finish-trip {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 2px solid var(--red, #dc2626);
+  background: var(--white);
+  color: var(--red, #dc2626);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sim-controls .btn-finish-trip:hover {
+  background: var(--red, #dc2626);
+  color: white;
+}
+
+.sim-controls .btn-finish-trip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

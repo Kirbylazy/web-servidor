@@ -26,6 +26,7 @@ const LiveTrip = () => {
   const [etas, setEtas] = useState([])
   const [currentPos, setCurrentPos] = useState(null)
   const [completed, setCompleted] = useState(false)
+  const [finishing, setFinishing] = useState(false)
 
   // Load trip data
   useEffect(() => {
@@ -176,6 +177,20 @@ const LiveTrip = () => {
     }
   }
 
+  const handleFinishTrip = async () => {
+    if (!confirm('Finalizar este viaje? Se marcara como completado.')) return
+    setFinishing(true)
+    try {
+      if (simRunning) stopSim()
+      await api.put(`/trips/${id}`, { estado: 'completado' })
+      navigate(`/trips/${id}`)
+    } catch (err) {
+      alert(err.message)
+    } finally {
+      setFinishing(false)
+    }
+  }
+
   if (loading) return <div className="live-page"><p className="loading">Cargando...</p></div>
 
   return (
@@ -261,13 +276,17 @@ const LiveTrip = () => {
 
             {completed && (
               <div className="sim-completed">
-                <p>Viaje completado</p>
+                <p>Simulacion completada</p>
                 <button className="btn-start" onClick={startSim} disabled={!connected}>
                   Repetir simulación
                 </button>
               </div>
             )}
           </div>
+
+          <button className="btn-finish-trip" onClick={handleFinishTrip} disabled={finishing}>
+            {finishing ? 'Finalizando...' : 'Finalizar viaje'}
+          </button>
         </div>
       </div>
     </div>
