@@ -160,7 +160,7 @@ const MyTrips = () => {
           bookings.length === 0
             ? <p className="empty">No tienes reservas todavía.</p>
             : bookings.map(b => (
-              <Link to={`/trips/${b.trip_id}`} key={b.id} className="mytrip-card">
+              <Link to={`/trips/${b.trip_id}?tramo_origen=${encodeURIComponent(b.origen)}&tramo_destino=${encodeURIComponent(b.destino)}`} key={b.id} className="mytrip-card">
                 {b.trip_estado === 'en_ruta' && b.estado === 'confirmada' && (
                   <div className="eta-banner-inline">
                     <span className="eta-icon">🚗</span>
@@ -177,7 +177,7 @@ const MyTrips = () => {
                   <span className={`status-badge status-${b.estado}`}>{b.estado}</span>
                 </div>
                 <div className="mytrip-stats">
-                  <span>💶 {Number(b.precio_asiento).toFixed(2)} €</span>
+                  <span>💶 {Number(b.precio_tramo ?? b.precio_asiento).toFixed(2)} €</span>
                   <span>🧑 {b.conductor_nombre}</span>
                 </div>
               </Link>

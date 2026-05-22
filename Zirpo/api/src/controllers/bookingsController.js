@@ -2,7 +2,6 @@ import pool from '../db.js'
 
 const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
 
-// Get the orden of a city in the paradas list
 function getOrden(paradas, ciudad) {
   if (!ciudad) return null
   const n = norm(ciudad)
@@ -10,10 +9,7 @@ function getOrden(paradas, ciudad) {
   return p ? p.orden : null
 }
 
-// Calculate how many seats are occupied on each segment of a trip
-// A segment is between parada[i] and parada[i+1]
-// Returns array of occupied counts, one per segment
-function calcOccupancy(paradas, bookings, tripOrigen, tripDestino) {
+function calcOccupancy(paradas, bookings) {
   const numSegments = paradas.length - 1
   if (numSegments <= 0) return []
 
@@ -24,7 +20,6 @@ function calcOccupancy(paradas, bookings, tripOrigen, tripDestino) {
     const startOrden = b.tramo_origen ? getOrden(paradas, b.tramo_origen) : 0
     const endOrden = b.tramo_destino ? getOrden(paradas, b.tramo_destino) : paradas.length - 1
     if (startOrden === null || endOrden === null) continue
-    // This booking occupies segments from startOrden to endOrden-1
     for (let s = startOrden; s < endOrden && s < numSegments; s++) {
       occupancy[s]++
     }
@@ -33,9 +28,8 @@ function calcOccupancy(paradas, bookings, tripOrigen, tripDestino) {
   return occupancy
 }
 
-// Available seats for a specific tramo = asientos_totales - max occupancy on that tramo's segments
-function availableForTramo(paradas, bookings, tripOrigen, tripDestino, asientosTotales, tramoOrigen, tramoDestino) {
-  const occupancy = calcOccupancy(paradas, bookings, tripOrigen, tripDestino)
+function availableForTramo(paradas, bookings, asientosTotales, tramoOrigen, tramoDestino) {
+  const occupancy = calcOccupancy(paradas, bookings)
   if (occupancy.length === 0) return asientosTotales
 
   const startOrden = tramoOrigen ? getOrden(paradas, tramoOrigen) : 0
@@ -50,12 +44,23 @@ function availableForTramo(paradas, bookings, tripOrigen, tripDestino, asientosT
   return asientosTotales - maxOccupied
 }
 
+function calcTramoPrice(paradas, tramoOrigen, tramoDestino) {
+  if (!paradas.length || !tramoOrigen || !tramoDestino) return null
+  const po = paradas.find(p => norm(p.ciudad).includes(norm(tramoOrigen)) || norm(tramoOrigen).includes(norm(p.ciudad)))
+  const pd = paradas.find(p => norm(p.ciudad).includes(norm(tramoDestino)) || norm(tramoDestino).includes(norm(p.ciudad)))
+  if (po && pd) {
+    return Math.round((parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen)) * 100) / 100
+  }
+  return null
+}
+
 export const getBookings = async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT b.*,
              COALESCE(b.tramo_origen, t.origen) AS origen,
              COALESCE(b.tramo_destino, t.destino) AS destino,
+             t.origen AS trip_origen, t.destino AS trip_destino,
              t.fecha, t.hora, t.precio_asiento,
              t.estado AS trip_estado,
              u.nombre AS conductor_nombre, u.foto AS conductor_foto
@@ -65,6 +70,27 @@ export const getBookings = async (req, res) => {
       WHERE b.pasajero_id = ?
       ORDER BY t.fecha DESC
     `, [req.user.id])
+
+    // Calculate tramo price for each booking that has paradas
+    if (rows.length > 0) {
+      const tripIds = [...new Set(rows.map(b => b.trip_id))]
+      const [allParadas] = await pool.query(
+        `SELECT * FROM paradas WHERE trip_id IN (${tripIds.map(() => '?').join(',')}) ORDER BY orden`,
+        tripIds
+      )
+      const byTrip = {}
+      allParadas.forEach(p => {
+        if (!byTrip[p.trip_id]) byTrip[p.trip_id] = []
+        byTrip[p.trip_id].push(p)
+      })
+
+      rows.forEach(b => {
+        const paradas = byTrip[b.trip_id] || []
+        const precio = calcTramoPrice(paradas, b.origen, b.destino)
+        b.precio_tramo = precio !== null ? precio : b.precio_asiento
+      })
+    }
+
     res.json({ bookings: rows })
   } catch (err) {
     console.error(err)
@@ -83,7 +109,6 @@ export const createBooking = async (req, res) => {
     if (trip.estado !== 'activo') return res.status(400).json({ error: 'El viaje no está disponible' })
     if (trip.conductor_id === req.user.id) return res.status(400).json({ error: 'No puedes reservar tu propio viaje' })
 
-    // Get paradas and existing bookings to check per-segment availability
     const [paradas] = await pool.query(
       'SELECT * FROM paradas WHERE trip_id = ? ORDER BY orden', [trip_id]
     )
@@ -93,14 +118,12 @@ export const createBooking = async (req, res) => {
 
     if (paradas.length >= 2) {
       const available = availableForTramo(
-        paradas, existingBookings, trip.origen, trip.destino,
-        trip.asientos_totales, tramo_origen, tramo_destino
+        paradas, existingBookings, trip.asientos_totales, tramo_origen, tramo_destino
       )
       if (available <= 0) {
         return res.status(400).json({ error: 'No quedan plazas disponibles en este tramo' })
       }
     } else {
-      // No paradas, fallback to simple check
       if (trip.asientos_disponibles <= 0) {
         return res.status(400).json({ error: 'No quedan plazas disponibles' })
       }
@@ -142,7 +165,6 @@ export const updateBookingStatus = async (req, res) => {
     if (estado === 'confirmada' && !esConductor) return res.status(403).json({ error: 'Solo el conductor puede confirmar' })
 
     if (estado === 'confirmada' && booking.estado === 'pendiente') {
-      // Check per-segment availability before confirming
       const [paradas] = await pool.query(
         'SELECT * FROM paradas WHERE trip_id = ? ORDER BY orden', [booking.trip_id]
       )
@@ -153,8 +175,7 @@ export const updateBookingStatus = async (req, res) => {
 
       if (paradas.length >= 2) {
         const available = availableForTramo(
-          paradas, existingBookings, null, null,
-          booking.asientos_totales, booking.tramo_origen, booking.tramo_destino
+          paradas, existingBookings, booking.asientos_totales, booking.tramo_origen, booking.tramo_destino
         )
         if (available <= 0) {
           return res.status(400).json({ error: 'No quedan plazas en este tramo' })
@@ -162,7 +183,6 @@ export const updateBookingStatus = async (req, res) => {
       }
 
       await pool.query('UPDATE bookings SET estado = ? WHERE id = ?', [estado, req.params.id])
-      // Update asientos_disponibles as the minimum available across all segments
       await updateTripAvailability(booking.trip_id)
       const [updated] = await pool.query('SELECT * FROM bookings WHERE id = ?', [req.params.id])
       return res.json({ booking: updated[0] })
@@ -183,7 +203,6 @@ export const updateBookingStatus = async (req, res) => {
   }
 }
 
-// Recalculate trips.asientos_disponibles as the minimum available seats across all segments
 async function updateTripAvailability(tripId) {
   const [trips] = await pool.query('SELECT * FROM trips WHERE id = ?', [tripId])
   const trip = trips[0]
@@ -197,14 +216,13 @@ async function updateTripAvailability(tripId) {
   )
 
   if (paradas.length < 2) {
-    // Simple: count confirmed bookings
-    const confirmed = bookings.filter(b => b.estado === 'confirmada' || b.estado === 'pendiente').length
+    const count = bookings.length
     await pool.query('UPDATE trips SET asientos_disponibles = ? WHERE id = ?',
-      [Math.max(0, trip.asientos_totales - confirmed), tripId])
+      [Math.max(0, trip.asientos_totales - count), tripId])
     return
   }
 
-  const occupancy = calcOccupancy(paradas, bookings, trip.origen, trip.destino)
+  const occupancy = calcOccupancy(paradas, bookings)
   const maxOccupied = occupancy.length > 0 ? Math.max(...occupancy) : 0
   const available = Math.max(0, trip.asientos_totales - maxOccupied)
 

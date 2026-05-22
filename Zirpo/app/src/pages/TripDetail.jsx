@@ -7,6 +7,7 @@ import { createMap, addPolyline, decodePolyline, fitBoundsToPoints, L } from '..
 import './TripDetail.css'
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/Zirpo/api', '') || 'http://localhost:3000'
+const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
 
 function closestIndex(path, lat, lng) {
   let best = 0, bestDist = Infinity
@@ -32,7 +33,6 @@ function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoL
     const map = createMap(mapRef.current)
     mapInstanceRef.current = map
 
-    // Determine which paradas to show
     let visibleParadas = paradas?.length > 0 ? paradas : null
     let slicedPath = null
 
@@ -43,7 +43,6 @@ function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoL
       const idxD = paradas.findIndex(p => norm(p.ciudad).includes(nD) || nD.includes(norm(p.ciudad)))
       if (idxO !== -1 && idxD !== -1 && idxO < idxD) {
         visibleParadas = paradas.slice(idxO, idxD + 1)
-        // Slice polyline to this segment
         if (polyline) {
           const fullPath = decodePolyline(polyline)
           const pO = visibleParadas[0]
@@ -86,8 +85,6 @@ function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoL
   return <div ref={mapRef} className="trip-map" />
 }
 
-const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
-
 const TripDetail = () => {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
@@ -103,8 +100,8 @@ const TripDetail = () => {
   const [etaConnected, setEtaConnected] = useState(false)
   const socketRef = useRef(null)
 
-  const tramoOrigen = searchParams.get('tramo_origen')
-  const tramoDestino = searchParams.get('tramo_destino')
+  const paramOrigen = searchParams.get('tramo_origen')
+  const paramDestino = searchParams.get('tramo_destino')
 
   useEffect(() => { fetchTrip() }, [id])
 
@@ -121,27 +118,43 @@ const TripDetail = () => {
     }
   }
 
-  const getTramo = () => {
-    if (!tramoOrigen || !tramoDestino || !paradas.length) {
-      return { origen: trip?.origen, destino: trip?.destino, precio: trip?.precio_asiento }
-    }
-    const nOrigen = norm(tramoOrigen)
-    const nDestino = norm(tramoDestino)
-    const po = paradas.find(p => norm(p.ciudad).includes(nOrigen))
-    const pd = paradas.find(p => norm(p.ciudad).includes(nDestino))
-    if (po && pd && po.orden < pd.orden) {
-      return {
-        origen: po.ciudad,
-        destino: pd.ciudad,
-        precio: parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen)
-      }
-    }
-    return { origen: trip?.origen, destino: trip?.destino, precio: trip?.precio_asiento }
-  }
-
-  const tramo = trip ? getTramo() : {}
   const myBooking = bookings.find(b => b.pasajero_id === user?.id)
   const isConductor = String(trip?.conductor_id) === String(user?.id)
+
+  // Determine the tramo to display:
+  // Priority: 1) search params, 2) existing booking's tramo, 3) full trip
+  const getTramo = () => {
+    if (!trip) return {}
+
+    // Try search params first
+    let tOrigen = paramOrigen
+    let tDestino = paramDestino
+
+    // If no search params but user has a booking with tramo, use that
+    if ((!tOrigen || !tDestino) && myBooking) {
+      tOrigen = myBooking.tramo_origen || trip.origen
+      tDestino = myBooking.tramo_destino || trip.destino
+    }
+
+    if (tOrigen && tDestino && paradas.length > 0) {
+      const nOrigen = norm(tOrigen)
+      const nDestino = norm(tDestino)
+      const po = paradas.find(p => norm(p.ciudad).includes(nOrigen) || nOrigen.includes(norm(p.ciudad)))
+      const pd = paradas.find(p => norm(p.ciudad).includes(nDestino) || nDestino.includes(norm(p.ciudad)))
+      if (po && pd && po.orden < pd.orden) {
+        return {
+          origen: po.ciudad,
+          destino: pd.ciudad,
+          precio: parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen),
+          isPartial: po.orden > 0 || pd.orden < paradas.length - 1
+        }
+      }
+    }
+
+    return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento, isPartial: false }
+  }
+
+  const tramo = getTramo()
 
   // Calculate available seats for the specific tramo
   const tramoDisponibles = (() => {
@@ -157,6 +170,19 @@ const TripDetail = () => {
       if (seg !== undefined && seg < min) min = seg
     }
     return min
+  })()
+
+  // Filter paradas to show only the tramo
+  const tramoParadas = (() => {
+    if (!tramo.isPartial || !paradas.length) return paradas
+    const nO = norm(tramo.origen)
+    const nD = norm(tramo.destino)
+    const idxO = paradas.findIndex(p => norm(p.ciudad).includes(nO) || nO.includes(norm(p.ciudad)))
+    const idxD = paradas.findIndex(p => norm(p.ciudad).includes(nD) || nD.includes(norm(p.ciudad)))
+    if (idxO !== -1 && idxD !== -1 && idxO < idxD) {
+      return paradas.slice(idxO, idxD + 1)
+    }
+    return paradas
   })()
 
   // Socket.io ETA for passengers when trip is en_ruta
@@ -177,7 +203,7 @@ const TripDetail = () => {
 
     socket.on('simulation:position', (data) => {
       if (!data.etas?.length) return
-      const pickupCity = tramoOrigen || trip.origen
+      const pickupCity = tramo.origen
       const nPickup = norm(pickupCity)
       const match = data.etas.find(e =>
         norm(e.ciudad).includes(nPickup) || nPickup.includes(norm(e.ciudad))
@@ -309,30 +335,24 @@ const TripDetail = () => {
           </div>
         </div>
 
-        {(trip.distancia_km || trip.duracion_min) && (
-          <div className="detail-route-info">
-            {trip.distancia_km && <span>{trip.distancia_km} km</span>}
-            {trip.duracion_min && <span>{Math.floor(trip.duracion_min / 60)}h {trip.duracion_min % 60}min</span>}
-          </div>
-        )}
-
         <TripMap
           polyline={trip.ruta_polyline}
           paradas={paradas}
           origenLat={trip.origen_lat} origenLng={trip.origen_lng}
           destinoLat={trip.destino_lat} destinoLng={trip.destino_lng}
-          tramoOrigen={tramo.origen !== trip.origen ? tramo.origen : null}
-          tramoDestino={tramo.destino !== trip.destino ? tramo.destino : null}
+          tramoOrigen={tramo.isPartial ? tramo.origen : null}
+          tramoDestino={tramo.isPartial ? tramo.destino : null}
         />
 
-        {paradas.length > 1 && (
+        {tramoParadas.length > 1 && (
           <div className="paradas-list">
-            {paradas.map((p, i) => {
-              const siguiente = paradas[i + 1]
-              const esFinal = i === paradas.length - 1
+            {tramoParadas.map((p, i) => {
+              const siguiente = tramoParadas[i + 1]
+              const esFinal = i === tramoParadas.length - 1
+              const esFirst = i === 0
               return (
                 <div key={p.id} className={`parada-item ${esFinal ? 'parada-final' : ''}`}>
-                  <div className={`parada-dot ${i === 0 ? 'dot-origin' : esFinal ? 'dot-dest' : 'dot-stop'}`} />
+                  <div className={`parada-dot ${esFirst ? 'dot-origin' : esFinal ? 'dot-dest' : 'dot-stop'}`} />
                   <div className="parada-info">
                     <span className="parada-ciudad">{p.ciudad}</span>
                     {!esFinal && siguiente && (
@@ -341,8 +361,8 @@ const TripDetail = () => {
                       </span>
                     )}
                   </div>
-                  {i === 0 && <span className="parada-tag">Salida</span>}
-                  {esFinal && <span className="parada-tag">Llegada</span>}
+                  {esFirst && <span className="parada-tag">{tramo.isPartial ? 'Subida' : 'Salida'}</span>}
+                  {esFinal && <span className="parada-tag">{tramo.isPartial ? 'Bajada' : 'Llegada'}</span>}
                 </div>
               )
             })}

@@ -11,7 +11,7 @@ const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, 
 function getTramo(trip, searchOrigen, searchDestino) {
   const paradas = trip.paradas || []
   if (!paradas.length || !searchOrigen || !searchDestino) {
-    return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento }
+    return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento, plazas: trip.asientos_disponibles }
   }
 
   const nOrigen = norm(searchOrigen)
@@ -21,14 +21,23 @@ function getTramo(trip, searchOrigen, searchDestino) {
   const pd = paradas.find(p => norm(p.ciudad).includes(nDestino))
 
   if (po && pd && po.orden < pd.orden) {
+    // Calculate min available seats across segments of this tramo
+    let minPlazas = trip.asientos_totales
+    for (let i = po.orden; i < pd.orden; i++) {
+      const seg = paradas.find(p => p.orden === i)
+      if (seg?.asientos_disponibles_segmento !== undefined && seg.asientos_disponibles_segmento < minPlazas) {
+        minPlazas = seg.asientos_disponibles_segmento
+      }
+    }
     return {
       origen: po.ciudad,
       destino: pd.ciudad,
-      precio: parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen)
+      precio: parseFloat(pd.precio_desde_origen) - parseFloat(po.precio_desde_origen),
+      plazas: minPlazas
     }
   }
 
-  return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento }
+  return { origen: trip.origen, destino: trip.destino, precio: trip.precio_asiento, plazas: trip.asientos_disponibles }
 }
 
 const SearchTrips = () => {
@@ -100,7 +109,7 @@ const SearchTrips = () => {
         {trips.map(trip => {
           const tramo = getTramo(trip, form.origen, form.destino)
           return (
-            <Link to={`/trips/${trip.id}?tramo_origen=${encodeURIComponent(form.origen)}&tramo_destino=${encodeURIComponent(form.destino)}`} key={trip.id} className="trip-card">
+            <Link to={`/trips/${trip.id}?tramo_origen=${encodeURIComponent(tramo.origen)}&tramo_destino=${encodeURIComponent(tramo.destino)}`} key={trip.id} className="trip-card">
               <div className="trip-card-header">
                 <div className="trip-route">
                   <span className="trip-city">{tramo.origen}</span>
@@ -111,7 +120,7 @@ const SearchTrips = () => {
               </div>
               <div className="trip-card-meta">
                 <span>{formatDate(trip.fecha)} · {formatTime(trip.hora)}</span>
-                <span>{trip.asientos_disponibles} plaza{trip.asientos_disponibles !== 1 ? 's' : ''}</span>
+                <span>{tramo.plazas} plaza{tramo.plazas !== 1 ? 's' : ''}</span>
               </div>
               <div className="trip-card-driver">
                 {trip.conductor_foto

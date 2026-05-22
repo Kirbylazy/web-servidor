@@ -80,19 +80,55 @@ export const getTrips = async (req, res) => {
 
     const [rows] = await pool.query(sql, params)
 
-    // Adjuntar paradas a cada viaje para que el frontend calcule el tramo buscado
+    // Adjuntar paradas con disponibilidad por segmento
     if (rows.length > 0) {
       const tripIds = rows.map(t => t.id)
       const [allParadas] = await pool.query(
         `SELECT * FROM paradas WHERE trip_id IN (${tripIds.map(() => '?').join(',')}) ORDER BY orden`,
         tripIds
       )
-      const byTrip = {}
+      const [allBookings] = await pool.query(
+        `SELECT * FROM bookings WHERE trip_id IN (${tripIds.map(() => '?').join(',')}) AND estado IN ('pendiente', 'confirmada')`,
+        tripIds
+      )
+      const paradasByTrip = {}
       allParadas.forEach(p => {
-        if (!byTrip[p.trip_id]) byTrip[p.trip_id] = []
-        byTrip[p.trip_id].push(p)
+        if (!paradasByTrip[p.trip_id]) paradasByTrip[p.trip_id] = []
+        paradasByTrip[p.trip_id].push(p)
       })
-      rows.forEach(t => { t.paradas = byTrip[t.id] || [] })
+      const bookingsByTrip = {}
+      allBookings.forEach(b => {
+        if (!bookingsByTrip[b.trip_id]) bookingsByTrip[b.trip_id] = []
+        bookingsByTrip[b.trip_id].push(b)
+      })
+
+      const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+      const getOrden = (paradas, ciudad) => {
+        if (!ciudad) return null
+        const n = norm(ciudad)
+        const p = paradas.find(p => norm(p.ciudad).includes(n) || n.includes(norm(p.ciudad)))
+        return p ? p.orden : null
+      }
+
+      rows.forEach(t => {
+        const paradas = paradasByTrip[t.id] || []
+        const tripBookings = bookingsByTrip[t.id] || []
+        t.paradas = paradas
+
+        if (paradas.length >= 2) {
+          const numSeg = paradas.length - 1
+          const occ = new Array(numSeg).fill(0)
+          for (const b of tripBookings) {
+            const sO = b.tramo_origen ? getOrden(paradas, b.tramo_origen) : 0
+            const sD = b.tramo_destino ? getOrden(paradas, b.tramo_destino) : paradas.length - 1
+            if (sO === null || sD === null) continue
+            for (let s = sO; s < sD && s < numSeg; s++) occ[s]++
+          }
+          paradas.forEach((p, i) => {
+            if (i < numSeg) p.asientos_disponibles_segmento = t.asientos_totales - occ[i]
+          })
+        }
+      })
     }
 
     res.json({ trips: rows })
