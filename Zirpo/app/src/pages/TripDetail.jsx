@@ -143,6 +143,22 @@ const TripDetail = () => {
   const myBooking = bookings.find(b => b.pasajero_id === user?.id)
   const isConductor = String(trip?.conductor_id) === String(user?.id)
 
+  // Calculate available seats for the specific tramo
+  const tramoDisponibles = (() => {
+    if (!trip || !paradas.length) return trip?.asientos_disponibles ?? 0
+    const nO = norm(tramo.origen)
+    const nD = norm(tramo.destino)
+    const idxO = paradas.findIndex(p => norm(p.ciudad).includes(nO) || nO.includes(norm(p.ciudad)))
+    const idxD = paradas.findIndex(p => norm(p.ciudad).includes(nD) || nD.includes(norm(p.ciudad)))
+    if (idxO === -1 || idxD === -1) return trip?.asientos_disponibles ?? 0
+    let min = trip.asientos_totales
+    for (let i = idxO; i < idxD; i++) {
+      const seg = paradas[i]?.asientos_disponibles_segmento
+      if (seg !== undefined && seg < min) min = seg
+    }
+    return min
+  })()
+
   // Socket.io ETA for passengers when trip is en_ruta
   useEffect(() => {
     if (!trip || trip.estado !== 'en_ruta') return
@@ -261,7 +277,7 @@ const TripDetail = () => {
                   </button>
                 </div>
               </>
-            ) : trip.asientos_disponibles > 0 ? (
+            ) : tramoDisponibles > 0 ? (
               <div className="detail-actions-buttons">
                 <button className="btn-book-action" onClick={handleBook} disabled={booking}>
                   {booking ? 'Solicitando...' : 'Reservar'}
@@ -285,7 +301,7 @@ const TripDetail = () => {
           </div>
           <div className="detail-meta-item">
             <span className="meta-label">Plazas</span>
-            <span>{trip.asientos_disponibles} disponibles</span>
+            <span>{tramoDisponibles} disponibles</span>
           </div>
           <div className="detail-meta-item">
             <span className="meta-label">Precio</span>

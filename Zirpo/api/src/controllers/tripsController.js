@@ -128,7 +128,34 @@ export const getTripById = async (req, res) => {
       [req.params.id]
     )
 
-    res.json({ trip: rows[0], bookings, paradas })
+    // Calculate per-segment availability
+    const trip = rows[0]
+    if (paradas.length >= 2) {
+      const numSegments = paradas.length - 1
+      const occupancy = new Array(numSegments).fill(0)
+      const activeBookings = bookings.filter(b => b.estado === 'confirmada' || b.estado === 'pendiente')
+      const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+      const getOrden = (ciudad) => {
+        if (!ciudad) return null
+        const n = norm(ciudad)
+        const p = paradas.find(p => norm(p.ciudad).includes(n) || n.includes(norm(p.ciudad)))
+        return p ? p.orden : null
+      }
+      for (const b of activeBookings) {
+        const sO = b.tramo_origen ? getOrden(b.tramo_origen) : 0
+        const sD = b.tramo_destino ? getOrden(b.tramo_destino) : paradas.length - 1
+        if (sO === null || sD === null) continue
+        for (let s = sO; s < sD && s < numSegments; s++) occupancy[s]++
+      }
+      // Attach per-segment availability to paradas
+      paradas.forEach((p, i) => {
+        if (i < numSegments) {
+          p.asientos_disponibles_segmento = trip.asientos_totales - occupancy[i]
+        }
+      })
+    }
+
+    res.json({ trip, bookings, paradas })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Error interno del servidor' })
