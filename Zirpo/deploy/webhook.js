@@ -21,7 +21,8 @@ function deploy() {
     const cmds = [
       `cd ${PROJECT_DIR} && sudo git fetch origin && sudo git reset --hard origin/main`,
       `cd ${PROJECT_DIR}/app && sudo npm install && sudo npm run build`,
-      `pm2 restart zirpo-api`
+      `pm2 restart zirpo-api`,
+      `pm2 restart zirpo-webhook`
     ]
 
     for (const cmd of cmds) {
