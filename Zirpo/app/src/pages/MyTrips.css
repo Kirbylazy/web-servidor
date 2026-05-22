@@ -201,3 +201,34 @@
   letter-spacing: 0.05em;
   margin: 0.5rem 0 0;
 }
+
+/* ETA en ruta */
+.eta-banner-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  background: linear-gradient(135deg, #dbeafe, #ede9fe);
+  border-radius: var(--radius);
+  margin-bottom: 0.6rem;
+  animation: etaPulse 2s infinite;
+}
+
+@keyframes etaPulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+}
+
+.eta-icon { font-size: 1.1rem; }
+
+.eta-live {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.eta-live.eta-arrived {
+  color: #16a34a;
+}
+
+.status-en_ruta { background: #dbeafe; color: #1d4ed8; }

@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom'
+import { io } from 'socket.io-client'
 import { api } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { createMap, addPolyline, fitBoundsToPoints, L } from '../utils/mapService'
 import './TripDetail.css'
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/Zirpo/api', '') || 'http://localhost:3000'
 
 function TripMap({ polyline, paradas, origenLat, origenLng, destinoLat, destinoLng }) {
   const mapRef = useRef(null)
@@ -62,6 +65,9 @@ const TripDetail = () => {
   const [loading, setLoading] = useState(true)
   const [booking, setBooking] = useState(false)
   const [msg, setMsg] = useState('')
+  const [etaMin, setEtaMin] = useState(null)
+  const [etaConnected, setEtaConnected] = useState(false)
+  const socketRef = useRef(null)
 
   const tramoOrigen = searchParams.get('tramo_origen')
   const tramoDestino = searchParams.get('tramo_destino')
@@ -103,6 +109,44 @@ const TripDetail = () => {
   const myBooking = bookings.find(b => b.pasajero_id === user?.id)
   const isConductor = String(trip?.conductor_id) === String(user?.id)
 
+  // Socket.io ETA for passengers when trip is en_ruta
+  useEffect(() => {
+    if (!trip || trip.estado !== 'en_ruta') return
+    if (isConductor) return
+    if (!myBooking || myBooking.estado !== 'confirmada') return
+
+    const socket = io(SOCKET_URL)
+    socketRef.current = socket
+
+    socket.on('connect', () => {
+      setEtaConnected(true)
+      socket.emit('trip:join', parseInt(id))
+    })
+
+    socket.on('disconnect', () => setEtaConnected(false))
+
+    socket.on('simulation:position', (data) => {
+      if (!data.etas?.length) return
+      const pickupCity = tramoOrigen || trip.origen
+      const nPickup = norm(pickupCity)
+      const match = data.etas.find(e =>
+        norm(e.ciudad).includes(nPickup) || nPickup.includes(norm(e.ciudad))
+      )
+      if (match) {
+        setEtaMin(match.reached ? 0 : match.etaMin)
+      }
+    })
+
+    socket.on('simulation:complete', () => setEtaMin(0))
+
+    return () => {
+      socket.emit('trip:leave', parseInt(id))
+      socket.disconnect()
+      socketRef.current = null
+      setEtaConnected(false)
+    }
+  }, [trip?.estado, trip?.id, isConductor, myBooking?.estado])
+
   const handleBook = async () => {
     setBooking(true)
     setMsg('')
@@ -136,6 +180,18 @@ const TripDetail = () => {
       <div className="trip-detail-topbar">
         <Link to="/" className="back-link">← Volver</Link>
       </div>
+
+      {etaMin !== null && !isConductor && (
+        <div className="eta-banner">
+          <div className="eta-banner-icon">🚗</div>
+          <div className="eta-banner-text">
+            {etaMin === 0
+              ? <span className="eta-arrived">El conductor ha llegado</span>
+              : <><span className="eta-minutes">{etaMin}</span> min para que llegue el conductor</>
+            }
+          </div>
+        </div>
+      )}
 
       <div className="trip-detail-card">
         <div className="detail-route">

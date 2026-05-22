@@ -4,6 +4,7 @@ export const getBookings = async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT b.*, t.origen, t.destino, t.fecha, t.hora, t.precio_asiento,
+             t.estado AS trip_estado,
              u.nombre AS conductor_nombre, u.foto AS conductor_foto
       FROM bookings b
       JOIN trips t ON b.trip_id = t.id

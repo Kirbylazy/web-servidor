@@ -1,7 +1,47 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { io } from 'socket.io-client'
 import { api } from '../services/api'
 import './MyTrips.css'
+
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/Zirpo/api', '') || 'http://localhost:3000'
+const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+
+function EtaBadge({ tripId, origen }) {
+  const [eta, setEta] = useState(null)
+  const socketRef = useRef(null)
+
+  useEffect(() => {
+    const socket = io(SOCKET_URL)
+    socketRef.current = socket
+
+    socket.on('connect', () => {
+      socket.emit('trip:join', tripId)
+    })
+
+    socket.on('simulation:position', (data) => {
+      if (!data.etas?.length) return
+      const nOrigen = norm(origen)
+      const match = data.etas.find(e =>
+        norm(e.ciudad).includes(nOrigen) || nOrigen.includes(norm(e.ciudad))
+      )
+      if (match) {
+        setEta(match.reached ? 0 : match.etaMin)
+      }
+    })
+
+    socket.on('simulation:complete', () => setEta(0))
+
+    return () => {
+      socket.emit('trip:leave', tripId)
+      socket.disconnect()
+    }
+  }, [tripId, origen])
+
+  if (eta === null) return <span className="eta-live">En ruta...</span>
+  if (eta === 0) return <span className="eta-live eta-arrived">Ha llegado</span>
+  return <span className="eta-live">{eta} min</span>
+}
 
 const MyTrips = () => {
   const [trips, setTrips] = useState([])
@@ -121,6 +161,12 @@ const MyTrips = () => {
             ? <p className="empty">No tienes reservas todavía.</p>
             : bookings.map(b => (
               <Link to={`/trips/${b.trip_id}`} key={b.id} className="mytrip-card">
+                {b.trip_estado === 'en_ruta' && b.estado === 'confirmada' && (
+                  <div className="eta-banner-inline">
+                    <span className="eta-icon">🚗</span>
+                    <EtaBadge tripId={b.trip_id} origen={b.origen} />
+                  </div>
+                )}
                 <div className="mytrip-route">
                   <span>{b.origen}</span>
                   <span className="trip-arrow">→</span>
