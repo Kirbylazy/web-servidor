@@ -20,7 +20,8 @@ function deploy() {
   try {
     const cmds = [
       `cd ${PROJECT_DIR} && sudo git fetch origin && sudo git reset --hard origin/main`,
-      `cd ${PROJECT_DIR}/app && sudo npm install && sudo npm run build`,
+      `cd ${PROJECT_DIR}/app && pnpm install --frozen-lockfile && pnpm run build`,
+      `cd ${PROJECT_DIR}/api && pnpm install --frozen-lockfile`,
       `pm2 restart zirpo-api`,
       `pm2 restart zirpo-webhook`
     ]
