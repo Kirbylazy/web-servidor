@@ -171,6 +171,12 @@ const createTables = async () => {
       }
     }
 
+    // Fix foto URLs: /Zirpo/uploads/ -> /Zirpo/api/uploads/
+    await conn.query(`
+      UPDATE users SET foto = REPLACE(foto, '/Zirpo/uploads/', '/Zirpo/api/uploads/')
+      WHERE foto LIKE '/Zirpo/uploads/%' AND foto NOT LIKE '/Zirpo/api/uploads/%'
+    `).catch(() => {})
+
     console.log('Tablas creadas/actualizadas correctamente')
   } catch (err) {
     console.error('Error en migración:', err.message)

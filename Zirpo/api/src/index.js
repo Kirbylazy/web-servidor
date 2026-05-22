@@ -34,6 +34,9 @@ app.use(helmet({
 app.use(cors())
 app.use(express.json())
 
+// Servir fotos de perfil
+app.use('/api/uploads', express.static('uploads'))
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }))
 
 app.use('/api/auth', authRouter)
