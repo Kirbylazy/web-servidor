@@ -203,8 +203,8 @@ const TripDetail = () => {
     try {
       await api.post('/bookings', {
         trip_id: trip.id,
-        tramo_origen: tramo.origen !== trip.origen ? tramo.origen : undefined,
-        tramo_destino: tramo.destino !== trip.destino ? tramo.destino : undefined,
+        tramo_origen: tramo.origen,
+        tramo_destino: tramo.destino,
       })
       await fetchTrip()
       setMsg('Reserva solicitada! El conductor te confirmara pronto.')
@@ -389,7 +389,12 @@ const TripDetail = () => {
                     ? <img src={b.pasajero_foto} alt="" className="driver-avatar" />
                     : <div className="driver-avatar-placeholder">{b.pasajero_nombre?.[0]}</div>
                   }
-                  <span>{b.pasajero_nombre}</span>
+                  <div>
+                    <span>{b.pasajero_nombre}</span>
+                    {b.tramo_origen && (
+                      <span className="booking-tramo">{b.tramo_origen} → {b.tramo_destino}</span>
+                    )}
+                  </div>
                 </div>
                 <span className={`status-badge status-${b.estado}`}>{b.estado}</span>
                 <div className="booking-actions">
