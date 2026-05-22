@@ -616,8 +616,8 @@ const PublishTrip = () => {
             {error && <p className="msg-error">{error}</p>}
 
             <button type="button" className="btn-primary" onClick={goToStep3}
-              disabled={!routeData || calculando} style={{ marginTop: '1.25rem' }}>
-              Siguiente →
+              disabled={!routeData || calculando || loadingPickups} style={{ marginTop: '1.25rem' }}>
+              {loadingPickups ? 'Cargando...' : 'Siguiente →'}
             </button>
           </>
         )}
