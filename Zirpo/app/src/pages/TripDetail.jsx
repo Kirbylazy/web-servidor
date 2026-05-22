@@ -260,8 +260,9 @@ const TripDetail = () => {
 
   // Calculate estimated arrival time for a parada based on distance proportion
   const getEstimatedTime = (parada) => {
-    if (!trip?.hora || !trip?.duracion_min || !trip?.distancia_km || !parada.distancia_desde_origen_km) return null
-    const fraction = parseFloat(parada.distancia_desde_origen_km) / trip.distancia_km
+    if (!trip?.hora || !trip?.duracion_min || !trip?.distancia_km) return formatTime(trip?.hora || '00:00')
+    const distKm = parseFloat(parada.distancia_desde_origen_km) || 0
+    const fraction = trip.distancia_km > 0 ? distKm / trip.distancia_km : 0
     const etaMin = Math.round(trip.duracion_min * fraction)
     const [h, m] = trip.hora.split(':').map(Number)
     const totalMin = h * 60 + m + etaMin
@@ -388,9 +389,7 @@ const TripDetail = () => {
                   <div className="parada-time-tag">
                     {esFirst && <span className="parada-tag">{tramo.isPartial ? 'Subida' : 'Salida'}</span>}
                     {esFinal && <span className="parada-tag">{tramo.isPartial ? 'Bajada' : 'Llegada'}</span>}
-                    <span className="parada-hora">
-                      {esFirst && !tramo.isPartial ? formatTime(trip.hora) : getEstimatedTime(p) || formatTime(trip.hora)}
-                    </span>
+                    <span className="parada-hora">{getEstimatedTime(p)}</span>
                   </div>
                 </div>
               )

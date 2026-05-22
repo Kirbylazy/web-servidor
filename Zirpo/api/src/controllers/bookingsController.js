@@ -134,6 +134,8 @@ export const createBooking = async (req, res) => {
       [trip_id, req.user.id, tramo_origen || null, tramo_destino || null]
     )
 
+    await updateTripAvailability(trip_id)
+
     const [rows] = await pool.query('SELECT * FROM bookings WHERE id = ?', [result.insertId])
     res.status(201).json({ booking: rows[0] })
   } catch (err) {

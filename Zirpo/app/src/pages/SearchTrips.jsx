@@ -57,6 +57,15 @@ const SearchTrips = () => {
     }
   }, [])
 
+  // Refresh results when coming back to this page (e.g. after booking)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (searched) fetchTrips()
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [searched, form])
+
   const fetchTrips = async (params = form) => {
     setLoading(true)
     setSearched(true)
