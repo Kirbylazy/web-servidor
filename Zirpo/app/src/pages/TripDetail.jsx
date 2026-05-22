@@ -105,6 +105,17 @@ const TripDetail = () => {
 
   useEffect(() => { fetchTrip() }, [id])
 
+  // Refresh data on window focus and every 15s
+  useEffect(() => {
+    const refresh = () => fetchTrip()
+    window.addEventListener('focus', refresh)
+    const interval = setInterval(refresh, 15000)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      clearInterval(interval)
+    }
+  }, [id])
+
   const fetchTrip = async () => {
     try {
       const data = await api.get(`/trips/${id}`)
@@ -112,7 +123,7 @@ const TripDetail = () => {
       setBookings(data.bookings)
       setParadas(data.paradas || [])
     } catch {
-      navigate('/')
+      if (loading) navigate('/')
     } finally {
       setLoading(false)
     }
