@@ -1,21 +1,14 @@
 import pool from '../db.js'
 
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org'
-const OSRM_URL = 'https://router.project-osrm.org'
+const GEOCODER_URL = process.env.GEOCODER_URL || 'http://localhost:2322'
+const ROUTER_URL = process.env.ROUTER_URL || 'http://localhost:8080'
 
 async function geocodeCity(city) {
-  const params = new URLSearchParams({
-    q: city + ', España',
-    format: 'json',
-    limit: '1',
-    countrycodes: 'es',
-  })
-  const res = await fetch(`${NOMINATIM_URL}/search?${params}`, {
-    headers: { 'User-Agent': 'Zirpo-API' },
-  })
+  const params = new URLSearchParams({ q: city, limit: '1' })
+  const res = await fetch(`${GEOCODER_URL}/search?${params}`)
   const data = await res.json()
   if (!data.length) return null
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+  return { lat: data[0].lat, lng: data[0].lng }
 }
 
 async function calcularRuta(origen, destino) {
@@ -26,22 +19,21 @@ async function calcularRuta(origen, destino) {
     ])
     if (!origenGeo || !destinoGeo) return null
 
-    const coords = `${origenGeo.lng},${origenGeo.lat};${destinoGeo.lng},${destinoGeo.lat}`
     const res = await fetch(
-      `${OSRM_URL}/route/v1/driving/${coords}?overview=full&geometries=polyline`
+      `${ROUTER_URL}/route?point=${origenGeo.lat},${origenGeo.lng}&point=${destinoGeo.lat},${destinoGeo.lng}&profile=car&type=json&points_encoded=true`
     )
     const data = await res.json()
-    if (data.code !== 'Ok' || !data.routes?.length) return null
+    if (!data.paths?.length) return null
 
-    const route = data.routes[0]
+    const path = data.paths[0]
     return {
       origen_lat: origenGeo.lat,
       origen_lng: origenGeo.lng,
       destino_lat: destinoGeo.lat,
       destino_lng: destinoGeo.lng,
-      distancia_km: Math.round(route.distance / 1000),
-      duracion_min: Math.round(route.duration / 60),
-      ruta_polyline: route.geometry,
+      distancia_km: Math.round(path.distance / 1000),
+      duracion_min: Math.round(path.time / 60000),
+      ruta_polyline: path.points,
     }
   } catch {
     return null

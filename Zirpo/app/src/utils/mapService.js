@@ -13,6 +13,12 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 })
 
+// --- Service URLs (local self-hosted) ---
+
+const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'
+const GEOCODER_URL = import.meta.env.VITE_GEOCODER_URL || `${BASE_URL.replace(':3000', ':2322')}`
+const ROUTER_URL = import.meta.env.VITE_ROUTER_URL || `${BASE_URL.replace(':3000', ':8080')}`
+
 // --- Tile layer ---
 
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -27,122 +33,117 @@ export function createMap(container, options = {}) {
   return map
 }
 
-// --- Nominatim geocoding ---
-
-const NOMINATIM_URL = 'https://nominatim.openstreetmap.org'
+// --- Local geocoder (puerto 2322) ---
 
 export async function searchCities(query, limit = 5) {
   if (!query || query.length < 2) return []
-  const params = new URLSearchParams({
-    q: query,
-    format: 'json',
-    addressdetails: '1',
-    limit: String(limit),
-    countrycodes: 'es',
-    'accept-language': 'es',
-  })
-  const res = await fetch(`${NOMINATIM_URL}/search?${params}`, {
-    headers: { 'User-Agent': 'Zirpo-App' },
-  })
+  const params = new URLSearchParams({ q: query, limit: String(limit) })
+  const res = await fetch(`${GEOCODER_URL}/search?${params}`)
   const data = await res.json()
-  return data
-    .filter(r => ['city', 'town', 'village', 'municipality'].includes(r.type) ||
-      r.class === 'place' || r.class === 'boundary')
-    .map(r => ({
-      name: r.address?.city || r.address?.town || r.address?.village || r.address?.municipality || r.display_name.split(',')[0],
-      displayName: r.display_name,
-      lat: parseFloat(r.lat),
-      lng: parseFloat(r.lon),
-    }))
+  return data.map(r => ({
+    name: r.name,
+    displayName: r.name + ', España',
+    lat: r.lat,
+    lng: r.lng,
+  }))
 }
 
 export async function reverseGeocode(lat, lng) {
-  const params = new URLSearchParams({
-    lat: String(lat),
-    lon: String(lng),
-    format: 'json',
-    addressdetails: '1',
-    'accept-language': 'es',
-  })
-  const res = await fetch(`${NOMINATIM_URL}/reverse?${params}`, {
-    headers: { 'User-Agent': 'Zirpo-App' },
-  })
+  const params = new URLSearchParams({ lat: String(lat), lng: String(lng) })
+  const res = await fetch(`${GEOCODER_URL}/reverse?${params}`)
   const data = await res.json()
   return {
-    address: data.display_name || '',
-    city: data.address?.city || data.address?.town || data.address?.village || '',
-    lat: parseFloat(data.lat),
-    lng: parseFloat(data.lon),
+    address: data.name + ', España',
+    city: data.name || '',
+    lat: data.lat,
+    lng: data.lng,
   }
 }
 
 export async function searchAddress(query, lat, lng) {
   if (!query || query.length < 3) return []
-  const params = new URLSearchParams({
-    q: query,
-    format: 'json',
-    limit: '5',
-    countrycodes: 'es',
-    'accept-language': 'es',
-  })
-  if (lat && lng) {
-    params.set('viewbox', `${lng - 0.1},${lat + 0.1},${lng + 0.1},${lat - 0.1}`)
-    params.set('bounded', '0')
-  }
-  const res = await fetch(`${NOMINATIM_URL}/search?${params}`, {
-    headers: { 'User-Agent': 'Zirpo-App' },
-  })
+  const params = new URLSearchParams({ q: query, lat: String(lat), lng: String(lng), limit: '5' })
+  const res = await fetch(`${GEOCODER_URL}/address?${params}`)
   const data = await res.json()
   return data.map(r => ({
-    name: r.display_name.split(',')[0],
-    address: r.display_name,
-    lat: parseFloat(r.lat),
-    lng: parseFloat(r.lon),
+    name: r.name,
+    address: r.address,
+    lat: r.lat,
+    lng: r.lng,
   }))
 }
 
-// --- OSRM routing ---
-
-const OSRM_URL = 'https://router.project-osrm.org'
+// --- GraphHopper routing (puerto 8080) ---
 
 export async function calcRoute(waypoints) {
-  // waypoints: array of { lat, lng } — minimum 2 (origin + destination)
   if (waypoints.length < 2) throw new Error('Se necesitan al menos 2 puntos')
 
-  const coords = waypoints.map(w => `${w.lng},${w.lat}`).join(';')
+  const points = waypoints.map(w => `point=${w.lat},${w.lng}`).join('&')
   const res = await fetch(
-    `${OSRM_URL}/route/v1/driving/${coords}?overview=full&geometries=polyline&steps=false&annotations=false`
+    `${ROUTER_URL}/route?${points}&profile=car&type=json&points_encoded=true`
   )
   const data = await res.json()
-  if (data.code !== 'Ok' || !data.routes?.length) throw new Error('No se pudo calcular la ruta')
+  if (data.message) throw new Error(data.message)
+  if (!data.paths?.length) throw new Error('No se pudo calcular la ruta')
 
-  const route = data.routes[0]
-  const legs = route.legs.map((leg, i) => ({
-    distanceKm: Math.round(leg.distance / 1000),
-    durationMin: Math.round(leg.duration / 60),
-    startLat: waypoints[i].lat,
-    startLng: waypoints[i].lng,
-    endLat: waypoints[i + 1].lat,
-    endLng: waypoints[i + 1].lng,
-  }))
+  const path = data.paths[0]
+
+  // GraphHopper with multiple waypoints returns snapped_waypoints and legs info
+  // We calculate legs from the instructions or approximate from total
+  const totalDistanceKm = Math.round(path.distance / 1000)
+  const totalDurationMin = Math.round(path.time / 60000)
+
+  // If we have waypoint indices, split into legs
+  let legs
+  if (path.legs && path.legs.length) {
+    legs = path.legs.map((leg, i) => ({
+      distanceKm: Math.round(leg.distance / 1000),
+      durationMin: Math.round(leg.time / 60000),
+      startLat: waypoints[i].lat,
+      startLng: waypoints[i].lng,
+      endLat: waypoints[i + 1].lat,
+      endLng: waypoints[i + 1].lng,
+    }))
+  } else if (waypoints.length === 2) {
+    legs = [{
+      distanceKm: totalDistanceKm,
+      durationMin: totalDurationMin,
+      startLat: waypoints[0].lat,
+      startLng: waypoints[0].lng,
+      endLat: waypoints[1].lat,
+      endLng: waypoints[1].lng,
+    }]
+  } else {
+    // Approximate: distribute evenly (fallback)
+    const n = waypoints.length - 1
+    legs = Array.from({ length: n }, (_, i) => ({
+      distanceKm: Math.round(totalDistanceKm / n),
+      durationMin: Math.round(totalDurationMin / n),
+      startLat: waypoints[i].lat,
+      startLng: waypoints[i].lng,
+      endLat: waypoints[i + 1].lat,
+      endLng: waypoints[i + 1].lng,
+    }))
+  }
 
   return {
     legs,
-    polyline: route.geometry, // encoded polyline (precision 5)
-    totalDistanceKm: Math.round(route.distance / 1000),
-    totalDurationMin: Math.round(route.duration / 60),
+    polyline: path.points, // encoded polyline
+    totalDistanceKm,
+    totalDurationMin,
   }
 }
 
 // --- Geocode a city name to get lat/lng ---
 
 export async function geocodeCity(cityName) {
-  const results = await searchCities(cityName + ', España', 1)
+  const results = await searchCities(cityName, 1)
   if (!results.length) throw new Error(`No se encontró: ${cityName}`)
   return { lat: results[0].lat, lng: results[0].lng, name: results[0].name }
 }
 
-// --- Polyline decoding (Leaflet built-in doesn't have it, so we do it manually) ---
+// --- Polyline decoding ---
+// GraphHopper uses precision 5 by default (same as Google/OSRM)
 
 export function decodePolyline(encoded) {
   const points = []
