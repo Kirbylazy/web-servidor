@@ -116,6 +116,15 @@ const createTables = async () => {
       )
     `)
 
+    // Actualizar ENUM de estado en trips para incluir en_ruta
+    await conn.query(`
+      ALTER TABLE trips MODIFY COLUMN estado ENUM('activo','completado','cancelado','en_ruta') DEFAULT 'activo'
+    `).catch(() => {})
+
+    // Añadir tramo_origen/tramo_destino a bookings
+    await conn.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS tramo_origen VARCHAR(255) DEFAULT NULL`).catch(() => {})
+    await conn.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS tramo_destino VARCHAR(255) DEFAULT NULL`).catch(() => {})
+
     // Añadir pickup_address a paradas (para tablas ya existentes)
     await conn.query(`
       ALTER TABLE paradas ADD COLUMN IF NOT EXISTS pickup_address VARCHAR(255) DEFAULT NULL

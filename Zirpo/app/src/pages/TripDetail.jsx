@@ -261,6 +261,20 @@ const TripDetail = () => {
     }
   }
 
+  const [finishing, setFinishing] = useState(false)
+  const handleFinishTrip = async () => {
+    if (!confirm('Finalizar este viaje? Se marcara como completado.')) return
+    setFinishing(true)
+    try {
+      await api.put(`/trips/${trip.id}`, { estado: 'completado' })
+      await fetchTrip()
+    } catch (err) {
+      setMsg(err.message)
+    } finally {
+      setFinishing(false)
+    }
+  }
+
   const formatDate = d => new Date(d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
   const formatTime = t => t.slice(0, 5)
   const formatDuration = min => {
@@ -431,11 +445,19 @@ const TripDetail = () => {
           </div>
         ) : null}
 
-        {isConductor && trip.estado !== 'cancelado' && (
-          <button className="btn-book-action" onClick={() => navigate(`/live/${trip.id}`)}
-            style={{ width: '100%', marginBottom: '1rem' }}>
-            {trip.estado === 'en_ruta' ? 'Ver viaje en curso' : 'Iniciar viaje'}
-          </button>
+        {isConductor && (trip.estado === 'activo' || trip.estado === 'en_ruta') && (
+          <div className="conductor-actions">
+            <button className="btn-book-action" onClick={() => navigate(`/live/${trip.id}`)}>
+              {trip.estado === 'en_ruta' ? 'Ver viaje en curso' : 'Iniciar viaje'}
+            </button>
+            <button className="btn-finish-trip" onClick={handleFinishTrip} disabled={finishing}>
+              {finishing ? 'Finalizando...' : 'Finalizar viaje'}
+            </button>
+          </div>
+        )}
+
+        {isConductor && trip.estado === 'completado' && (
+          <div className="trip-completed-badge">Viaje completado</div>
         )}
 
         {isConductor && bookings.length > 0 && (

@@ -266,6 +266,10 @@ export const updateTrip = async (req, res) => {
     if (!rows[0]) return res.status(404).json({ error: 'Viaje no encontrado' })
     if (rows[0].conductor_id !== req.user.id) return res.status(403).json({ error: 'No autorizado' })
 
+    if (estado && !['activo', 'completado', 'cancelado', 'en_ruta'].includes(estado)) {
+      return res.status(400).json({ error: 'Estado no valido' })
+    }
+
     await pool.query('UPDATE trips SET descripcion = ?, estado = ? WHERE id = ?',
       [descripcion ?? rows[0].descripcion, estado ?? rows[0].estado, req.params.id])
 
@@ -302,8 +306,8 @@ export const getMyTrips = async (req, res) => {
       ORDER BY t.fecha DESC, t.hora DESC
     `, [req.user.id])
 
-    const activos = trips.filter(t => t.estado === 'activo')
-    const historial = trips.filter(t => t.estado !== 'activo')
+    const activos = trips.filter(t => t.estado === 'activo' || t.estado === 'en_ruta')
+    const historial = trips.filter(t => t.estado !== 'activo' && t.estado !== 'en_ruta')
 
     res.json({ trips: activos, historial })
   } catch (err) {
