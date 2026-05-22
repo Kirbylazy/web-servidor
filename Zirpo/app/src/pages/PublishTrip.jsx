@@ -91,12 +91,29 @@ const PublishTrip = () => {
     }
   }
 
+  const sortStopsByDistance = async (waypoints) => {
+    const filtered = waypoints.filter(s => s.trim())
+    if (filtered.length <= 1) return filtered
+    const origenGeo = await geocodeCity(origen)
+    const geos = await Promise.all(filtered.map(async (city) => {
+      const geo = await geocodeCity(city)
+      const dLat = (geo.lat - origenGeo.lat) * Math.PI / 180
+      const dLng = (geo.lng - origenGeo.lng) * Math.PI / 180
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(origenGeo.lat * Math.PI / 180) * Math.cos(geo.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+      const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+      return { city, dist }
+    }))
+    geos.sort((a, b) => a.dist - b.dist)
+    return geos.map(g => g.city)
+  }
+
   const updateRoute = async (waypoints) => {
     try {
-      const data = await doCalcRoute(waypoints)
+      const sorted = await sortStopsByDistance(waypoints)
+      const data = await doCalcRoute(sorted)
       setRouteData(data)
       setSegmentPrices(calcDefaultPrices(data.legs))
-      setStops(waypoints.filter(s => s.trim()))
+      setStops(sorted)
       setNeedsRecalc(false)
     } catch { /* error already set */ }
   }
