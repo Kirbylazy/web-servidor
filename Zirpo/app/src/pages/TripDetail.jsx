@@ -260,6 +260,13 @@ const TripDetail = () => {
           </div>
         ) : null}
 
+        {isConductor && (trip.estado === 'activo' || trip.estado === 'en_ruta') && (
+          <button className="btn-book-action" onClick={() => navigate(`/live/${trip.id}`)}
+            style={{ width: '100%', marginBottom: '1rem' }}>
+            {trip.estado === 'en_ruta' ? 'Ver viaje en curso' : 'Iniciar viaje'}
+          </button>
+        )}
+
         {isConductor && bookings.length > 0 && (
           <div className="conductor-bookings">
             <h3>Solicitudes de reserva</h3>

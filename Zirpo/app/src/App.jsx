@@ -12,6 +12,7 @@ import TripDetail from './pages/TripDetail'
 import MyTrips from './pages/MyTrips'
 import Messages from './pages/Messages'
 import Chat from './pages/Chat'
+import LiveTrip from './pages/LiveTrip'
 
 const ProtectedWithNav = ({ children }) => (
   <ProtectedRoute>
@@ -35,6 +36,7 @@ const App = () => {
           <Route path="/my-trips" element={<ProtectedWithNav><MyTrips /></ProtectedWithNav>} />
           <Route path="/messages" element={<ProtectedWithNav><Messages /></ProtectedWithNav>} />
           <Route path="/chat/:tripId/:passengerId" element={<ProtectedWithNav><Chat /></ProtectedWithNav>} />
+          <Route path="/live/:id" element={<ProtectedWithNav><LiveTrip /></ProtectedWithNav>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

@@ -1,9 +1,11 @@
 import express from 'express'
+import { createServer } from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import 'dotenv/config'
 import cron from 'node-cron'
 import pool from './db.js'
+import { initSocket } from './socket.js'
 
 import authRouter from './routes/auth.js'
 import tripsRouter from './routes/trips.js'
@@ -12,6 +14,8 @@ import usersRouter from './routes/users.js'
 import messagesRouter from './routes/messages.js'
 
 const app = express()
+const server = createServer(app)
+initSocket(server)
 const PORT = process.env.PORT || 3000
 
 app.use(helmet({
@@ -62,6 +66,6 @@ cron.schedule('0 3 * * *', async () => {
   }
 })
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Zirpo API corriendo en http://localhost:${PORT}`)
 })
