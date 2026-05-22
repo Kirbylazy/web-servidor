@@ -1,18 +1,16 @@
 .search-page {
   min-height: 100vh;
   background: var(--bg);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
 }
 
 .search-topbar {
-  background: var(--white);
-  padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  margin-bottom: 1.25rem;
 }
 
 .search-topbar h2 {
@@ -35,9 +33,11 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
+  padding: 1.25rem 1.5rem;
   background: var(--white);
-  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 1.25rem;
 }
 
 .search-filters .city-autocomplete {
@@ -84,9 +84,6 @@
 .btn-search:hover { background: var(--blue-hover); }
 
 .search-results {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
