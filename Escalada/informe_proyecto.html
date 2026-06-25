@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informe del Proyecto Escalada — Laravel 12</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #1a1a2e; line-height: 1.7; background: #fff; }
+
+  /* ── Portada ── */
+  .cover { width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; text-align: center; page-break-after: always; }
+  .cover .logo { font-size: 64px; margin-bottom: 20px; }
+  .cover h1 { font-size: 42px; font-weight: 800; letter-spacing: 2px; margin-bottom: 12px; }
+  .cover h2 { font-size: 20px; font-weight: 300; opacity: 0.8; margin-bottom: 40px; }
+  .cover .badge { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 50px; padding: 8px 24px; font-size: 14px; margin: 6px; display: inline-block; }
+  .cover .meta { margin-top: 60px; opacity: 0.5; font-size: 12px; }
+
+  /* ── Índice ── */
+  .toc { padding: 60px 80px; page-break-after: always; }
+  .toc h2 { font-size: 28px; color: #0f3460; border-bottom: 3px solid #e94560; padding-bottom: 12px; margin-bottom: 32px; }
+  .toc ol { list-style: none; counter-reset: toc; }
+  .toc > ol > li { counter-increment: toc; padding: 6px 0; border-bottom: 1px dotted #ddd; display: flex; justify-content: space-between; font-size: 14px; }
+  .toc > ol > li::before { content: counter(toc) ". "; font-weight: 700; color: #e94560; margin-right: 8px; }
+  .toc ol ol { margin-left: 24px; }
+  .toc ol ol li { font-size: 12px; color: #555; border-bottom: none; padding: 2px 0; }
+
+  /* ── Página normal ── */
+  .page { padding: 50px 80px; }
+  .page-break { page-break-before: always; }
+
+  /* ── Encabezados ── */
+  h1.section { font-size: 30px; color: #0f3460; border-left: 6px solid #e94560; padding-left: 16px; margin-bottom: 28px; margin-top: 20px; }
+  h2.sub { font-size: 20px; color: #16213e; margin: 28px 0 14px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
+  h3.sub2 { font-size: 16px; color: #0f3460; margin: 20px 0 10px; }
+  h4.sub3 { font-size: 14px; color: #e94560; margin: 16px 0 8px; font-weight: 600; }
+
+  /* ── Párrafos y listas ── */
+  p { margin-bottom: 12px; text-align: justify; }
+  ul, ol { margin: 10px 0 14px 24px; }
+  li { margin-bottom: 5px; }
+
+  /* ── Código ── */
+  pre { background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 18px 20px; margin: 14px 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 11.5px; line-height: 1.6; border-left: 4px solid #e94560; }
+  code { background: #f0f4ff; color: #c0392b; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 12px; }
+
+  /* ── Bloques especiales ── */
+  .info-box { background: #e8f4fd; border-left: 4px solid #3498db; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 14px 0; }
+  .warn-box { background: #fef9e7; border-left: 4px solid #f39c12; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 14px 0; }
+  .success-box { background: #eafaf1; border-left: 4px solid #27ae60; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 14px 0; }
+  .tip { font-weight: 700; margin-right: 6px; }
+
+  /* ── Tablas ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12px; }
+  th { background: #0f3460; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 9px 14px; border-bottom: 1px solid #eee; }
+  tr:nth-child(even) td { background: #f8f9ff; }
+  tr:hover td { background: #f0f4ff; }
+
+  /* ── Diagrama de roles ── */
+  .roles { display: flex; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .role-card { flex: 1; min-width: 120px; border-radius: 10px; padding: 16px; text-align: center; color: white; }
+  .role-card.admin { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+  .role-card.arbitro { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+  .role-card.entrenador { background: linear-gradient(135deg, #2980b9, #3498db); }
+  .role-card.competidor { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+  .role-card .nivel { font-size: 28px; font-weight: 800; }
+  .role-card .nombre { font-size: 14px; font-weight: 600; margin-top: 4px; }
+  .role-card .desc { font-size: 11px; opacity: 0.85; margin-top: 6px; }
+
+  /* ── Flujo ── */
+  .flow { display: flex; align-items: center; gap: 0; margin: 20px 0; flex-wrap: wrap; }
+  .flow-step { background: #0f3460; color: white; padding: 10px 18px; border-radius: 6px; font-size: 12px; font-weight: 600; text-align: center; flex: 1; min-width: 100px; }
+  .flow-arrow { color: #e94560; font-size: 20px; padding: 0 4px; font-weight: 700; }
+
+  /* ── Separador ── */
+  hr { border: none; border-top: 2px solid #f0f0f0; margin: 30px 0; }
+
+  /* ── Cabecera de sección ── */
+  .section-header { background: linear-gradient(135deg, #1a1a2e, #0f3460); color: white; padding: 20px 30px; border-radius: 10px; margin-bottom: 28px; }
+  .section-header .num { font-size: 40px; font-weight: 800; opacity: 0.3; float: right; }
+  .section-header h1 { font-size: 24px; }
+  .section-header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+
+  /* ── Badge de tecnología ── */
+  .tech-badge { display: inline-block; background: #e94560; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; margin: 2px; }
+  .tech-badge.blue { background: #3498db; }
+  .tech-badge.green { background: #27ae60; }
+  .tech-badge.purple { background: #8e44ad; }
+  .tech-badge.orange { background: #e67e22; }
+
+  /* ── Footer de página ── */
+  .page-footer { text-align: center; color: #aaa; font-size: 11px; border-top: 1px solid #eee; padding-top: 16px; margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  PORTADA                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="logo">🧗</div>
+  <h1>PROYECTO ESCALADA</h1>
+  <h2>Guía técnica completa de la aplicación</h2>
+  <div>
+    <span class="badge">Laravel 12</span>
+    <span class="badge">PHP 8.2</span>
+    <span class="badge">MySQL</span>
+    <span class="badge">Bootstrap 5</span>
+    <span class="badge">Alpine.js</span>
+  </div>
+  <p style="margin-top:30px; font-size:15px; opacity:0.7; max-width:500px;">
+    Plataforma de gestión de competiciones de escalada para la Federación Andaluza.
+    Este documento explica en detalle cómo funciona la aplicación y los conceptos de Laravel utilizados.
+  </p>
+  <div class="meta">Generado el 17 de Marzo de 2026</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  ÍNDICE                                                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="toc page">
+  <h2>Índice de contenidos</h2>
+  <ol>
+    <li><span>1. ¿Qué es Laravel? El framework MVC</span><span></span></li>
+    <li><span>2. Estructura de archivos del proyecto</span><span></span></li>
+    <li><span>3. La base de datos: migraciones y Eloquent ORM</span><span></span></li>
+    <li><span>4. Los Modelos: el corazón de los datos</span><span></span></li>
+    <li><span>5. Las Rutas: cómo llegan las peticiones</span><span></span></li>
+    <li><span>6. Los Controladores: lógica de negocio</span><span></span></li>
+    <li><span>7. Las Vistas Blade: el HTML dinámico</span><span></span></li>
+    <li><span>8. Autenticación con Laravel Breeze</span><span></span></li>
+    <li><span>9. Sistema de roles y middleware</span><span></span></li>
+    <li><span>10. Flujo completo: ejemplo de una inscripción</span><span></span></li>
+    <li><span>11. Frontend: Bootstrap 5 y Alpine.js</span><span></span></li>
+    <li><span>12. Seeders: datos de prueba</span><span></span></li>
+    <li><span>13. Diagrama completo de la aplicación</span><span></span></li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  1. QUÉ ES LARAVEL                                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">01</span>
+    <h1>¿Qué es Laravel? El framework MVC</h1>
+    <p>El patrón de arquitectura que organiza toda la aplicación</p>
+  </div>
+
+  <h2 class="sub">¿Qué es un framework?</h2>
+  <p>Un <strong>framework</strong> es un conjunto de herramientas, convenciones y código ya escrito que te ahorra tener que construir todo desde cero. Laravel es el framework PHP más popular del mundo: te proporciona un sistema de rutas, acceso a base de datos, autenticación, generación de HTML y muchísimo más, para que tú te concentres solo en la lógica de tu aplicación.</p>
+
+  <h2 class="sub">El patrón MVC (Modelo - Vista - Controlador)</h2>
+  <p>Laravel sigue el patrón <strong>MVC</strong>, que divide la aplicación en tres capas con responsabilidades bien separadas:</p>
+
+  <table>
+    <tr><th>Capa</th><th>¿Qué hace?</th><th>En nuestro proyecto</th></tr>
+    <tr><td><strong>Modelo (M)</strong></td><td>Gestiona los datos y la base de datos</td><td><code>app/Models/Competicion.php</code>, <code>User.php</code>, etc.</td></tr>
+    <tr><td><strong>Vista (V)</strong></td><td>Genera el HTML que ve el usuario</td><td><code>resources/views/</code> (archivos <code>.blade.php</code>)</td></tr>
+    <tr><td><strong>Controlador (C)</strong></td><td>Recibe la petición, usa el modelo y devuelve la vista</td><td><code>app/Http/Controllers/</code></td></tr>
+  </table>
+
+  <h3 class="sub2">El ciclo de una petición HTTP en Laravel</h3>
+  <p>Cuando el usuario hace clic en un enlace o envía un formulario, esto es lo que ocurre internamente:</p>
+
+  <div class="flow">
+    <div class="flow-step">1. Navegador<br>envía petición</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">2. Laravel<br>recibe en index.php</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">3. Middleware<br>(¿auth? ¿rol?)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">4. Router<br>busca la ruta</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">5. Controlador<br>ejecuta lógica</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">6. Modelo<br>consulta BD</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">7. Vista Blade<br>genera HTML</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">8. Respuesta<br>al navegador</div>
+  </div>
+
+  <div class="info-box">
+    <span class="tip">💡 Ejemplo real:</span> Cuando el admin visita <code>/admin/pruebas</code>, Laravel verifica que esté autenticado y que tenga rol admin (middleware), busca la ruta en <code>web.php</code>, ejecuta <code>AdminController@pruebas()</code>, que consulta las competiciones en la BD, y devuelve la vista <code>admin/pruebas.blade.php</code> con los datos.
+  </div>
+
+  <h2 class="sub">¿Por qué PHP y no otro lenguaje?</h2>
+  <p>PHP fue diseñado específicamente para la web. Laravel añade una capa de elegancia sobre PHP haciendo que el código sea más limpio, organizado y fácil de mantener. La versión que usamos, <strong>PHP 8.2</strong>, incluye características modernas como tipado estricto, enums, fibers y mucho más.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  2. ESTRUCTURA DE ARCHIVOS                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">02</span>
+    <h1>Estructura de archivos del proyecto</h1>
+    <p>Dónde está cada cosa y por qué</p>
+  </div>
+
+  <p>Un proyecto Laravel tiene una estructura de carpetas estandarizada. Aprenderla es esencial para moverte por el código:</p>
+
+  <pre>Escalada/
+│
+├── app/                        ← El corazón de la aplicación
+│   ├── Http/
+│   │   ├── Controllers/        ← Los controladores (lógica de negocio)
+│   │   │   ├── AdminController.php
+│   │   │   ├── ArbitroController.php
+│   │   │   ├── CompeticionController.php
+│   │   │   ├── CopaController.php
+│   │   │   ├── EntrenadorController.php
+│   │   │   ├── InscripcionController.php
+│   │   │   ├── NotificacionController.php
+│   │   │   └── UbicacionController.php
+│   │   └── Middleware/
+│   │       └── CheckRol.php    ← Verifica el rol del usuario
+│   ├── Models/                 ← Los modelos (representación de tablas BD)
+│   │   ├── User.php
+│   │   ├── Competicion.php
+│   │   ├── Copa.php
+│   │   ├── Ubicacion.php
+│   │   ├── Inscripcion.php
+│   │   └── LicenciaValidacion.php
+│   └── Notifications/          ← Notificaciones automáticas
+│
+├── database/
+│   ├── migrations/             ← Definición de las tablas BD
+│   ├── seeders/                ← Datos de prueba
+│   └── factories/              ← Generadores de datos falsos
+│
+├── resources/
+│   ├── views/                  ← Las vistas HTML (Blade)
+│   │   ├── layouts/
+│   │   │   └── app.blade.php   ← Layout principal (navbar, etc.)
+│   │   ├── admin/              ← Vistas del panel admin
+│   │   ├── arbitro/            ← Vistas del árbitro
+│   │   ├── dashboard/          ← Dashboards por rol
+│   │   └── components/         ← Componentes reutilizables
+│   └── js/                     ← JavaScript (gestionado por Vite)
+│
+├── routes/
+│   └── web.php                 ← TODAS las rutas de la aplicación
+│
+├── public/
+│   └── index.php               ← Punto de entrada de TODAS las peticiones
+│
+├── .env                        ← Configuración del entorno (BD, mail, etc.)
+├── composer.json               ← Dependencias PHP
+└── package.json                ← Dependencias JavaScript</pre>
+
+  <div class="warn-box">
+    <span class="tip">⚠️ Importante:</span> El único archivo que el servidor web "ve" directamente es <code>public/index.php</code>. Todas las peticiones pasan por ahí. El resto de carpetas (<code>app/</code>, <code>routes/</code>, etc.) están fuera del alcance directo del navegador, lo que es una medida de seguridad fundamental.
+  </div>
+
+  <h2 class="sub">El archivo .env</h2>
+  <p>El archivo <code>.env</code> (environment) contiene la configuración sensible del entorno: credenciales de base de datos, claves de API, configuración de correo, etc. <strong>Nunca se sube a Git</strong> por razones de seguridad.</p>
+
+  <pre>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=escalada
+DB_USERNAME=root
+DB_PASSWORD=
+
+APP_NAME=Escalada
+APP_URL=http://localhost:8000
+APP_LOCALE=es</pre>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  3. BASE DE DATOS: MIGRACIONES Y ELOQUENT                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">03</span>
+    <h1>La base de datos: migraciones y Eloquent ORM</h1>
+    <p>Cómo Laravel gestiona la estructura y los datos de MySQL</p>
+  </div>
+
+  <h2 class="sub">¿Qué son las migraciones?</h2>
+  <p>Las <strong>migraciones</strong> son archivos PHP que describen la estructura de las tablas de la base de datos. En lugar de escribir SQL directamente, describes las tablas en PHP y Laravel las crea automáticamente. Esto permite que cualquier desarrollador reconstruya la BD con un solo comando: <code>php artisan migrate</code>.</p>
+
+  <div class="success-box">
+    <span class="tip">✅ Ventaja clave:</span> Si añades una columna nueva a una tabla, creas una migración nueva y todos los demás miembros del equipo la reciben al hacer <code>git pull</code> + <code>php artisan migrate</code>. No hay que compartir scripts SQL manualmente.
+  </div>
+
+  <h3 class="sub2">Ejemplo: Migración de competiciones</h3>
+  <pre>// database/migrations/2026_02_16_150333_create_competicions_table.php
+Schema::create('competicions', function (Blueprint $table) {
+    $table->id();                         // Columna id autoincremental
+
+    $table->foreignId('copa_id')          // Clave foránea a tabla "copas"
+          ->nullable()                    // Puede ser null (sin copa)
+          ->constrained('copas')          // Referencia a copas.id
+          ->nullOnDelete();               // Si se borra la copa → null (no cascade)
+
+    $table->foreignId('arbitro_id')       // El árbitro asignado
+          ->nullable()
+          ->constrained('users')          // Referencia a users.id
+          ->nullOnDelete();
+
+    $table->foreignId('ubicacion_id')     // Rocódromo donde se celebra
+          ->constrained('ubicacions')
+          ->cascadeOnDelete();            // Si se borra el rocódromo → borra esto tb
+
+    $table->string('name');               // Nombre de la competición
+    $table->string('provincia');          // Provincia
+    $table->dateTime('fecha_realizacion');// Fecha y hora de inicio
+    $table->dateTime('fecha_fin')->nullable(); // Fecha fin (puede ser null)
+    $table->string('tipo');               // bloque / dificultad / velocidad
+    $table->boolean('campeonato')->default(false); // ¿Es campeonato?
+    $table->json('categorias')->nullable(); // Array JSON de categorías
+    $table->timestamps();                 // created_at y updated_at automáticos
+});</pre>
+
+  <h2 class="sub">Diagrama de la base de datos</h2>
+  <table>
+    <tr><th>Tabla</th><th>Columnas principales</th><th>Se relaciona con</th></tr>
+    <tr><td><code>users</code></td><td>name, email, dni, rol, provincia, talla, genero</td><td>competicions, inscripciones, entrenador_competidor</td></tr>
+    <tr><td><code>copas</code></td><td>name, tipo, temporada</td><td>competicions</td></tr>
+    <tr><td><code>ubicacions</code></td><td>name, provincia, direccion, alto, ancho, n_lineas</td><td>competicions</td></tr>
+    <tr><td><code>competicions</code></td><td>name, tipo, fecha_realizacion, fecha_fin, campeonato, categorias</td><td>copas, users (árbitro), ubicacions, inscripciones</td></tr>
+    <tr><td><code>competicions_users</code></td><td>user_id, competicion_id, tipoDato, dato</td><td>users, competicions (tabla pivote)</td></tr>
+    <tr><td><code>inscripciones</code></td><td>estado, licencia_path, pago_path, categoria, licencia_estado, pago_estado</td><td>users, competicions</td></tr>
+    <tr><td><code>licencia_validaciones</code></td><td>user_id, competicion_id, tipo, valida_hasta</td><td>users, competicions</td></tr>
+    <tr><td><code>entrenador_competidor</code></td><td>entrenador_id, competidor_id, estado</td><td>users (doble)</td></tr>
+    <tr><td><code>notifications</code></td><td>type, notifiable_id, data, read_at</td><td>users (polimórfica)</td></tr>
+  </table>
+
+  <h2 class="sub">¿Qué es Eloquent ORM?</h2>
+  <p>ORM significa <em>Object-Relational Mapping</em>. Es un sistema que te permite trabajar con la base de datos usando objetos PHP en lugar de SQL puro. Eloquent es el ORM de Laravel.</p>
+
+  <pre>// Sin Eloquent (SQL puro — tedioso):
+$result = DB::select("SELECT * FROM competicions WHERE id = 5");
+
+// Con Eloquent (mucho más limpio):
+$competicion = Competicion::find(5);
+echo $competicion->name;          // Accedes a columnas como propiedades
+echo $competicion->copa->name;    // ¡Accedes a relaciones automáticamente!
+echo $competicion->inscripciones->count(); // Cuenta relaciones</pre>
+
+  <div class="info-box">
+    <span class="tip">💡 Concepto clave:</span> En Eloquent, cada tabla de la base de datos corresponde a una clase PHP (Modelo). Cada fila de la tabla corresponde a un objeto de esa clase. Modificar el objeto y llamar a <code>save()</code> actualiza la fila en la BD automáticamente.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  4. LOS MODELOS                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">04</span>
+    <h1>Los Modelos: el corazón de los datos</h1>
+    <p>Cómo representamos y relacionamos las entidades del dominio</p>
+  </div>
+
+  <h2 class="sub">Modelo User — El usuario del sistema</h2>
+  <p>Es el modelo más complejo. Un <code>User</code> puede tener múltiples roles con comportamientos distintos:</p>
+
+  <pre>class User extends Authenticatable
+{
+    protected $fillable = [
+        'name', 'email', 'password', 'dni',
+        'fecha_nacimiento', 'provincia', 'talla', 'genero',
+        'rol',   // 'competidor' | 'entrenador' | 'arbitro' | 'admin'
+    ];
+
+    // $hidden oculta estos campos cuando convertimos a JSON/array
+    protected $hidden = ['password', 'remember_token'];
+
+    // Métodos de comprobación de rol
+    public function isAdmin():      bool { return $this->nivelRol() >= 4; }
+    public function isArbitro():    bool { return $this->nivelRol() >= 3; }
+    public function isEntrenador(): bool { return $this->nivelRol() >= 2; }
+    public function isCompetidor(): bool { return $this->nivelRol() >= 1; }
+
+    // Nivel numérico del rol (para jerarquía)
+    public function nivelRol(): int {
+        return match($this->rol) {
+            'admin'      => 4,
+            'arbitro'    => 3,
+            'entrenador' => 2,
+            default      => 1,  // competidor
+        };
+    }
+}</pre>
+
+  <h3 class="sub2">Relaciones del modelo User</h3>
+  <p>Las <strong>relaciones</strong> son la parte más potente de Eloquent. Definen cómo se conectan los modelos entre sí:</p>
+
+  <table>
+    <tr><th>Método</th><th>Tipo</th><th>Descripción</th></tr>
+    <tr><td><code>competiciones()</code></td><td>BelongsToMany</td><td>Competiciones en las que participa (tabla pivote <code>competicions_users</code>)</td></tr>
+    <tr><td><code>competicionesArbitradas()</code></td><td>HasMany</td><td>Competiciones donde está asignado como árbitro</td></tr>
+    <tr><td><code>inscripciones()</code></td><td>HasMany</td><td>Todas las inscripciones del usuario</td></tr>
+    <tr><td><code>competidoresAceptados()</code></td><td>BelongsToMany</td><td>Competidores bajo su tutela (estado = aceptado)</td></tr>
+    <tr><td><code>competidoresPendientes()</code></td><td>BelongsToMany</td><td>Solicitudes de vínculo pendientes</td></tr>
+    <tr><td><code>entrenadores()</code></td><td>BelongsToMany</td><td>Entrenadores que lo supervisan (relación inversa)</td></tr>
+  </table>
+
+  <h2 class="sub">Los tipos de relaciones en Eloquent</h2>
+
+  <h3 class="sub2">HasMany (uno a muchos)</h3>
+  <pre>// Una Copa tiene MUCHAS Competiciones
+class Copa extends Model {
+    public function competiciones(): HasMany {
+        return $this->hasMany(Competicion::class, 'copa_id');
+    }
+}
+// Uso:
+$copa = Copa::find(1);
+$competiciones = $copa->competiciones; // Devuelve una Collection de Competicion</pre>
+
+  <h3 class="sub2">BelongsTo (muchos a uno, inversa)</h3>
+  <pre>// Una Competicion PERTENECE a una Copa
+class Competicion extends Model {
+    public function copa(): BelongsTo {
+        return $this->belongsTo(Copa::class, 'copa_id');
+    }
+}
+// Uso:
+$competicion = Competicion::find(1);
+echo $competicion->copa->name; // "Copa de Bloque 2026"
+echo $competicion->copa?->name; // Con "?" por si copa_id es null</pre>
+
+  <h3 class="sub2">BelongsToMany (muchos a muchos)</h3>
+  <pre>// Un User puede estar en MUCHAS Competiciones,
+// y una Competicion puede tener MUCHOS Users
+// Se necesita tabla intermedia: competicions_users
+class User extends Model {
+    public function competiciones(): BelongsToMany {
+        return $this->belongsToMany(
+            Competicion::class,
+            'competicions_users',   // nombre de la tabla pivote
+            'user_id',              // FK de este modelo en la pivote
+            'competicion_id'        // FK del otro modelo en la pivote
+        )->withPivot('tipoDato', 'dato') // columnas extra de la pivote
+         ->withTimestamps();
+    }
+}</pre>
+
+  <h2 class="sub">El modelo Inscripcion — lógica de negocio avanzada</h2>
+  <p>El modelo <code>Inscripcion</code> tiene lógica de negocio propia, algo muy común en Laravel:</p>
+
+  <pre>public function recalcularEstado(): void
+{
+    // Si algún documento es inválido → rechazada
+    if ($this->licencia_estado === 'no_valida' || $this->pago_estado === 'no_valida') {
+        $this->estado = 'rechazada';
+    }
+    // Si ambos documentos son válidos → aprobada
+    elseif (
+        in_array($this->licencia_estado, ['valida', 'valida_dia']) &&
+        in_array($this->pago_estado,     ['valida', 'valida_dia'])
+    ) {
+        $this->estado = 'aprobada';
+    }
+    // Si no → pendiente
+    else {
+        $this->estado = 'pendiente';
+    }
+    $this->save(); // Guarda en la BD
+}
+
+// Calcula la categoría automáticamente según la edad y género del competidor
+public static function calcularCategoria(User $user): string
+{
+    $edad = Carbon::parse($user->fecha_nacimiento)->age;
+    $cat  = match(true) {
+        $edad <= 8  => 'U9',
+        $edad <= 10 => 'U11',
+        $edad <= 12 => 'U13',
+        $edad <= 14 => 'U15',
+        $edad <= 16 => 'U17',
+        $edad <= 18 => 'U19',
+        $edad <= 34 => 'Absoluta',
+        default     => 'Veterana',
+    };
+    $genero = match($user->genero) {
+        'M' => 'Masculino',
+        'F' => 'Femenino',
+        default => 'Otro',
+    };
+    return "$genero $cat"; // Ej: "Femenino U15"
+}</pre>
+
+  <h2 class="sub">$fillable y la protección de asignación masiva</h2>
+  <div class="warn-box">
+    <span class="tip">⚠️ Seguridad:</span> En Laravel, <code>$fillable</code> define qué campos pueden asignarse masivamente. Si un usuario malicioso envía <code>rol=admin</code> en un formulario, Laravel lo ignorará si <code>rol</code> no está en <code>$fillable</code>. Esto previene ataques de <em>mass assignment</em>.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  5. LAS RUTAS                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">05</span>
+    <h1>Las Rutas: cómo llegan las peticiones</h1>
+    <p>El archivo web.php — el mapa de toda la aplicación</p>
+  </div>
+
+  <h2 class="sub">¿Qué es una ruta?</h2>
+  <p>Una <strong>ruta</strong> asocia una URL y un método HTTP (GET, POST, PATCH, DELETE) con una acción específica del controlador. Todo esto se define en <code>routes/web.php</code>.</p>
+
+  <pre>// GET /admin/copas → ejecuta AdminController::copas() → devuelve vista
+Route::get('/admin/copas', [AdminController::class, 'copas'])->name('admin.copas');
+
+// POST /admin/copas → ejecuta CopaController::store() → guarda nueva copa
+Route::post('/admin/copas', [CopaController::class, 'store'])->name('admin.copas.store');
+
+// PATCH /admin/copas/{copa} → ejecuta CopaController::update() → edita copa
+Route::patch('/admin/copas/{copa}', [CopaController::class, 'update'])->name('admin.copas.update');
+
+// DELETE /admin/copas/{copa} → ejecuta CopaController::destroy() → borra copa
+Route::delete('/admin/copas/{copa}', [CopaController::class, 'destroy'])->name('admin.copas.destroy');</pre>
+
+  <div class="info-box">
+    <span class="tip">💡 Los métodos HTTP:</span> Los navegadores solo pueden enviar GET y POST. Para PATCH y DELETE, Laravel usa un campo oculto <code>_method</code> en el formulario. El Blade <code>@method('PATCH')</code> lo genera automáticamente.
+  </div>
+
+  <h2 class="sub">Rutas con parámetros: Route Model Binding</h2>
+  <p>Cuando una ruta tiene <code>{copa}</code> o <code>{competicion}</code>, Laravel automáticamente busca el registro correspondiente en la BD y lo inyecta en el controlador. A esto se llama <strong>Route Model Binding</strong>.</p>
+
+  <pre>// Ruta:
+Route::patch('/admin/copas/{copa}', [CopaController::class, 'update']);
+
+// Controlador — Laravel inyecta automáticamente el objeto Copa:
+public function update(Request $request, Copa $copa)
+{
+    // $copa ya es el objeto Copa con id = el número de la URL
+    // Si no existe → Laravel devuelve automáticamente un 404
+    $copa->update(['name' => $request->name]);
+}</pre>
+
+  <h2 class="sub">Grupos de rutas con middleware y prefijos</h2>
+  <p>En vez de repetir el middleware y prefijo en cada ruta, se agrupan:</p>
+
+  <pre>// Todas las rutas admin comparten: autenticación + rol admin + prefijo /admin
+Route::middleware(['auth', 'rol:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/pruebas',    [AdminController::class, 'pruebas'])->name('pruebas');
+    Route::get('/copas',      [AdminController::class, 'copas'])->name('copas');
+    Route::get('/usuarios',   [AdminController::class, 'usuarios'])->name('usuarios');
+    Route::get('/rocodromos', [AdminController::class, 'rocodromos'])->name('rocodromos');
+    // ...más rutas
+});
+// Resultado: ruta 'admin.copas' → URL /admin/copas → requiere auth + rol:admin</pre>
+
+  <h2 class="sub">Rutas con nombre (named routes)</h2>
+  <p>El <code>->name('admin.copas')</code> asigna un nombre a la ruta. Esto es fundamental porque en las vistas y controladores <strong>nunca escribimos URLs hardcodeadas</strong>; en su lugar usamos el nombre:</p>
+
+  <pre>// En una vista Blade — genera la URL correcta automáticamente:
+&lt;a href="{{ route('admin.copas') }}"&gt;Ver copas&lt;/a&gt;
+&lt;form action="{{ route('admin.copas.update', $copa->id) }}" method="POST"&gt;
+
+// En un controlador — redirige a una ruta con nombre:
+return redirect()->route('admin.pruebas')->with('status', 'Copa creada.');</pre>
+
+  <div class="success-box">
+    <span class="tip">✅ Ventaja:</span> Si cambias la URL de una ruta (de <code>/admin/copas</code> a <code>/panel/copas</code>), solo tienes que cambiarlo en <code>web.php</code>. Todas las vistas que usen <code>route('admin.copas')</code> seguirán funcionando automáticamente.
+  </div>
+
+  <h2 class="sub">Resumen de todas las rutas del proyecto</h2>
+  <table>
+    <tr><th>Grupo</th><th>Prefijo</th><th>Middleware</th><th>Rutas principales</th></tr>
+    <tr><td>Dashboard</td><td>/dashboard</td><td>auth</td><td>Redirige según rol</td></tr>
+    <tr><td>Admin</td><td>/admin</td><td>auth, rol:admin</td><td>CRUD competiciones, copas, usuarios, rocódromos</td></tr>
+    <tr><td>Árbitro</td><td>/arbitro</td><td>auth, rol:arbitro</td><td>Panel, validar inscripciones, gestionar equipo</td></tr>
+    <tr><td>Entrenador</td><td>/entrenador</td><td>auth, rol:entrenador</td><td>Solicitar vínculos, inscribir competidores</td></tr>
+    <tr><td>Inscripciones</td><td>/inscripciones, /competiciones</td><td>auth</td><td>Ver, crear inscripción, subir documentos</td></tr>
+    <tr><td>Notificaciones</td><td>/notificaciones</td><td>auth</td><td>Aceptar/rechazar/desvincular</td></tr>
+    <tr><td>Perfil</td><td>/profile</td><td>auth</td><td>Ver, editar, eliminar cuenta</td></tr>
+    <tr><td>Auth</td><td>/login, /register...</td><td>guest</td><td>Login, registro, reset password</td></tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  6. LOS CONTROLADORES                                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">06</span>
+    <h1>Los Controladores: lógica de negocio</h1>
+    <p>Cómo procesa Laravel cada petición</p>
+  </div>
+
+  <h2 class="sub">¿Qué hace un controlador?</h2>
+  <p>El controlador es el intermediario entre las rutas y los modelos/vistas. Recibe la petición HTTP, valida los datos, consulta o modifica la BD usando los modelos, y devuelve una respuesta (normalmente una vista o una redirección).</p>
+
+  <h2 class="sub">AdminController — Panel de administración</h2>
+  <pre>// Método para listar y filtrar competiciones (pruebas):
+public function pruebas(Request $request)
+{
+    $filtro  = $request->get('filtro', 'proximas');
+    $copaId  = $request->get('copa_id', '');
+
+    // Construimos la query de forma dinámica según los filtros
+    $query = Competicion::with('copa', 'ubicacion', 'arbitro')
+                        ->withCount('inscripciones');
+
+    // Aplicamos filtro de fecha
+    if ($filtro === 'proximas') {
+        $query->where('fecha_realizacion', '>=', now());
+    } elseif ($filtro === 'este_año') {
+        $query->whereYear('fecha_realizacion', now()->year);
+    }
+
+    // Aplicamos filtro de copa
+    if ($copaId === 'sin_copa') {
+        $query->whereNull('copa_id');
+    } elseif ($copaId) {
+        $query->where('copa_id', $copaId);
+    }
+
+    $competiciones = $query->orderBy('fecha_realizacion')->get();
+
+    // Datos necesarios para los formularios
+    $copas     = Copa::orderBy('temporada', 'desc')->get();
+    $ubicaciones = Ubicacion::orderBy('name')->get();
+    $arbitros  = User::where('rol', 'arbitro')->orWhere('rol', 'admin')->get();
+
+    // Devolvemos la vista con todos los datos necesarios
+    return view('admin.pruebas', compact('competiciones', 'copas', 'ubicaciones', 'arbitros', 'filtro', 'copaId'));
+}</pre>
+
+  <h2 class="sub">CompeticionController — CRUD de competiciones</h2>
+  <pre>public function store(Request $request)
+{
+    // 1. VALIDACIÓN: Laravel valida automáticamente y devuelve errores si falla
+    $request->validate([
+        'name'              => 'required|string|max:150',
+        'tipo'              => 'required|in:bloque,dificultad,velocidad',
+        'fecha_realizacion' => 'required|date',
+        'fecha_fin'         => 'nullable|date|after_or_equal:fecha_realizacion',
+        'provincia'         => 'required|string',
+        'ubicacion_id'      => 'required|exists:ubicacions,id', // debe existir en BD
+        'copa_id'           => 'nullable|exists:copas,id',
+        'arbitro_id'        => 'nullable|exists:users,id',
+        'categorias'        => 'nullable|array',
+        'categorias.*'      => 'in:U9,U11,U13,U15,U17,U19,Absoluta,Veterana,Promoción',
+    ]);
+
+    // 2. CREACIÓN: Eloquent crea el registro en la BD
+    Competicion::create([
+        'name'              => $request->name,
+        'tipo'              => $request->tipo,
+        'fecha_realizacion' => $request->fecha_realizacion,
+        'fecha_fin'         => $request->fecha_fin ?: null,
+        'provincia'         => $request->provincia,
+        'ubicacion_id'      => $request->ubicacion_id,
+        'copa_id'           => $request->copa_id ?: null,
+        'arbitro_id'        => $request->arbitro_id ?: null,
+        'campeonato'        => false,
+        'categorias'        => $request->categorias ?? [],
+    ]);
+
+    // 3. REDIRECCIÓN con mensaje flash (se muestra una vez)
+    return back()->with('status', "Prueba «{$request->name}» creada correctamente.");
+}</pre>
+
+  <div class="info-box">
+    <span class="tip">💡 Mensajes flash:</span> <code>->with('status', 'mensaje')</code> almacena el mensaje en la sesión durante UNA sola petición. En la vista, <code>session('status')</code> lo recupera. Es el patrón estándar para mostrar confirmaciones tras formularios.
+  </div>
+
+  <h2 class="sub">ArbitroController — Validación de inscripciones</h2>
+  <p>El árbitro puede verificar documentos de cada inscripción. Este es el método más complejo del proyecto:</p>
+
+  <pre>public function validarLicencia(Request $request, Inscripcion $inscripcion)
+{
+    // Verificamos que este usuario es el árbitro asignado a esta competición
+    $this->checkArbitroPorCompeticion($inscripcion->competicion_id);
+
+    $request->validate([
+        'tipo'     => 'required|in:licencia,pago',
+        'decision' => 'required|in:valida,valida_dia,no_valida',
+        'motivo'   => 'required_if:decision,no_valida|nullable|string|max:500',
+    ]);
+
+    if ($request->tipo === 'licencia') {
+        $inscripcion->licencia_estado = $request->decision;
+        $inscripcion->licencia_motivo = $request->decision === 'no_valida'
+            ? $request->motivo : null;
+
+        // Si la licencia es válida, registramos en LicenciaValidacion
+        // para que no haya que re-validarla en otras competiciones del mismo año
+        if ($request->decision !== 'no_valida') {
+            $validaHasta = $request->decision === 'valida'
+                ? now()->endOfYear()->toDateString()       // válida hasta 31/12
+                : $inscripcion->competicion->fecha_realizacion->toDateString(); // solo ese día
+
+            LicenciaValidacion::updateOrCreate(
+                ['user_id' => $inscripcion->user_id, 'competicion_id' => $inscripcion->competicion_id],
+                ['validada_por' => auth()->id(), 'tipo' => $request->decision, 'valida_hasta' => $validaHasta]
+            );
+        }
+    } else {
+        $inscripcion->pago_estado = $request->decision;
+        $inscripcion->pago_motivo = $request->decision === 'no_valida' ? $request->motivo : null;
+    }
+
+    // Recalcular el estado global de la inscripción
+    $estadoAnterior = $inscripcion->estado;
+    $inscripcion->recalcularEstado();
+
+    // Notificar al competidor si el estado global cambia
+    if ($inscripcion->estado !== $estadoAnterior) {
+        $inscripcion->user->notify(new InscripcionActualizadaNotification($inscripcion, $motivo));
+    }
+
+    // Responde en JSON (la llamada viene de Alpine.js / fetch)
+    return response()->json(['success' => true, 'message' => 'Verificado.']);
+}</pre>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  7. LAS VISTAS BLADE                                            -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">07</span>
+    <h1>Las Vistas Blade: el HTML dinámico</h1>
+    <p>Cómo Laravel genera el HTML que ve el usuario</p>
+  </div>
+
+  <h2 class="sub">¿Qué es Blade?</h2>
+  <p><strong>Blade</strong> es el motor de plantillas de Laravel. Los archivos terminan en <code>.blade.php</code> y mezclan HTML con directivas especiales de Blade que comienzan con <code>@</code>. Laravel compila estas plantillas a PHP puro y las cachea para mayor rendimiento.</p>
+
+  <h2 class="sub">El layout principal (layouts/app.blade.php)</h2>
+  <p>En lugar de repetir la barra de navegación y el pie en cada página, existe un <strong>layout</strong> que define la estructura común. Todas las vistas del proyecto lo extienden:</p>
+
+  <pre>&lt;!-- resources/views/layouts/app.blade.php --&gt;
+&lt;!doctype html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;title&gt;@yield('title', 'Escalada')&lt;/title&gt;  &lt;!-- Las vistas definen el título --&gt;
+    &lt;link href="bootstrap.min.css" rel="stylesheet"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;nav class="navbar"&gt;...&lt;/nav&gt;  &lt;!-- Navbar común a todas las páginas --&gt;
+
+    &lt;main class="container py-4"&gt;
+        @if (session('status'))  &lt;!-- Mensajes flash de éxito --&gt;
+            &lt;div class="alert alert-success"&gt;{{ session('status') }}&lt;/div&gt;
+        @endif
+
+        @yield('content')  &lt;!-- ← AQUÍ va el contenido de cada vista --&gt;
+    &lt;/main&gt;
+
+    &lt;script src="bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+    &lt;script src="alpinejs/cdn.min.js"&gt;&lt;/script&gt;
+    @yield('scripts')  &lt;!-- Scripts adicionales opcionales --&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+  <h3 class="sub2">Una vista que extiende el layout:</h3>
+  <pre>&lt;!-- resources/views/admin/copas.blade.php --&gt;
+@extends('layouts.app')         &lt;!-- Hereda el layout --&gt;
+@section('title', 'Admin — Copas')  &lt;!-- Define el título --&gt;
+
+@section('content')             &lt;!-- Define el contenido que va en @yield('content') --&gt;
+&lt;div class="row g-4"&gt;
+    &lt;div class="col-auto"&gt;
+        @include('admin.partials.sidebar')  &lt;!-- Incluye el sidebar --&gt;
+    &lt;/div&gt;
+    &lt;div class="col"&gt;
+        &lt;h4&gt;Copas&lt;/h4&gt;
+        ...
+    &lt;/div&gt;
+&lt;/div&gt;
+@endsection</pre>
+
+  <h2 class="sub">Directivas Blade más utilizadas en el proyecto</h2>
+
+  <table>
+    <tr><th>Directiva</th><th>Función</th><th>Ejemplo en el proyecto</th></tr>
+    <tr><td><code>{{ $var }}</code></td><td>Imprime el valor escapando HTML (seguro)</td><td><code>{{ $copa->name }}</code></td></tr>
+    <tr><td><code>{!! $var !!}</code></td><td>Imprime sin escapar (solo para HTML de confianza)</td><td>Raramente usado</td></tr>
+    <tr><td><code>@if / @else / @endif</code></td><td>Condicionales</td><td><code>@if($c->campeonato) &lt;badge&gt; @endif</code></td></tr>
+    <tr><td><code>@foreach / @endforeach</code></td><td>Bucles</td><td><code>@foreach($copas as $copa)</code></td></tr>
+    <tr><td><code>@forelse / @empty</code></td><td>Bucle con caso vacío</td><td>Tablas con "No hay datos"</td></tr>
+    <tr><td><code>@auth / @guest</code></td><td>Condicional de autenticación</td><td>Mostrar/ocultar botón de login</td></tr>
+    <tr><td><code>@csrf</code></td><td>Token de seguridad en formularios</td><td>Todos los formularios POST</td></tr>
+    <tr><td><code>@method('PATCH')</code></td><td>Simula métodos HTTP no soportados</td><td>Formularios de edición</td></tr>
+    <tr><td><code>@selected($cond)</code></td><td>Añade <code>selected</code> si condición es true</td><td>Selects de formularios</td></tr>
+    <tr><td><code>@checked($cond)</code></td><td>Añade <code>checked</code> si condición es true</td><td>Checkboxes de categorías</td></tr>
+    <tr><td><code>@include('partial')</code></td><td>Incluye otra vista</td><td>Sidebar del admin</td></tr>
+    <tr><td><code>@extends / @section</code></td><td>Herencia de layouts</td><td>Todas las vistas</td></tr>
+  </table>
+
+  <h2 class="sub">Pasar datos a las vistas con compact()</h2>
+  <pre>// En el controlador — se pasan los datos:
+return view('admin.copas', compact('copas', 'filtro'));
+// Equivalente a:
+return view('admin.copas', ['copas' => $copas, 'filtro' => $filtro]);
+
+// En la vista — se usan directamente:
+@foreach($copas as $copa)
+    &lt;td&gt;{{ $copa->name }}&lt;/td&gt;
+    &lt;td&gt;{{ $copa->temporada }}&lt;/td&gt;
+@endforeach</pre>
+
+  <h2 class="sub">Seguridad automática: XSS prevention</h2>
+  <div class="warn-box">
+    <span class="tip">🔒 Seguridad:</span> Las llaves dobles <code>{{ }}</code> escapan automáticamente los caracteres HTML especiales (<code>&lt;</code>, <code>&gt;</code>, <code>"</code>, etc.), previniendo ataques XSS (Cross-Site Scripting). Si un usuario introduce <code>&lt;script&gt;alert('hack')&lt;/script&gt;</code> en su nombre, Blade lo mostrará como texto literal, nunca lo ejecutará.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  8. AUTENTICACIÓN CON BREEZE                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">08</span>
+    <h1>Autenticación con Laravel Breeze</h1>
+    <p>Cómo funciona el sistema de login y sesiones</p>
+  </div>
+
+  <h2 class="sub">¿Qué es Laravel Breeze?</h2>
+  <p><strong>Laravel Breeze</strong> es un starter kit oficial de Laravel que proporciona todo lo necesario para autenticación: login, registro, recuperación de contraseña y verificación de email. Genera las vistas, rutas y controladores listos para usar.</p>
+
+  <h2 class="sub">El middleware 'auth'</h2>
+  <p>El middleware <code>auth</code> es la "puerta" que protege las rutas privadas. Si el usuario no está autenticado, lo redirige al login:</p>
+
+  <pre>// En web.php — esta ruta requiere estar logueado:
+Route::get('/dashboard', function () { ... })->middleware(['auth'])->name('dashboard');
+
+// Si un usuario no autenticado visita /dashboard:
+// → Laravel lo redirige automáticamente a /login</pre>
+
+  <h2 class="sub">La sesión: cómo Laravel "recuerda" al usuario</h2>
+  <p>HTTP es un protocolo <em>sin estado</em>: cada petición es independiente. Para mantener al usuario logueado entre páginas, Laravel usa <strong>sesiones</strong>. En este proyecto, las sesiones se almacenan en la base de datos (tabla <code>sessions</code>):</p>
+
+  <div class="flow">
+    <div class="flow-step">Usuario envía<br>login + password</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Laravel verifica<br>en tabla users</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Crea sesión<br>en tabla sessions</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Envía cookie<br>con session_id</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Siguientes peticiones<br>incluyen la cookie</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Laravel verifica<br>la sesión en BD</div>
+  </div>
+
+  <h2 class="sub">Acceso al usuario autenticado</h2>
+  <pre>// En cualquier controlador o vista:
+auth()->user()         // Objeto User del usuario actual
+auth()->id()           // ID del usuario actual
+auth()->check()        // true si está autenticado
+auth()->guest()        // true si NO está autenticado
+
+// En una vista Blade:
+@auth
+    Hola, {{ auth()->user()->name }}
+    @if(auth()->user()->isAdmin())
+        &lt;a href="/admin"&gt;Panel Admin&lt;/a&gt;
+    @endif
+@endauth
+
+@guest
+    &lt;a href="/login"&gt;Iniciar sesión&lt;/a&gt;
+@endguest</pre>
+
+  <h2 class="sub">Protección CSRF</h2>
+  <p><strong>CSRF</strong> (Cross-Site Request Forgery) es un ataque donde una web maliciosa hace peticiones en nombre del usuario. Laravel lo previene con un token único por sesión.</p>
+
+  <pre>&lt;!-- Todo formulario POST debe incluir @csrf --&gt;
+&lt;form method="POST" action="{{ route('admin.copas.store') }}"&gt;
+    @csrf  &lt;!-- Genera: &lt;input type="hidden" name="_token" value="abc123..."&gt; --&gt;
+    &lt;input name="name" required&gt;
+    &lt;button&gt;Crear&lt;/button&gt;
+&lt;/form&gt;</pre>
+
+  <div class="warn-box">
+    <span class="tip">⚠️ Atención:</span> Si olvidas <code>@csrf</code> en un formulario POST, Laravel devolverá un error 419 (Page Expired). Es un error muy común al aprender Laravel.
+  </div>
+
+  <h2 class="sub">Hash de contraseñas</h2>
+  <p>Las contraseñas <strong>nunca se guardan en texto plano</strong>. Laravel usa <strong>bcrypt</strong> (o Argon2) para hacer un hash unidireccional:</p>
+  <pre>// Al registrarse — guarda el hash, no la contraseña:
+'password' => Hash::make($request->password)
+// Resultado en BD: "$2y$12$vH5SILdkhlC42So8T9bc..."
+
+// Al hacer login — compara el hash:
+Hash::check($request->password, $user->password) // true o false</pre>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  9. SISTEMA DE ROLES Y MIDDLEWARE                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">09</span>
+    <h1>Sistema de roles y middleware</h1>
+    <p>Cómo se controla quién puede hacer qué</p>
+  </div>
+
+  <h2 class="sub">Los cuatro roles del sistema</h2>
+  <div class="roles">
+    <div class="role-card admin">
+      <div class="nivel">4</div>
+      <div class="nombre">Admin</div>
+      <div class="desc">Control total: usuarios, competiciones, copas, rocódromos, árbitros</div>
+    </div>
+    <div class="role-card arbitro">
+      <div class="nivel">3</div>
+      <div class="nombre">Árbitro</div>
+      <div class="desc">Valida inscripciones y documentos en sus competiciones asignadas</div>
+    </div>
+    <div class="role-card entrenador">
+      <div class="nivel">2</div>
+      <div class="nombre">Entrenador</div>
+      <div class="desc">Gestiona su equipo e inscribe competidores en competiciones</div>
+    </div>
+    <div class="role-card competidor">
+      <div class="nivel">1</div>
+      <div class="nombre">Competidor</div>
+      <div class="desc">Se inscribe en competiciones y sube sus documentos</div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span class="tip">💡 Jerarquía:</span> Un árbitro tiene nivel 3, lo que significa que <em>también</em> tiene los permisos de entrenador (nivel 2) y competidor (nivel 1). El middleware verifica <code>nivelRol() >= nivelRequerido</code>, no igualdad estricta.
+  </div>
+
+  <h2 class="sub">El middleware CheckRol</h2>
+  <p>Un <strong>middleware</strong> es código que se ejecuta antes de que la petición llegue al controlador. El middleware <code>CheckRol</code> verifica que el usuario tenga el nivel de rol suficiente:</p>
+
+  <pre>// app/Http/Middleware/CheckRol.php
+class CheckRol
+{
+    public function handle(Request $request, Closure $next, string ...$roles): Response
+    {
+        $user = auth()->user();
+
+        // Mapa de roles a niveles numéricos
+        $niveles = ['competidor' => 1, 'entrenador' => 2, 'arbitro' => 3, 'admin' => 4];
+
+        // Nivel mínimo requerido (el más bajo de los roles pedidos)
+        $nivelRequerido = min(array_map(fn($r) => $niveles[$r] ?? 0, $roles));
+
+        // Si el usuario no tiene nivel suficiente → redirige con error
+        if (!$user || $user->nivelRol() < $nivelRequerido) {
+            return redirect()->route('dashboard')
+                             ->with('error', 'No tienes permiso para acceder aquí.');
+        }
+
+        return $next($request); // Continúa con la petición
+    }
+}</pre>
+
+  <h3 class="sub2">Cómo se registra y usa el middleware:</h3>
+  <pre>// bootstrap/app.php — registro del middleware con alias:
+$middleware->alias(['rol' => CheckRol::class]);
+
+// routes/web.php — uso en grupos de rutas:
+Route::middleware(['auth', 'rol:admin'])->group(function () {
+    // Solo accesible por admins (nivel 4)
+});
+
+Route::middleware(['auth', 'rol:arbitro'])->group(function () {
+    // Accesible por árbitros (nivel 3+) y admins (nivel 4)
+});</pre>
+
+  <h2 class="sub">Registro y cambio de roles</h2>
+  <p>Por defecto, los usuarios se registran con rol <code>competidor</code>. Solo el admin puede cambiar los roles desde el panel:</p>
+
+  <pre>// AdminController@updateRol
+public function updateRol(Request $request, User $user)
+{
+    $request->validate([
+        'rol' => 'required|in:competidor,entrenador,arbitro'
+        // Nota: no incluye 'admin' — no se puede hacer admin desde aquí
+    ]);
+    $user->update(['rol' => $request->rol]);
+    return back()->with('status', "Rol de {$user->name} actualizado.");
+}</pre>
+
+  <h2 class="sub">El sistema entrenador-competidor</h2>
+  <p>La relación entre entrenador y competidor usa una tabla pivote <code>entrenador_competidor</code> con un estado de aprobación, similar a cómo funciona "seguir" en redes sociales:</p>
+
+  <div class="flow">
+    <div class="flow-step">Entrenador busca<br>por DNI</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Envía solicitud<br>(estado: pendiente)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Competidor recibe<br>notificación</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Acepta o rechaza</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Si acepta:<br>estado = aceptado</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  10. FLUJO COMPLETO DE UNA INSCRIPCIÓN                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">10</span>
+    <h1>Flujo completo: ejemplo de una inscripción</h1>
+    <p>De principio a fin: cómo un competidor se inscribe en una competición</p>
+  </div>
+
+  <h2 class="sub">Visión general del proceso</h2>
+  <div class="flow">
+    <div class="flow-step">1. Competidor<br>ve dashboard</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">2. Pulsa<br>"Inscribirme"</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">3. Sube licencia<br>y pago</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">4. Estado:<br>pendiente</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">5. Árbitro<br>verifica docs</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">6. Estado:<br>aprobada/rechazada</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">7. Competidor<br>notificado</div>
+  </div>
+
+  <h3 class="sub2">Paso 1 y 2: InscripcionController@store</h3>
+  <pre>// Cuando el competidor pulsa "Inscribirme":
+public function store(Request $request, Competicion $competicion)
+{
+    // Verifica que no esté ya inscrito
+    if ($competicion->inscripciones()->where('user_id', auth()->id())->exists()) {
+        return back()->with('error', 'Ya estás inscrito en esta competición.');
+    }
+
+    // Crea la inscripción en estado "pendiente" (sin documentos aún)
+    Inscripcion::create([
+        'user_id'        => auth()->id(),
+        'competicion_id' => $competicion->id,
+        'estado'         => 'pendiente',
+        // Calcula categoría automáticamente por edad y género
+        'categoria'      => Inscripcion::calcularCategoria(auth()->user()),
+    ]);
+
+    return back()->with('status', 'Inscripción realizada. Ahora sube tus documentos.');
+}</pre>
+
+  <h3 class="sub2">Paso 3: Subida de documentos</h3>
+  <pre>// Cuando sube la licencia federativa:
+public function uploadLicencia(Request $request, Competicion $competicion)
+{
+    $request->validate([
+        'licencia' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120' // max 5MB
+    ]);
+
+    $inscripcion = Inscripcion::where('user_id', auth()->id())
+                              ->where('competicion_id', $competicion->id)
+                              ->firstOrFail();
+
+    // Laravel guarda el archivo en storage/app/public/inscripciones/
+    // y devuelve la ruta relativa
+    $path = $request->file('licencia')->store('inscripciones', 'public');
+
+    $inscripcion->update(['licencia_path' => $path]);
+
+    return back()->with('status', 'Licencia subida correctamente.');
+}</pre>
+
+  <h3 class="sub2">Paso 5: El árbitro verifica un documento</h3>
+  <p>El árbitro accede a <code>/arbitro/competicion/{id}</code>, ve la lista de competidores por categoría, abre el modal de verificación y marca la licencia como válida/no válida. La llamada se hace con <code>fetch()</code> de JavaScript (Alpine.js):</p>
+
+  <pre>// Alpine.js en la vista — llamada AJAX al servidor:
+async verificar(tipo) {
+    const resp = await fetch('/arbitro/inscripcion/{{ $ins->id }}/validar', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+        },
+        body: JSON.stringify({
+            tipo: 'licencia',
+            decision: 'valida',   // valida / valida_dia / no_valida
+            motivo: null
+        })
+    });
+    const data = await resp.json();
+    // Actualiza la UI sin recargar la página
+    this.licEstado = data.licencia_estado;
+}</pre>
+
+  <h3 class="sub2">Paso 6 y 7: Recalcular estado y notificar</h3>
+  <p>Después de que el árbitro valida, el sistema recalcula el estado global y notifica al competidor:</p>
+
+  <pre>// En ArbitroController (simplificado):
+$inscripcion->recalcularEstado(); // → 'aprobada' o 'rechazada' o 'pendiente'
+
+// Si el estado cambió a final → notificar al competidor
+if (in_array($inscripcion->estado, ['aprobada', 'rechazada'])) {
+    $inscripcion->user->notify(
+        new InscripcionActualizadaNotification($inscripcion, $motivo)
+    );
+}
+// La notificación se guarda en la tabla "notifications"
+// El competidor la ve en su dashboard la próxima vez que entre</pre>
+
+  <h2 class="sub">Estados de una inscripción</h2>
+  <table>
+    <tr><th>Estado inscripción</th><th>licencia_estado</th><th>pago_estado</th><th>Descripción</th></tr>
+    <tr><td>pendiente</td><td>null</td><td>null</td><td>Recién inscrito, sin documentos revisados</td></tr>
+    <tr><td>pendiente</td><td>valida</td><td>null</td><td>Licencia OK, esperando verificar pago</td></tr>
+    <tr><td>aprobada</td><td>valida</td><td>valida</td><td>Ambos documentos válidos ✅</td></tr>
+    <tr><td>aprobada</td><td>valida_dia</td><td>valida</td><td>Licencia solo para hoy, pago OK ✅</td></tr>
+    <tr><td>rechazada</td><td>no_valida</td><td>—</td><td>Licencia inválida ❌</td></tr>
+    <tr><td>rechazada</td><td>—</td><td>no_valida</td><td>Justificante de pago inválido ❌</td></tr>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  11. FRONTEND: BOOTSTRAP Y ALPINE.JS                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">11</span>
+    <h1>Frontend: Bootstrap 5 y Alpine.js</h1>
+    <p>Las herramientas que dan vida a la interfaz de usuario</p>
+  </div>
+
+  <h2 class="sub">Bootstrap 5 — El sistema de diseño</h2>
+  <p><strong>Bootstrap</strong> es un framework CSS que proporciona componentes visuales listos para usar (botones, tarjetas, tablas, modales, formularios...) y un sistema de rejilla responsiva. Se carga desde CDN, sin necesidad de instalar nada:</p>
+
+  <pre>&lt;!-- En layouts/app.blade.php --&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;</pre>
+
+  <h3 class="sub2">El sistema de rejilla (Grid)</h3>
+  <pre>&lt;!-- El layout de admin usa la rejilla de Bootstrap --&gt;
+&lt;div class="row g-4"&gt;             &lt;!-- fila con gap de 4 unidades --&gt;
+    &lt;div class="col-auto"&gt;         &lt;!-- columna que se ajusta a su contenido --&gt;
+        @include('admin.partials.sidebar')
+    &lt;/div&gt;
+    &lt;div class="col"&gt;              &lt;!-- columna que ocupa el resto del espacio --&gt;
+        &lt;!-- contenido principal --&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</pre>
+
+  <h2 class="sub">Alpine.js — Interactividad sin complejidad</h2>
+  <p><strong>Alpine.js</strong> es un framework JavaScript minimalista que añade interactividad directamente en el HTML, sin necesidad de escribir ficheros <code>.js</code> separados. Es perfecto para casos de uso simples como modales, toggles, formularios dinámicos.</p>
+
+  <h3 class="sub2">Ejemplo: El modal de editar Copa</h3>
+  <pre>&lt;!-- En admin/copas.blade.php --&gt;
+
+&lt;!-- 1. Botón que abre el modal con data-* attributes (Blade renderiza los datos) --&gt;
+&lt;button data-bs-toggle="modal" data-bs-target="#modalEditarCopa"
+        data-id="{{ $copa->id }}"
+        data-name="{{ $copa->name }}"
+        data-tipo="{{ $copa->tipo }}"
+        data-temporada="{{ $copa->temporada }}"&gt;
+    Editar
+&lt;/button&gt;
+
+&lt;!-- 2. Modal con formulario --&gt;
+&lt;div class="modal fade" id="modalEditarCopa"&gt;
+    &lt;form method="POST" action="" id="editarCopaForm"&gt;
+        @csrf @method('PATCH')
+        &lt;input name="name"      id="editarCopaName"&gt;
+        &lt;select name="tipo"     id="editarCopaTipo"&gt;...&lt;/select&gt;
+        &lt;input name="temporada" id="editarCopaTemporada"&gt;
+    &lt;/form&gt;
+&lt;/div&gt;
+
+&lt;!-- 3. JavaScript: Bootstrap dispara el evento 'show.bs.modal' justo antes de abrir --&gt;
+&lt;script&gt;
+document.getElementById('modalEditarCopa').addEventListener('show.bs.modal', function(event) {
+    const btn = event.relatedTarget; // El botón que abrió el modal
+    // Leemos los data-* del botón y rellenamos el formulario
+    document.getElementById('editarCopaForm').action = '/admin/copas/' + btn.dataset.id;
+    document.getElementById('editarCopaName').value = btn.dataset.name;
+    document.getElementById('editarCopaTipo').value = btn.dataset.tipo;
+    document.getElementById('editarCopaTemporada').value = btn.dataset.temporada;
+});
+&lt;/script&gt;</pre>
+
+  <h3 class="sub2">Alpine.js en los modales de validación del árbitro</h3>
+  <pre>&lt;!-- x-data define el estado reactivo del componente --&gt;
+&lt;div class="modal-content" x-data="{
+    licDecision: '',           // Decisión tomada para la licencia
+    loading: false,            // Spinner de carga
+    msg: '',                   // Mensaje de resultado
+    licEstado: 'pendiente',    // Estado actual de la licencia
+
+    // Método asíncrono que llama a la API del servidor
+    async verificar(tipo) {
+        this.loading = true;
+        const resp = await fetch('/arbitro/inscripcion/{{ $ins->id }}/validar', {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', ... },
+            body: JSON.stringify({ tipo, decision: this.licDecision })
+        });
+        const data = await resp.json();
+        this.licEstado = data.licencia_estado; // Actualiza la UI reactivamente
+        this.loading = false;
+    }
+}"&gt;
+    &lt;!-- :class vincula clases CSS al estado reactivo --&gt;
+    &lt;span class="badge" :class="licEstado === 'valida' ? 'bg-success' : 'bg-secondary'"
+          x-text="licEstado"&gt;&lt;/span&gt;
+
+    &lt;button :disabled="loading" @click="verificar('licencia')"&gt;
+        &lt;span x-show="loading" class="spinner-border spinner-border-sm"&gt;&lt;/span&gt;
+        Confirmar
+    &lt;/button&gt;
+&lt;/div&gt;</pre>
+
+  <div class="info-box">
+    <span class="tip">💡 Alpine vs React/Vue:</span> Alpine.js es ideal para añadir "destellos" de interactividad a páginas que ya genera el servidor (como las de Laravel). No requiere compilación ni <code>node_modules</code>. React o Vue serían excesivos para este proyecto.
+  </div>
+
+  <h2 class="sub">Vite — El bundler de assets</h2>
+  <p><strong>Vite</strong> compila y optimiza los archivos JavaScript y CSS del proyecto. En desarrollo (<code>npm run dev</code>) proporciona Hot Module Replacement (los cambios se reflejan en el navegador al instante sin recargar).</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  12. SEEDERS                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">12</span>
+    <h1>Seeders y Factories: datos de prueba</h1>
+    <p>Cómo poblamos la base de datos para desarrollo y testing</p>
+  </div>
+
+  <h2 class="sub">¿Qué son los seeders?</h2>
+  <p>Los <strong>seeders</strong> son clases PHP que insertan datos en la base de datos. Son fundamentales en desarrollo para tener datos con los que trabajar sin tener que introducirlos manualmente.</p>
+
+  <pre>// database/seeders/DatabaseSeeder.php — Seeder principal
+public function run(): void
+{
+    // Crea el usuario admin con credenciales conocidas
+    User::create([
+        'name'     => 'admin',
+        'email'    => 'admin@escalada.com',
+        'password' => bcrypt('admin'),   // bcrypt() hace el hash de la contraseña
+        'rol'      => 'admin',
+        'dni'      => '00000000A',
+        'fecha_nacimiento' => '1990-01-01',
+        'provincia' => 'Sevilla',
+        'talla'    => 'M',
+        'genero'   => 'otro',
+    ]);
+
+    // Crea 2 copas de competición
+    $copaBloque = Copa::create([
+        'name' => 'Copa de Bloque 2026', 'tipo' => 'Bloque', 'temporada' => 2026,
+    ]);
+
+    // Crea ubicaciones usando una Factory (genera datos realistas aleatoriamente)
+    $ubicaciones = [];
+    foreach (['Sevilla', 'Málaga', 'Granada', ...] as $prov) {
+        $ubicaciones[$prov] = Ubicacion::factory()->create(['provincia' => $prov]);
+    }
+
+    // Crea 7 competiciones de ejemplo
+    Competicion::create([
+        'name'              => '1ª Prueba de Bloque de Andalucía, Sevilla',
+        'tipo'              => 'bloque',
+        'fecha_realizacion' => '2026-02-14 10:00:00',
+        'copa_id'           => $copaBloque->id,
+        'ubicacion_id'      => $ubicaciones['Sevilla']->id,
+        ...
+    ]);
+
+    // Crea 300 usuarios aleatorios con la factory
+    User::factory()->count(300)->create();
+
+    // Ejecuta sub-seeders
+    $this->call(TestUsersSeeder::class);     // Crea usuarios de test con roles
+    $this->call(InscripcionesSeeder::class); // Inscribe competidores automáticamente
+}</pre>
+
+  <h2 class="sub">Factories: datos realistas con Faker</h2>
+  <p>Las <strong>factories</strong> usan la librería <strong>Faker</strong> para generar datos aleatorios pero realistas (nombres, emails, fechas, etc.):</p>
+
+  <pre>// database/factories/UserFactory.php
+class UserFactory extends Factory
+{
+    public function definition(): array
+    {
+        return [
+            'name'             => fake()->name(),            // "María García López"
+            'email'            => fake()->unique()->email(), // "maria@example.com"
+            'password'         => static::$password ??= Hash::make('password'),
+            'dni'              => strtoupper(fake()->unique()->bothify('########?')),
+            'fecha_nacimiento' => fake()->dateTimeBetween('-30 years', '-15 years'),
+            'provincia'        => fake()->randomElement(['Sevilla', 'Málaga', 'Granada', ...]),
+            'talla'            => fake()->randomElement(['XS', 'S', 'M', 'L', 'XL', 'XXL']),
+            'genero'           => fake()->randomElement(['M', 'F', 'otro']),
+            'rol'              => 'competidor',
+        ];
+    }
+}</pre>
+
+  <h2 class="sub">InscripcionesSeeder: simulación de datos realistas</h2>
+  <p>Este seeder es especialmente complejo: inscribe 150 competidores en cada competición con una distribución de estados que simula la realidad:</p>
+
+  <table>
+    <tr><th>Estado</th><th>Probabilidad</th><th>Descripción</th></tr>
+    <tr><td>Pendiente (sin docs)</td><td>30%</td><td>Inscrito pero no ha subido documentos</td></tr>
+    <tr><td>Aprobada</td><td>30%</td><td>Ambos documentos verificados y válidos</td></tr>
+    <tr><td>Rechazada (licencia)</td><td>20%</td><td>La licencia federativa no es válida</td></tr>
+    <tr><td>Rechazada (pago)</td><td>10%</td><td>El justificante de pago no es válido</td></tr>
+    <tr><td>Pendiente (lic OK)</td><td>10%</td><td>Licencia verificada, esperando verificar pago</td></tr>
+  </table>
+
+  <h2 class="sub">Comandos de base de datos</h2>
+  <pre>php artisan migrate                  # Ejecuta migraciones pendientes
+php artisan migrate:fresh            # Borra todas las tablas y re-migra
+php artisan migrate:fresh --seed     # Borra, re-migra y ejecuta todos los seeders
+php artisan db:seed                  # Ejecuta todos los seeders (sin borrar)
+php artisan db:seed --class=TestUsersSeeder  # Ejecuta un seeder específico
+php artisan migrate:status           # Muestra el estado de todas las migraciones</pre>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--  13. DIAGRAMA COMPLETO                                          -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="page page-break">
+  <div class="section-header">
+    <span class="num">13</span>
+    <h1>Diagrama completo de la aplicación</h1>
+    <p>Una vista de pájaro de toda la arquitectura</p>
+  </div>
+
+  <h2 class="sub">Mapa de rutas y accesos por rol</h2>
+  <table>
+    <tr><th>URL</th><th>Método</th><th>Controlador@método</th><th>Rol mínimo</th><th>Descripción</th></tr>
+    <tr><td>/dashboard</td><td>GET</td><td>Closure (web.php)</td><td>auth</td><td>Redirige según rol</td></tr>
+    <tr><td>/admin/pruebas</td><td>GET</td><td>Admin@pruebas</td><td>admin</td><td>Lista competiciones</td></tr>
+    <tr><td>/admin/copas</td><td>GET</td><td>Admin@copas</td><td>admin</td><td>Lista copas</td></tr>
+    <tr><td>/admin/copas</td><td>POST</td><td>Copa@store</td><td>admin</td><td>Crea copa</td></tr>
+    <tr><td>/admin/copas/{copa}</td><td>PATCH</td><td>Copa@update</td><td>admin</td><td>Edita copa</td></tr>
+    <tr><td>/admin/copas/{copa}</td><td>DELETE</td><td>Copa@destroy</td><td>admin</td><td>Borra copa</td></tr>
+    <tr><td>/admin/usuarios</td><td>GET</td><td>Admin@usuarios</td><td>admin</td><td>Lista usuarios</td></tr>
+    <tr><td>/admin/usuarios/{user}/rol</td><td>PATCH</td><td>Admin@updateRol</td><td>admin</td><td>Cambia rol</td></tr>
+    <tr><td>/admin/rocodromos</td><td>GET</td><td>Admin@rocodromos</td><td>admin</td><td>Lista rocódromos</td></tr>
+    <tr><td>/admin/competiciones</td><td>POST</td><td>Competicion@store</td><td>admin</td><td>Crea competición</td></tr>
+    <tr><td>/admin/competiciones/{id}</td><td>PATCH</td><td>Competicion@update</td><td>admin</td><td>Edita competición</td></tr>
+    <tr><td>/admin/competiciones/{id}/arbitro</td><td>PATCH</td><td>Admin@asignarArbitro</td><td>admin</td><td>Asigna árbitro</td></tr>
+    <tr><td>/arbitro/</td><td>GET</td><td>Arbitro@panel</td><td>arbitro</td><td>Panel árbitro</td></tr>
+    <tr><td>/arbitro/entrenador</td><td>GET</td><td>Arbitro@panelEntrenador</td><td>arbitro</td><td>Gestión equipo</td></tr>
+    <tr><td>/arbitro/deportista</td><td>GET</td><td>Arbitro@panelDeportista</td><td>arbitro</td><td>Mis inscripciones</td></tr>
+    <tr><td>/arbitro/competicion/{id}</td><td>GET</td><td>Arbitro@competicion</td><td>arbitro</td><td>Categorías de la competición</td></tr>
+    <tr><td>/arbitro/inscripcion/{id}/validar</td><td>PATCH</td><td>Arbitro@validarLicencia</td><td>arbitro</td><td>Valida documento</td></tr>
+    <tr><td>/competiciones/{id}</td><td>GET</td><td>Inscripcion@show</td><td>auth</td><td>Detalle competición</td></tr>
+    <tr><td>/inscripciones/{id}</td><td>POST</td><td>Inscripcion@store</td><td>auth</td><td>Inscribirse</td></tr>
+    <tr><td>/inscripciones/{id}/licencia</td><td>POST</td><td>Inscripcion@uploadLicencia</td><td>auth</td><td>Sube licencia</td></tr>
+    <tr><td>/entrenador/solicitar</td><td>POST</td><td>Entrenador@solicitarVinculo</td><td>entrenador</td><td>Solicita vínculo</td></tr>
+    <tr><td>/entrenador/inscribir</td><td>POST</td><td>Entrenador@inscribir</td><td>entrenador</td><td>Inscribe a equipo</td></tr>
+  </table>
+
+  <h2 class="sub">Relaciones entre modelos</h2>
+  <pre>                    ┌─────────┐
+                    │  Copa   │
+                    │---------│
+                    │ name    │
+                    │ tipo    │
+                    │temporada│
+                    └────┬────┘
+                         │ hasMany
+              ┌──────────▼──────────┐
+              │    Competicion       │
+              │----------------------│      ┌──────────┐
+   ┌──────────┤ copa_id (nullable)   ├──────┤ Ubicacion│
+   │          │ arbitro_id (nullable)│      └──────────┘
+   │          │ fecha_realizacion    │
+   │          │ fecha_fin            │
+   │          │ tipo, campeonato     │
+   │          │ categorias (JSON)    │
+   │          └──────────┬──────────┘
+   │                     │ hasMany
+   │              ┌──────▼──────┐
+   │              │ Inscripcion │
+   │              │-------------|
+   │              │ user_id     │◄──────────┐
+   │              │ estado      │           │
+   │              │ licencia_*  │           │
+   │              │ pago_*      │           │
+   │              └─────────────┘           │
+   │                                        │
+   │              ┌─────────────────────────┤
+   │              │        User             │
+   │              │-------------------------|
+   └──────────────┤ rol (admin/arb/ent/comp)│
+    belongsTo     │ dni, genero, talla      │
+    (árbitro)     │ fecha_nacimiento        │
+                  └─────────────────────────┘
+                           │ M:N (entrenador_competidor)
+                           └──────────────────────────► User (competidores)</pre>
+
+  <h2 class="sub">Comandos de desarrollo habituales</h2>
+  <pre>composer run dev          # Arranca servidor + queue + Vite (todo en uno)
+php artisan serve         # Solo el servidor web (http://localhost:8000)
+npm run dev               # Solo Vite (HMR para CSS/JS)
+php artisan tinker        # REPL interactivo para probar código Laravel
+php artisan route:list    # Lista todas las rutas registradas
+php artisan make:model    # Crea un nuevo modelo
+php artisan make:controller  # Crea un nuevo controlador
+php artisan make:migration   # Crea una nueva migración</pre>
+
+  <div class="page-footer">
+    <p>Proyecto Escalada — Laravel 12 · PHP 8.2 · MySQL · Bootstrap 5 · Alpine.js</p>
+    <p>Federación Andaluza de Escalada — 2026</p>
+  </div>
+</div>
+
+</body>
+</html>

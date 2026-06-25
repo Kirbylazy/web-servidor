@@ -1,7 +1,7 @@
 .chat-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(100vh - 56px);
   background: #f0f2f5;
 }
 
@@ -25,11 +25,21 @@
   padding: 0.25rem 0.5rem;
 }
 
-.chat-topbar-info { flex: 1; }
+.chat-topbar-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-interlocutor {
+  font-size: 1rem;
+  font-weight: 700;
+}
 
 .chat-trip-route {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0.85;
 }
 
 .chat-messages {

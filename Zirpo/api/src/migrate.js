@@ -116,6 +116,15 @@ const createTables = async () => {
       )
     `)
 
+    // Actualizar ENUM de estado en trips para incluir en_ruta
+    await conn.query(`
+      ALTER TABLE trips MODIFY COLUMN estado ENUM('activo','completado','cancelado','en_ruta') DEFAULT 'activo'
+    `).catch(() => {})
+
+    // Añadir tramo_origen/tramo_destino a bookings
+    await conn.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS tramo_origen VARCHAR(255) DEFAULT NULL`).catch(() => {})
+    await conn.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS tramo_destino VARCHAR(255) DEFAULT NULL`).catch(() => {})
+
     // Añadir pickup_address a paradas (para tablas ya existentes)
     await conn.query(`
       ALTER TABLE paradas ADD COLUMN IF NOT EXISTS pickup_address VARCHAR(255) DEFAULT NULL
@@ -134,10 +143,21 @@ const createTables = async () => {
       )
     `)
 
+    // Añadir passenger_id a messages para chats privados conductor-pasajero
+    await conn.query(`
+      ALTER TABLE messages ADD COLUMN IF NOT EXISTS passenger_id INT DEFAULT NULL
+    `).catch(() => {})
+    await conn.query(`
+      ALTER TABLE messages ADD INDEX IF NOT EXISTS idx_trip_passenger (trip_id, passenger_id)
+    `).catch(() => {})
+
     // Seed: cuentas de test
     const testUsers = [
       { nombre: 'Conductor', apellidos: 'Test', email: 'conductor@test.com' },
       { nombre: 'Pasajero', apellidos: 'Test', email: 'pasajero@test.com' },
+      { nombre: 'Pasajero1', apellidos: 'Test', email: 'pasajero1@test.com' },
+      { nombre: 'Pasajero2', apellidos: 'Test', email: 'pasajero2@test.com' },
+      { nombre: 'Pasajero3', apellidos: 'Test', email: 'pasajero3@test.com' },
     ]
     const hash = await bcrypt.hash('password', 12)
     for (const u of testUsers) {
@@ -150,6 +170,12 @@ const createTables = async () => {
         console.log(`Usuario test creado: ${u.email}`)
       }
     }
+
+    // Fix foto URLs: /Zirpo/uploads/ -> /Zirpo/api/uploads/
+    await conn.query(`
+      UPDATE users SET foto = REPLACE(foto, '/Zirpo/uploads/', '/Zirpo/api/uploads/')
+      WHERE foto LIKE '/Zirpo/uploads/%' AND foto NOT LIKE '/Zirpo/api/uploads/%'
+    `).catch(() => {})
 
     console.log('Tablas creadas/actualizadas correctamente')
   } catch (err) {

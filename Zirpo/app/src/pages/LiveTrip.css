@@ -1,0 +1,301 @@
+.live-page {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.live-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.25rem;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.connection-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.connection-badge.connected {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.live-content {
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.live-map {
+  width: 100%;
+  height: 300px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+/* Driver marker */
+.driver-marker {
+  width: 20px;
+  height: 20px;
+  background: var(--blue);
+  border: 3px solid var(--white);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3), var(--shadow-md);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3), var(--shadow-md); }
+  50% { box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.1), var(--shadow-md); }
+}
+
+/* Route header */
+.live-route-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.live-route-cities {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+}
+
+.live-progress {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--blue);
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ETA list */
+.eta-list {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.eta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.eta-item:last-child { border-bottom: none; }
+
+.eta-item.reached { opacity: 0.5; }
+
+.eta-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.eta-city {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
+
+.eta-time {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.eta-item.reached .eta-time {
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* Simulation controls */
+.sim-controls {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sim-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.speed-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.speed-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-right: 0.25rem;
+}
+
+.speed-btn {
+  padding: 0.35rem 0.7rem;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.speed-btn.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+
+.speed-btn:hover:not(.active) {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+/* Action buttons */
+.sim-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-start {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-start:hover:not(:disabled) { background: var(--blue-hover); }
+.btn-start:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-pause {
+  flex: 1;
+  padding: 0.75rem;
+  background: #fef3c7;
+  color: #92400e;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-pause:hover { background: #fde68a; }
+
+.btn-resume {
+  flex: 1;
+  padding: 0.75rem;
+  background: var(--green-bg);
+  color: #166534;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-resume:hover { background: #bbf7d0; }
+
+.btn-stop {
+  padding: 0.75rem 1.25rem;
+  background: var(--red-bg);
+  color: var(--red);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-stop:hover { background: #fecaca; }
+
+.sim-completed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: center;
+}
+
+.sim-completed p {
+  font-weight: 700;
+  color: var(--green);
+  font-size: 1rem;
+}
+
+/* Finish trip button */
+.sim-controls .btn-finish-trip {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 2px solid var(--red, #dc2626);
+  background: var(--white);
+  color: var(--red, #dc2626);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sim-controls .btn-finish-trip:hover {
+  background: var(--red, #dc2626);
+  color: white;
+}
+
+.sim-controls .btn-finish-trip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

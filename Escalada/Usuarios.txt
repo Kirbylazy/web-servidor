@@ -1,0 +1,4 @@
+Admin            admin@escalada.com       admin
+Arbitro          arbitro@escalada.com     password
+Entrenador       entrenador@escalada.com  password
+Competidor(1-5)  competidor1@escalada.com password

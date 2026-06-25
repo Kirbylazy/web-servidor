@@ -1,25 +1,39 @@
 import pool from '../db.js'
 
-const GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY
+const GEOCODER_URL = process.env.GEOCODER_URL || 'http://localhost:2322'
+const ROUTER_URL = process.env.ROUTER_URL || 'http://localhost:8080'
+
+async function geocodeCity(city) {
+  const params = new URLSearchParams({ q: city, limit: '1' })
+  const res = await fetch(`${GEOCODER_URL}/search?${params}`)
+  const data = await res.json()
+  if (!data.length) return null
+  return { lat: data[0].lat, lng: data[0].lng }
+}
 
 async function calcularRuta(origen, destino) {
-  if (!GOOGLE_MAPS_KEY) return null
   try {
-    const url = `https://maps.googleapis.com/maps/api/directions/json?` +
-      `origin=${encodeURIComponent(origen)}&destination=${encodeURIComponent(destino)}` +
-      `&mode=driving&language=es&key=${GOOGLE_MAPS_KEY}`
-    const res = await fetch(url)
+    const [origenGeo, destinoGeo] = await Promise.all([
+      geocodeCity(origen),
+      geocodeCity(destino),
+    ])
+    if (!origenGeo || !destinoGeo) return null
+
+    const res = await fetch(
+      `${ROUTER_URL}/route?point=${origenGeo.lat},${origenGeo.lng}&point=${destinoGeo.lat},${destinoGeo.lng}&profile=car&type=json&points_encoded=true`
+    )
     const data = await res.json()
-    if (data.status !== 'OK') return null
-    const leg = data.routes[0].legs[0]
+    if (!data.paths?.length) return null
+
+    const path = data.paths[0]
     return {
-      origen_lat: leg.start_location.lat,
-      origen_lng: leg.start_location.lng,
-      destino_lat: leg.end_location.lat,
-      destino_lng: leg.end_location.lng,
-      distancia_km: Math.round(leg.distance.value / 1000),
-      duracion_min: Math.round(leg.duration.value / 60),
-      ruta_polyline: data.routes[0].overview_polyline.points,
+      origen_lat: origenGeo.lat,
+      origen_lng: origenGeo.lng,
+      destino_lat: destinoGeo.lat,
+      destino_lng: destinoGeo.lng,
+      distancia_km: Math.round(path.distance / 1000),
+      duracion_min: Math.round(path.time / 60000),
+      ruta_polyline: path.points,
     }
   } catch {
     return null
@@ -29,6 +43,8 @@ async function calcularRuta(origen, destino) {
 export const getTrips = async (req, res) => {
   const { origen, destino, fecha } = req.query
   try {
+    // No filtrar por asientos_disponibles globalmente — la disponibilidad
+    // se comprueba por tramo después de calcular la ocupación por segmento
     let sql = `
       SELECT t.*, u.nombre AS conductor_nombre, u.apellidos AS conductor_apellidos,
              u.foto AS conductor_foto, u.valoracion_media AS conductor_valoracion,
@@ -36,7 +52,7 @@ export const getTrips = async (req, res) => {
       FROM trips t
       JOIN users u ON t.conductor_id = u.id
       LEFT JOIN vehicles v ON v.user_id = t.conductor_id
-      WHERE t.estado = 'activo' AND t.asientos_disponibles > 0 AND t.fecha >= CURDATE()
+      WHERE t.estado = 'activo' AND t.fecha >= CURDATE()
     `
     const params = []
 
@@ -66,22 +82,81 @@ export const getTrips = async (req, res) => {
 
     const [rows] = await pool.query(sql, params)
 
-    // Adjuntar paradas a cada viaje para que el frontend calcule el tramo buscado
+    const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+    const getOrden = (paradas, ciudad) => {
+      if (!ciudad) return null
+      const n = norm(ciudad)
+      const p = paradas.find(p => norm(p.ciudad).includes(n) || n.includes(norm(p.ciudad)))
+      return p ? p.orden : null
+    }
+
+    // Adjuntar paradas con disponibilidad por segmento
     if (rows.length > 0) {
       const tripIds = rows.map(t => t.id)
       const [allParadas] = await pool.query(
         `SELECT * FROM paradas WHERE trip_id IN (${tripIds.map(() => '?').join(',')}) ORDER BY orden`,
         tripIds
       )
-      const byTrip = {}
+      const [allBookings] = await pool.query(
+        `SELECT * FROM bookings WHERE trip_id IN (${tripIds.map(() => '?').join(',')}) AND estado IN ('pendiente', 'confirmada')`,
+        tripIds
+      )
+      const paradasByTrip = {}
       allParadas.forEach(p => {
-        if (!byTrip[p.trip_id]) byTrip[p.trip_id] = []
-        byTrip[p.trip_id].push(p)
+        if (!paradasByTrip[p.trip_id]) paradasByTrip[p.trip_id] = []
+        paradasByTrip[p.trip_id].push(p)
       })
-      rows.forEach(t => { t.paradas = byTrip[t.id] || [] })
+      const bookingsByTrip = {}
+      allBookings.forEach(b => {
+        if (!bookingsByTrip[b.trip_id]) bookingsByTrip[b.trip_id] = []
+        bookingsByTrip[b.trip_id].push(b)
+      })
+
+      rows.forEach(t => {
+        const paradas = paradasByTrip[t.id] || []
+        const tripBookings = bookingsByTrip[t.id] || []
+        t.paradas = paradas
+
+        if (paradas.length >= 2) {
+          const numSeg = paradas.length - 1
+          const occ = new Array(numSeg).fill(0)
+          for (const b of tripBookings) {
+            const sO = b.tramo_origen ? getOrden(paradas, b.tramo_origen) : 0
+            const sD = b.tramo_destino ? getOrden(paradas, b.tramo_destino) : paradas.length - 1
+            if (sO === null || sD === null) continue
+            for (let s = sO; s < sD && s < numSeg; s++) occ[s]++
+          }
+          paradas.forEach((p, i) => {
+            if (i < numSeg) p.asientos_disponibles_segmento = t.asientos_totales - occ[i]
+          })
+        }
+      })
     }
 
-    res.json({ trips: rows })
+    // Filtrar viajes sin plazas en el tramo buscado
+    const filtered = rows.filter(t => {
+      const paradas = t.paradas || []
+      if (paradas.length < 2) return t.asientos_disponibles > 0
+
+      if (origen && destino) {
+        const sO = getOrden(paradas, origen)
+        const sD = getOrden(paradas, destino)
+        if (sO !== null && sD !== null && sO < sD) {
+          for (let s = sO; s < sD; s++) {
+            const seg = paradas[s]
+            if (seg?.asientos_disponibles_segmento !== undefined && seg.asientos_disponibles_segmento <= 0) {
+              return false
+            }
+          }
+          return true
+        }
+      }
+
+      // Sin tramo especifico: comprobar que al menos un segmento tiene plazas
+      return paradas.some(p => p.asientos_disponibles_segmento === undefined || p.asientos_disponibles_segmento > 0)
+    })
+
+    res.json({ trips: filtered })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Error interno del servidor' })
@@ -114,7 +189,34 @@ export const getTripById = async (req, res) => {
       [req.params.id]
     )
 
-    res.json({ trip: rows[0], bookings, paradas })
+    // Calculate per-segment availability
+    const trip = rows[0]
+    if (paradas.length >= 2) {
+      const numSegments = paradas.length - 1
+      const occupancy = new Array(numSegments).fill(0)
+      const activeBookings = bookings.filter(b => b.estado === 'confirmada' || b.estado === 'pendiente')
+      const norm = s => s?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+      const getOrden = (ciudad) => {
+        if (!ciudad) return null
+        const n = norm(ciudad)
+        const p = paradas.find(p => norm(p.ciudad).includes(n) || n.includes(norm(p.ciudad)))
+        return p ? p.orden : null
+      }
+      for (const b of activeBookings) {
+        const sO = b.tramo_origen ? getOrden(b.tramo_origen) : 0
+        const sD = b.tramo_destino ? getOrden(b.tramo_destino) : paradas.length - 1
+        if (sO === null || sD === null) continue
+        for (let s = sO; s < sD && s < numSegments; s++) occupancy[s]++
+      }
+      // Attach per-segment availability to paradas
+      paradas.forEach((p, i) => {
+        if (i < numSegments) {
+          p.asientos_disponibles_segmento = trip.asientos_totales - occupancy[i]
+        }
+      })
+    }
+
+    res.json({ trip, bookings, paradas })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Error interno del servidor' })
@@ -189,6 +291,10 @@ export const updateTrip = async (req, res) => {
     if (!rows[0]) return res.status(404).json({ error: 'Viaje no encontrado' })
     if (rows[0].conductor_id !== req.user.id) return res.status(403).json({ error: 'No autorizado' })
 
+    if (estado && !['activo', 'completado', 'cancelado', 'en_ruta'].includes(estado)) {
+      return res.status(400).json({ error: 'Estado no valido' })
+    }
+
     await pool.query('UPDATE trips SET descripcion = ?, estado = ? WHERE id = ?',
       [descripcion ?? rows[0].descripcion, estado ?? rows[0].estado, req.params.id])
 
@@ -225,8 +331,8 @@ export const getMyTrips = async (req, res) => {
       ORDER BY t.fecha DESC, t.hora DESC
     `, [req.user.id])
 
-    const activos = trips.filter(t => t.estado === 'activo')
-    const historial = trips.filter(t => t.estado !== 'activo')
+    const activos = trips.filter(t => t.estado === 'activo' || t.estado === 'en_ruta')
+    const historial = trips.filter(t => t.estado !== 'activo' && t.estado !== 'en_ruta')
 
     res.json({ trips: activos, historial })
   } catch (err) {

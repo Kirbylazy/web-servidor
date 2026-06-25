@@ -74,7 +74,7 @@ export const updatePhoto = async (req, res) => {
 
   if (!req.file) return res.status(400).json({ error: 'No se subió ninguna imagen' })
 
-  const fotoUrl = `/Zirpo/uploads/${req.file.filename}`
+  const fotoUrl = `/Zirpo/api/uploads/${req.file.filename}`
 
   try {
     await pool.query('UPDATE users SET foto = ? WHERE id = ?', [fotoUrl, req.user.id])

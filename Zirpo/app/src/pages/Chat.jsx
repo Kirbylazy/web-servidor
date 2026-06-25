@@ -5,30 +5,44 @@ import { useAuth } from '../context/AuthContext'
 import './Chat.css'
 
 const Chat = () => {
-  const { tripId } = useParams()
+  const { tripId, passengerId } = useParams()
   const { user } = useAuth()
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [trip, setTrip] = useState(null)
+  const [otherUser, setOtherUser] = useState(null)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const bottomRef = useRef(null)
   const lastId = useRef(0)
 
   useEffect(() => {
-    api.get(`/trips/${tripId}`).then(data => setTrip(data.trip)).catch(() => {})
-    api.get(`/messages/${tripId}`).then(data => {
+    api.get(`/trips/${tripId}`).then(data => {
+      setTrip(data.trip)
+      // Determine the other person's name
+      const isConductor = data.trip.conductor_id === user.id
+      if (isConductor) {
+        // Conductor chatting with a passenger — find passenger in bookings
+        const passenger = data.bookings?.find(b => b.pasajero_id === parseInt(passengerId))
+        setOtherUser(passenger ? { nombre: passenger.pasajero_nombre, foto: passenger.pasajero_foto } : null)
+      } else {
+        // Passenger chatting with conductor
+        setOtherUser({ nombre: data.trip.conductor_nombre, foto: data.trip.conductor_foto })
+      }
+    }).catch(() => {})
+
+    api.get(`/messages/${tripId}/${passengerId}`).then(data => {
       setMessages(data.messages)
       if (data.messages.length) {
         lastId.current = data.messages[data.messages.length - 1].id
       }
     }).catch(() => {})
-  }, [tripId])
+  }, [tripId, passengerId])
 
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const data = await api.get(`/messages/${tripId}?after_id=${lastId.current}`)
+        const data = await api.get(`/messages/${tripId}/${passengerId}?after_id=${lastId.current}`)
         if (data.messages.length) {
           setMessages(prev => [...prev, ...data.messages])
           lastId.current = data.messages[data.messages.length - 1].id
@@ -36,7 +50,7 @@ const Chat = () => {
       } catch { /* silenciar errores de polling */ }
     }, 4000)
     return () => clearInterval(interval)
-  }, [tripId])
+  }, [tripId, passengerId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -47,7 +61,11 @@ const Chat = () => {
     setSending(true)
     setError('')
     try {
-      const data = await api.post('/messages', { trip_id: parseInt(tripId), contenido: text.trim() })
+      const data = await api.post('/messages', {
+        trip_id: parseInt(tripId),
+        passenger_id: parseInt(passengerId),
+        contenido: text.trim()
+      })
       setMessages(prev => [...prev, data.message])
       lastId.current = data.message.id
       setText('')
@@ -67,7 +85,6 @@ const Chat = () => {
   const formatTime = ts => new Date(ts).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
   const formatDate = ts => new Date(ts).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
 
-  // Agrupar mensajes por fecha
   let lastDate = null
 
   return (
@@ -75,6 +92,7 @@ const Chat = () => {
       <div className="chat-topbar">
         <Link to={`/trips/${tripId}`} className="back-link">←</Link>
         <div className="chat-topbar-info">
+          {otherUser && <span className="chat-interlocutor">{otherUser.nombre}</span>}
           {trip && <span className="chat-trip-route">{trip.origen} → {trip.destino}</span>}
         </div>
       </div>
@@ -90,7 +108,6 @@ const Chat = () => {
             <div key={msg.id}>
               {showDate && <div className="chat-date-divider"><span>{msgDate}</span></div>}
               <div className={`chat-bubble ${isOwn ? 'chat-own' : 'chat-other'}`}>
-                {!isOwn && <span className="chat-sender">{msg.sender_nombre}</span>}
                 <p className="chat-text">{msg.contenido}</p>
                 <span className="chat-time">{formatTime(msg.created_at)}</span>
               </div>
