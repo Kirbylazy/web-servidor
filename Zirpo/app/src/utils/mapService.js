@@ -16,8 +16,9 @@ L.Icon.Default.mergeOptions({
 // --- Service URLs (local self-hosted) ---
 
 const BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000'
-const GEOCODER_URL = import.meta.env.VITE_GEOCODER_URL || `${BASE_URL.replace(':3000', ':2322')}`
-const ROUTER_URL = import.meta.env.VITE_ROUTER_URL || `${BASE_URL.replace(':3000', ':8080')}`
+const isAbsolute = BASE_URL.startsWith('http')
+const GEOCODER_URL = import.meta.env.VITE_GEOCODER_URL || (isAbsolute ? BASE_URL.replace(':3000', ':2322') : `${BASE_URL}/api/geocoder`)
+const ROUTER_URL = import.meta.env.VITE_ROUTER_URL || (isAbsolute ? BASE_URL.replace(':3000', ':8080') : `${BASE_URL}/api/router`)
 
 // --- Tile layer ---
 

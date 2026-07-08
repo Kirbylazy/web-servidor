@@ -37,6 +37,28 @@ app.use(express.json())
 // Servir fotos de perfil
 app.use('/api/uploads', express.static('uploads'))
 
+// Proxy para geocoder local (puerto 2322)
+app.use('/api/geocoder', async (req, res) => {
+  try {
+    const response = await fetch(`http://localhost:2322${req.url}`)
+    const data = await response.json()
+    res.json(data)
+  } catch (err) {
+    res.status(502).json({ error: 'Geocoder no disponible' })
+  }
+})
+
+// Proxy para GraphHopper local (puerto 8080)
+app.use('/api/router', async (req, res) => {
+  try {
+    const response = await fetch(`http://localhost:8080${req.url}`)
+    const data = await response.json()
+    res.json(data)
+  } catch (err) {
+    res.status(502).json({ error: 'Router no disponible' })
+  }
+})
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }))
 
 app.use('/api/auth', authRouter)
