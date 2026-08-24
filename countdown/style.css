@@ -28,7 +28,6 @@ body {
     overflow-x: hidden;
 }
 
-/* ── GRID FONDO ── */
 body::before {
     content: '';
     position: fixed;
@@ -41,7 +40,6 @@ body::before {
     z-index: 0;
 }
 
-/* ── GLOW RADIAL FONDO ── */
 body::after {
     content: '';
     position: fixed;
@@ -53,7 +51,6 @@ body::after {
     z-index: 0;
 }
 
-/* ── NAV ── */
 nav {
     width: 100%;
     padding: 20px 40px;
@@ -88,7 +85,6 @@ nav a.back:hover {
     box-shadow: var(--glow-cyan);
 }
 
-/* ── MAIN ── */
 main {
     position: relative;
     z-index: 5;
@@ -101,7 +97,6 @@ main {
     gap: 80px;
 }
 
-/* ── BLOQUE PRINCIPAL ── */
 .arrival-block {
     display: flex;
     flex-direction: column;
@@ -138,23 +133,27 @@ main {
     50%       { transform: scale(1.2); opacity: 0.8; }
 }
 
-/* ── CONTADOR ──
-   .counter es display:block para garantizar que .counter-row
-   apilen verticalmente sin importar el tamaño de pantalla.
-   Cada .counter-row es una fila horizontal de unidades.       */
+/* ─────────────────────────────────────────────
+   CONTADOR
+   .counter apila las dos filas verticalmente.
+   .counter-row es una línea horizontal de unidades,
+   nunca se rompe en más líneas (flex-wrap: nowrap).
+───────────────────────────────────────────── */
 .counter {
-    display: block;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
 }
 
 .counter-row {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     justify-content: center;
     align-items: flex-end;
-    gap: clamp(10px, 2.5vw, 24px);
-    margin-bottom: 20px;
+    gap: 16px;
 }
-.counter-row:last-child { margin-bottom: 0; }
 
 .counter-unit {
     display: flex;
@@ -164,7 +163,7 @@ main {
 }
 
 .counter-unit .value {
-    font-size: clamp(32px, 8vw, 72px);
+    font-size: clamp(32px, 7vw, 72px);
     color: var(--pink);
     text-shadow: var(--glow-pink);
     line-height: 1;
@@ -180,9 +179,10 @@ main {
 
 .counter-sep {
     font-size: clamp(24px, 6vw, 56px);
-    color: rgba(255,78,203,0.7);
+    color: rgba(255,78,203,0.75);
     padding-bottom: 14px;
     line-height: 1;
+    flex-shrink: 0;
 }
 
 /* ── DIVIDER ── */
@@ -205,7 +205,7 @@ main {
     font-size: 12px;
 }
 
-/* ── BLOQUE SECUNDARIO (VUELO) ── */
+/* ── BLOQUE VUELO ── */
 .flight-block {
     display: flex;
     flex-direction: column;
@@ -242,7 +242,7 @@ main {
 
 .flight-block .counter-sep {
     font-size: clamp(16px, 4vw, 36px);
-    color: rgba(93,214,255,0.7);
+    color: rgba(93,214,255,0.75);
     padding-bottom: 10px;
 }
 
@@ -252,7 +252,6 @@ main {
     margin-bottom: 4px;
 }
 
-/* ── LLEGADO ── */
 .arrived-msg {
     font-size: clamp(10px, 2vw, 14px);
     color: var(--orange);
@@ -267,7 +266,6 @@ main {
     50%       { opacity: 0.3; }
 }
 
-/* ── FOOTER ── */
 footer {
     position: relative;
     z-index: 5;
@@ -281,13 +279,19 @@ footer {
     width: 100%;
 }
 
-footer a {
-    color: var(--pink);
-    text-decoration: none;
-}
+footer a { color: var(--pink); text-decoration: none; }
 
-/* ── RESPONSIVE ── */
+/* ── MÓVIL ── */
 @media (max-width: 540px) {
     nav { padding: 16px 20px; }
-    .counter-row { gap: 6px; }
+
+    .counter-row { gap: 8px; }
+
+    .counter-unit .value         { font-size: clamp(26px, 9vw, 72px); }
+    .counter-sep                  { font-size: clamp(20px, 7vw, 56px); padding-bottom: 10px; }
+
+    .flight-block .counter-unit .value { font-size: clamp(18px, 6vw, 44px); }
+    .flight-block .counter-sep         { font-size: clamp(14px, 5vw, 36px); padding-bottom: 8px; }
+
+    .counter-unit .label { font-size: 7px; }
 }
