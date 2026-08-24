@@ -279,6 +279,7 @@ footer {
     width: 100%;
 }
 
+footer { line-height: 2; }
 footer a { color: var(--pink); text-decoration: none; }
 
 /* ── MÓVIL ── */
