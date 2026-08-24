@@ -1,0 +1,289 @@
+:root {
+    --bg:        #0d0524;
+    --bg2:       #140836;
+    --card-bg:   #1a0d40;
+    --border:    #3d1d70;
+    --text:      #e8ddff;
+    --text-dim:  #9080c0;
+    --pink:      #ff4ecb;
+    --cyan:      #5dd6ff;
+    --purple:    #c96bff;
+    --orange:    #ffa73d;
+
+    --glow-pink: 0 0 24px rgba(255,78,203,0.65), 0 0 60px rgba(255,78,203,0.25);
+    --glow-cyan: 0 0 24px rgba(93,214,255,0.65), 0 0 60px rgba(93,214,255,0.25);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Press Start 2P', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+/* ── GRID FONDO ── */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(93,214,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(93,214,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── GLOW RADIAL FONDO ── */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,78,203,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 80% 40% at 50% 100%, rgba(93,214,255,0.10) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── NAV ── */
+nav {
+    width: 100%;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    background: rgba(13,5,36,0.85);
+    backdrop-filter: blur(8px);
+}
+
+nav .logo {
+    font-size: 13px;
+    color: var(--pink);
+    text-shadow: var(--glow-pink);
+    letter-spacing: 0.04em;
+}
+
+nav a.back {
+    font-size: 9px;
+    color: var(--cyan);
+    text-decoration: none;
+    padding: 8px 14px;
+    border: 1px solid rgba(93,214,255,0.35);
+    border-radius: 2px;
+    transition: all 0.2s;
+}
+nav a.back:hover {
+    background: rgba(93,214,255,0.1);
+    box-shadow: var(--glow-cyan);
+}
+
+/* ── MAIN ── */
+main {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    max-width: 900px;
+    padding: 60px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 80px;
+}
+
+/* ── BLOQUE PRINCIPAL ── */
+.arrival-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    width: 100%;
+}
+
+.block-title {
+    font-size: clamp(8px, 1.4vw, 11px);
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-align: center;
+}
+
+.block-hero {
+    font-size: clamp(10px, 2vw, 14px);
+    color: var(--pink);
+    text-shadow: var(--glow-pink);
+    letter-spacing: 0.06em;
+    text-align: center;
+    line-height: 1.8;
+}
+
+.heart {
+    font-size: 28px;
+    animation: pulse 1.4s ease-in-out infinite;
+    display: block;
+    margin-bottom: 8px;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1);   opacity: 1; }
+    50%       { transform: scale(1.2); opacity: 0.8; }
+}
+
+/* ── CONTADOR ── */
+.counter {
+    display: flex;
+    gap: clamp(8px, 2.5vw, 24px);
+    align-items: flex-end;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.counter-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.counter-unit .value {
+    font-size: clamp(32px, 8vw, 72px);
+    color: var(--pink);
+    text-shadow: var(--glow-pink);
+    line-height: 1;
+    min-width: 2ch;
+    text-align: center;
+    transition: color 0.1s;
+}
+
+.counter-unit .label {
+    font-size: clamp(6px, 1vw, 8px);
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+}
+
+.counter-sep {
+    font-size: clamp(24px, 6vw, 56px);
+    color: rgba(255,78,203,0.35);
+    padding-bottom: 14px;
+    line-height: 1;
+}
+
+/* ── DIVIDER ── */
+.divider {
+    width: 100%;
+    max-width: 600px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    position: relative;
+}
+.divider::before {
+    content: '◈';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg);
+    padding: 0 12px;
+    color: var(--border);
+    font-size: 12px;
+}
+
+/* ── BLOQUE SECUNDARIO (VUELO) ── */
+.flight-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    padding: 32px 24px;
+    border: 1px solid rgba(93,214,255,0.2);
+    border-radius: 4px;
+    background: rgba(93,214,255,0.03);
+    position: relative;
+}
+
+.flight-block::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(93,214,255,0.15), transparent 60%);
+    pointer-events: none;
+}
+
+.flight-block .block-title {
+    color: var(--text-dim);
+}
+
+.flight-block .block-hero {
+    font-size: clamp(8px, 1.4vw, 11px);
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+}
+
+.flight-block .counter .value {
+    font-size: clamp(20px, 5vw, 44px);
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+}
+
+.flight-block .counter-sep {
+    color: rgba(93,214,255,0.35);
+    font-size: clamp(16px, 4vw, 36px);
+}
+
+.plane-icon {
+    font-size: 22px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* ── LLEGADO ── */
+.arrived-msg {
+    font-size: clamp(10px, 2vw, 14px);
+    color: var(--orange);
+    text-shadow: 0 0 20px rgba(255,167,61,0.6);
+    text-align: center;
+    line-height: 2;
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+/* ── FOOTER ── */
+footer {
+    position: relative;
+    z-index: 5;
+    margin-top: auto;
+    padding: 20px;
+    font-size: 7px;
+    color: var(--text-dim);
+    text-align: center;
+    letter-spacing: 0.1em;
+    border-top: 1px solid var(--border);
+    width: 100%;
+}
+
+footer a {
+    color: var(--pink);
+    text-decoration: none;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 540px) {
+    nav { padding: 16px 20px; }
+    .counter { gap: 6px; }
+    .counter-sep { display: none; }
+}
