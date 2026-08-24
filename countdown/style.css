@@ -110,7 +110,7 @@ main {
     color: var(--text-dim);
     letter-spacing: 0.12em;
     text-align: center;
-    line-height: 2;
+    line-height: 3;
 }
 
 .block-hero {
@@ -276,11 +276,11 @@ footer {
     color: var(--text-dim);
     text-align: center;
     letter-spacing: 0.1em;
+    line-height: 3;
     border-top: 1px solid var(--border);
     width: 100%;
 }
 
-footer { line-height: 2; }
 footer a { color: var(--pink); text-decoration: none; }
 
 /* ── MÓVIL ── */
