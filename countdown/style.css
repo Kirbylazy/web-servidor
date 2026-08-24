@@ -141,9 +141,15 @@ main {
 /* ── CONTADOR ── */
 .counter {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.counter-row {
+    display: flex;
     gap: clamp(8px, 2.5vw, 24px);
     align-items: flex-end;
-    flex-wrap: wrap;
     justify-content: center;
 }
 
@@ -284,6 +290,5 @@ footer a {
 /* ── RESPONSIVE ── */
 @media (max-width: 540px) {
     nav { padding: 16px 20px; }
-    .counter { gap: 6px; }
-    .counter-sep { display: none; }
+    .counter-row { gap: 6px; }
 }

@@ -34,12 +34,17 @@ function getCountdown(target) {
     return { months, days, hours, minutes, seconds };
 }
 
-function renderCountdown(ids, target, heroId, arrivedMsg) {
+function show(id, visible) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = visible ? '' : 'none';
+}
+
+function renderCountdown(p, target, heroId, arrivedMsg) {
     const cd   = getCountdown(target);
     const hero = document.getElementById(heroId);
 
     if (!cd) {
-        document.getElementById(ids[0]).closest('.counter').style.display = 'none';
+        show(`counter-${p}`, false);
         if (hero) {
             hero.innerHTML = arrivedMsg;
             hero.classList.add('arrived-msg');
@@ -47,26 +52,36 @@ function renderCountdown(ids, target, heroId, arrivedMsg) {
         return;
     }
 
-    document.getElementById(ids[0]).textContent = pad(cd.months);
-    document.getElementById(ids[1]).textContent = pad(cd.days);
-    document.getElementById(ids[2]).textContent = pad(cd.hours);
-    document.getElementById(ids[3]).textContent = pad(cd.minutes);
-    document.getElementById(ids[4]).textContent = pad(cd.seconds);
+    // Actualizar valores
+    document.getElementById(`${p}-months`).textContent  = pad(cd.months);
+    document.getElementById(`${p}-days`).textContent    = pad(cd.days);
+    document.getElementById(`${p}-hours`).textContent   = pad(cd.hours);
+    document.getElementById(`${p}-minutes`).textContent = pad(cd.minutes);
+    document.getElementById(`${p}-seconds`).textContent = pad(cd.seconds);
+
+    // Ocultar unidades que aún son cero por delante (leading zeros)
+    const showMonths  = cd.months > 0;
+    const showDays    = cd.months > 0 || cd.days > 0;
+    const showHours   = showDays       || cd.hours > 0;
+    const showMinutes = showHours      || cd.minutes > 0;
+
+    // Fila 1: meses : días
+    show(`wrap-${p}-months`, showMonths);
+    show(`sep-${p}-months`,  showMonths);  // ocultar ":" si meses oculto
+    show(`wrap-${p}-days`,   showDays);
+    show(`row1-${p}`,        showDays);    // ocultar fila entera si días también a cero
+
+    // Fila 2: horas : min : seg
+    show(`wrap-${p}-hours`,   showHours);
+    show(`sep-${p}-hours`,    showHours);   // ocultar ":" si horas oculto
+    show(`wrap-${p}-minutes`, showMinutes);
+    show(`sep-${p}-minutes`,  showMinutes); // ocultar ":" si minutos oculto
+    // SEG siempre visible
 }
 
 function tick() {
-    renderCountdown(
-        ['a-months', 'a-days', 'a-hours', 'a-minutes', 'a-seconds'],
-        TARGET_ARRIVAL,
-        'arrival-hero',
-        '<span class="heart">♥</span>¡YA ESTÁ AQUÍ!'
-    );
-    renderCountdown(
-        ['f-months', 'f-days', 'f-hours', 'f-minutes', 'f-seconds'],
-        TARGET_DEPARTURE,
-        'flight-hero',
-        '<span class="plane-icon">✈</span>¡EL VUELO HA DESPEGADO!'
-    );
+    renderCountdown('a', TARGET_ARRIVAL,   'arrival-hero', '<span class="heart">♥</span>¡YA ESTÁ AQUÍ!');
+    renderCountdown('f', TARGET_DEPARTURE, 'flight-hero',  '<span class="plane-icon">✈</span>¡EL VUELO HA DESPEGADO!');
 }
 
 tick();
