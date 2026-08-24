@@ -34,6 +34,7 @@ function getCountdown(target) {
     return { months, days, hours, minutes, seconds };
 }
 
+// Muestra u oculta un elemento por id ('' restaura el estilo CSS)
 function show(id, visible) {
     const el = document.getElementById(id);
     if (el) el.style.display = visible ? '' : 'none';
@@ -59,24 +60,26 @@ function renderCountdown(p, target, heroId, arrivedMsg) {
     document.getElementById(`${p}-minutes`).textContent = pad(cd.minutes);
     document.getElementById(`${p}-seconds`).textContent = pad(cd.seconds);
 
-    // Ocultar unidades que aún son cero por delante (leading zeros)
+    // Ocultar unidades que todavía son cero liderando (leading zeros)
+    // Una unidad se oculta solo si ella Y todas las superiores son cero
     const showMonths  = cd.months > 0;
     const showDays    = cd.months > 0 || cd.days > 0;
     const showHours   = showDays       || cd.hours > 0;
     const showMinutes = showHours      || cd.minutes > 0;
-
-    // Fila 1: meses : días
-    show(`wrap-${p}-months`, showMonths);
-    show(`sep-${p}-months`,  showMonths);  // ocultar ":" si meses oculto
-    show(`wrap-${p}-days`,   showDays);
-    show(`row1-${p}`,        showDays);    // ocultar fila entera si días también a cero
-
-    // Fila 2: horas : min : seg
-    show(`wrap-${p}-hours`,   showHours);
-    show(`sep-${p}-hours`,    showHours);   // ocultar ":" si horas oculto
-    show(`wrap-${p}-minutes`, showMinutes);
-    show(`sep-${p}-minutes`,  showMinutes); // ocultar ":" si minutos oculto
     // SEG siempre visible
+
+    // Fila 1: MESES : DÍAS
+    show(`wrap-${p}-months`, showMonths);
+    show(`sep-${p}-months`,  showMonths);   // ":" entre meses y días
+    show(`wrap-${p}-days`,   showDays);
+    show(`row1-${p}`,        showDays);     // ocultar fila entera cuando meses=0 y días=0
+
+    // Fila 2: HORAS : MIN : SEG
+    show(`wrap-${p}-hours`,   showHours);
+    show(`sep-${p}-hours`,    showHours);   // ":" entre horas y min
+    show(`wrap-${p}-minutes`, showMinutes);
+    show(`sep-${p}-seconds`,  showMinutes); // ":" entre min y seg
+    // .counter-unit de SEG no tiene id wrap porque nunca se oculta
 }
 
 function tick() {

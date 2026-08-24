@@ -138,20 +138,23 @@ main {
     50%       { transform: scale(1.2); opacity: 0.8; }
 }
 
-/* ── CONTADOR ── */
+/* ── CONTADOR ──
+   .counter es display:block para garantizar que .counter-row
+   apilen verticalmente sin importar el tamaño de pantalla.
+   Cada .counter-row es una fila horizontal de unidades.       */
 .counter {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
+    display: block;
+    text-align: center;
 }
 
 .counter-row {
     display: flex;
-    gap: clamp(8px, 2.5vw, 24px);
-    align-items: flex-end;
     justify-content: center;
+    align-items: flex-end;
+    gap: clamp(10px, 2.5vw, 24px);
+    margin-bottom: 20px;
 }
+.counter-row:last-child { margin-bottom: 0; }
 
 .counter-unit {
     display: flex;
@@ -167,7 +170,6 @@ main {
     line-height: 1;
     min-width: 2ch;
     text-align: center;
-    transition: color 0.1s;
 }
 
 .counter-unit .label {
@@ -178,7 +180,7 @@ main {
 
 .counter-sep {
     font-size: clamp(24px, 6vw, 56px);
-    color: rgba(255,78,203,0.35);
+    color: rgba(255,78,203,0.7);
     padding-bottom: 14px;
     line-height: 1;
 }
@@ -226,25 +228,22 @@ main {
     pointer-events: none;
 }
 
-.flight-block .block-title {
-    color: var(--text-dim);
-}
-
 .flight-block .block-hero {
     font-size: clamp(8px, 1.4vw, 11px);
     color: var(--cyan);
     text-shadow: var(--glow-cyan);
 }
 
-.flight-block .counter .value {
+.flight-block .counter-unit .value {
     font-size: clamp(20px, 5vw, 44px);
     color: var(--cyan);
     text-shadow: var(--glow-cyan);
 }
 
 .flight-block .counter-sep {
-    color: rgba(93,214,255,0.35);
     font-size: clamp(16px, 4vw, 36px);
+    color: rgba(93,214,255,0.7);
+    padding-bottom: 10px;
 }
 
 .plane-icon {
