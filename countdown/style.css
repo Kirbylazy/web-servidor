@@ -283,17 +283,23 @@ footer {
 
 footer a { color: var(--pink); text-decoration: none; }
 
-/* ── MÓVIL ── */
+/* ══════════════════════════════════════════════
+   MÓVIL  (≤ 540px)
+   Todos los tamaños en vw puro para que escalen
+   proporcionalmente a cualquier ancho de pantalla
+   y nunca desborden con flex-wrap:nowrap.
+   ══════════════════════════════════════════════ */
 @media (max-width: 540px) {
     nav { padding: 16px 20px; }
 
-    .counter-row { gap: 8px; }
+    /* contador principal (rosa) */
+    .counter-row                  { gap: 4px; }
+    .counter-unit .value          { font-size: 8.5vw; min-width: unset; }
+    .counter-sep                  { font-size: 7vw;   padding-bottom: 8px; }
+    .counter-unit .label          { font-size: 6px;   letter-spacing: 0.08em; }
 
-    .counter-unit .value         { font-size: clamp(26px, 9vw, 72px); }
-    .counter-sep                  { font-size: clamp(20px, 7vw, 56px); padding-bottom: 10px; }
-
-    .flight-block .counter-unit .value { font-size: clamp(18px, 6vw, 44px); }
-    .flight-block .counter-sep         { font-size: clamp(14px, 5vw, 36px); padding-bottom: 8px; }
-
-    .counter-unit .label { font-size: 7px; }
+    /* contador vuelo (cyan) — cabe dentro del padding extra del .flight-block */
+    .flight-block .counter-row                  { gap: 3px; }
+    .flight-block .counter-unit .value          { font-size: 6.5vw; }
+    .flight-block .counter-sep                  { font-size: 5.5vw; padding-bottom: 6px; }
 }
