@@ -110,6 +110,7 @@ main {
     color: var(--text-dim);
     letter-spacing: 0.12em;
     text-align: center;
+    line-height: 2;
 }
 
 .block-hero {
