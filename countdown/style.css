@@ -266,6 +266,21 @@ main {
     display: block;
 }
 
+.test-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--orange);
+    background: rgba(255,167,61,0.08);
+    border: 1px dashed var(--orange);
+    border-radius: 2px;
+    padding: 10px 14px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+}
+.test-btn:hover {
+    background: rgba(255,167,61,0.18);
+}
+
 .arrived-msg {
     font-size: clamp(10px, 2vw, 14px);
     color: var(--orange);

@@ -40,23 +40,27 @@ function show(id, visible) {
     if (el) el.style.display = visible ? '' : 'none';
 }
 
-function renderCountdown(p, target, heroId, arrivedMsg, videoId) {
-    const cd   = getCountdown(target);
+function showArrived(p, heroId, arrivedMsg, videoId) {
     const hero = document.getElementById(heroId);
+    show(`counter-${p}`, false);
+    if (hero) {
+        hero.innerHTML = arrivedMsg;
+        hero.classList.add('arrived-msg');
+    }
+    if (videoId) {
+        const video = document.getElementById(videoId);
+        if (video) {
+            video.classList.add('visible');
+            video.play().catch(() => {});
+        }
+    }
+}
+
+function renderCountdown(p, target, heroId, arrivedMsg, videoId) {
+    const cd = getCountdown(target);
 
     if (!cd) {
-        show(`counter-${p}`, false);
-        if (hero) {
-            hero.innerHTML = arrivedMsg;
-            hero.classList.add('arrived-msg');
-        }
-        if (videoId) {
-            const video = document.getElementById(videoId);
-            if (video) {
-                video.classList.add('visible');
-                video.play().catch(() => {});
-            }
-        }
+        showArrived(p, heroId, arrivedMsg, videoId);
         return;
     }
 
@@ -96,3 +100,8 @@ function tick() {
 
 tick();
 setInterval(tick, 1000);
+
+// BOTÓN TEMPORAL DE PRUEBA — fuerza el estado "llegada" del vuelo para comprobar el vídeo
+function testFlightArrival() {
+    showArrived('f', 'flight-hero', '<span class="plane-icon">✈</span>¡EL VUELO HA DESPEGADO!', 'flight-video');
+}
