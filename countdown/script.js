@@ -100,8 +100,3 @@ function tick() {
 
 tick();
 setInterval(tick, 1000);
-
-// BOTÓN TEMPORAL DE PRUEBA — fuerza el estado "llegada" del vuelo para comprobar el vídeo
-function testFlightArrival() {
-    showArrived('f', 'flight-hero', '<span class="plane-icon">✈</span>¡EL VUELO HA DESPEGADO!', 'flight-video');
-}
