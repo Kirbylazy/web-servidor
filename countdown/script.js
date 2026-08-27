@@ -40,7 +40,7 @@ function show(id, visible) {
     if (el) el.style.display = visible ? '' : 'none';
 }
 
-function renderCountdown(p, target, heroId, arrivedMsg) {
+function renderCountdown(p, target, heroId, arrivedMsg, videoId) {
     const cd   = getCountdown(target);
     const hero = document.getElementById(heroId);
 
@@ -49,6 +49,13 @@ function renderCountdown(p, target, heroId, arrivedMsg) {
         if (hero) {
             hero.innerHTML = arrivedMsg;
             hero.classList.add('arrived-msg');
+        }
+        if (videoId) {
+            const video = document.getElementById(videoId);
+            if (video) {
+                video.classList.add('visible');
+                video.play().catch(() => {});
+            }
         }
         return;
     }
@@ -84,7 +91,7 @@ function renderCountdown(p, target, heroId, arrivedMsg) {
 
 function tick() {
     renderCountdown('a', TARGET_ARRIVAL,   'arrival-hero', '<span class="heart">♥</span>¡YA ESTÁ AQUÍ!');
-    renderCountdown('f', TARGET_DEPARTURE, 'flight-hero',  '<span class="plane-icon">✈</span>¡EL VUELO HA DESPEGADO!');
+    renderCountdown('f', TARGET_DEPARTURE, 'flight-hero',  '<span class="plane-icon">✈</span>¡EL VUELO HA DESPEGADO!', 'flight-video');
 }
 
 tick();
