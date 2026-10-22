@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum Vitae — Dario Aguilar Rodriguez</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --accent:    #1a73e8;
+            --accent-dk: #0d47a1;
+            --dark:      #1c1c2e;
+            --mid:       #444;
+            --muted:     #777;
+            --light:     #f5f7fb;
+            --border:    #dde3f0;
+            --tag-bg:    #e8f0fe;
+            --tag-fg:    #174ea6;
+        }
+
+        html { font-size: 10.5pt; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #eef1f8;
+            color: var(--dark);
+            line-height: 1.55;
+            padding: 24px;
+        }
+
+        /* ===== PAGE WRAPPER ===== */
+        .page {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: var(--dark);
+            color: #fff;
+            padding: 32px 40px 28px;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+        }
+
+        .header-text { flex: 1; }
+
+        .header h1 {
+            font-size: 24pt;
+            font-weight: 700;
+            letter-spacing: 1px;
+            line-height: 1.15;
+        }
+
+        .header h1 span { color: var(--accent); }
+
+        .header .role {
+            font-size: 11pt;
+            color: #a0b4d6;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        .header-contact {
+            margin-top: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 22px;
+            font-size: 9pt;
+            color: #c4d0e8;
+        }
+
+        .header-contact a { color: #8ab4f8; text-decoration: none; }
+
+        .contact-item { display: flex; align-items: center; gap: 6px; }
+        .contact-item .ico { opacity: .75; font-size: 10pt; }
+
+        /* ===== BODY COLUMNS ===== */
+        .body {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            background: var(--light);
+            padding: 28px 24px;
+            border-right: 1px solid var(--border);
+        }
+
+        /* ===== MAIN ===== */
+        .main {
+            padding: 28px 32px;
+        }
+
+        /* ===== SECTION COMMON ===== */
+        .section { margin-bottom: 24px; }
+        .section:last-child { margin-bottom: 0; }
+
+        .section-title {
+            font-size: 8pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 5px;
+            margin-bottom: 14px;
+        }
+
+        /* ===== SKILLS ===== */
+        .skill-group { margin-bottom: 13px; }
+
+        .skill-group-title {
+            font-size: 8pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--mid);
+            margin-bottom: 6px;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .tag {
+            background: var(--tag-bg);
+            color: var(--tag-fg);
+            font-size: 7.5pt;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            border: 1px solid #c5d8fc;
+        }
+
+        .tag.dark {
+            background: #e8e8f0;
+            color: #333;
+            border-color: #ccc;
+        }
+
+        /* ===== SIDEBAR INFO ===== */
+        .info-item {
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-size: 7.5pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+        }
+
+        .info-value {
+            font-size: 9pt;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        /* ===== EDUCATION SIDEBAR ===== */
+        .edu-item { margin-bottom: 14px; }
+
+        .edu-degree {
+            font-size: 9pt;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.3;
+        }
+
+        .edu-school {
+            font-size: 8.5pt;
+            color: var(--mid);
+            margin-top: 2px;
+        }
+
+        .edu-year {
+            font-size: 8pt;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .edu-badge {
+            display: inline-block;
+            background: #e6f4ea;
+            color: #137333;
+            font-size: 7pt;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 20px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        /* ===== EXPERIENCE ===== */
+        .exp-item { margin-bottom: 18px; }
+        .exp-item:last-child { margin-bottom: 0; }
+
+        .exp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .exp-title {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.3;
+        }
+
+        .exp-company {
+            font-size: 9pt;
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .exp-badge {
+            background: #e6f4ea;
+            color: #137333;
+            font-size: 7pt;
+            font-weight: 700;
+            padding: 1px 8px;
+            border-radius: 20px;
+            white-space: nowrap;
+            margin-top: 2px;
+        }
+
+        .exp-date {
+            font-size: 8.5pt;
+            color: var(--muted);
+            font-weight: 600;
+            white-space: nowrap;
+            margin-top: 3px;
+        }
+
+        .exp-desc {
+            font-size: 9pt;
+            color: #444;
+            margin-top: 7px;
+            line-height: 1.55;
+        }
+
+        .exp-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        /* ===== PROJECTS ===== */
+        .project-item {
+            margin-bottom: 16px;
+            padding: 13px 15px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fafbff;
+        }
+
+        .project-item:last-child { margin-bottom: 0; }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .project-name {
+            font-size: 10pt;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .project-langs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .project-lang {
+            background: var(--dark);
+            color: #fff;
+            font-size: 7pt;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            letter-spacing: .5px;
+        }
+
+        .project-desc {
+            font-size: 8.5pt;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        /* ===== ABOUT ===== */
+        .about-text {
+            font-size: 9.5pt;
+            color: #444;
+            line-height: 1.65;
+        }
+
+        /* ===== HOBBIES ===== */
+        .hobby-list {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .hobby-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .hobby-name {
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: var(--mid);
+            white-space: nowrap;
+        }
+
+        .hobby-detail {
+            font-size: 8pt;
+            color: var(--muted);
+        }
+
+        /* ===== DIVIDER ===== */
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 14px 0;
+        }
+
+        /* ===== PRINT ===== */
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+                font-size: 9.5pt;
+            }
+
+            .page {
+                box-shadow: none;
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .project-item { page-break-inside: avoid; }
+            .exp-item      { page-break-inside: avoid; }
+            .edu-item      { page-break-inside: avoid; }
+
+            a { color: inherit !important; text-decoration: none; }
+        }
+
+        @page {
+            margin: 0.6cm;
+            size: A4;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-text">
+            <h1>DARIO <span>AGUILAR</span> RODRIGUEZ</h1>
+            <div class="role">Desarrollador Web Junior</div>
+            <div class="header-contact">
+                <div class="contact-item">
+                    <span class="ico">✉</span>
+                    <a href="mailto:darioaguilarrodriguez88@gmail.com">darioaguilarrodriguez88@gmail.com</a>
+                </div>
+                <div class="contact-item">
+                    <span class="ico">☎</span>
+                    <span>625 85 04 59</span>
+                </div>
+                <div class="contact-item">
+                    <span class="ico">📍</span>
+                    <span>Sevilla, España</span>
+                </div>
+                <div class="contact-item">
+                    <span class="ico">🌐</span>
+                    <a href="https://darioaguilarrodriguez.com/">darioaguilarrodriguez.com</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="body">
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="sidebar">
+
+            <!-- Disponibilidad -->
+            <div class="section">
+                <div class="section-title">Disponibilidad</div>
+                <div class="info-item">
+                    <div class="info-label">Estado</div>
+                    <div class="info-value">Buscando empleo / prácticas</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Incorporación</div>
+                    <div class="info-value">Inmediata</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Modalidad</div>
+                    <div class="info-value">Remoto · Híbrido</div>
+                </div>
+            </div>
+
+            <!-- Habilidades técnicas -->
+            <div class="section">
+                <div class="section-title">Frontend</div>
+                <div class="skill-tags">
+                    <span class="tag">HTML5</span>
+                    <span class="tag">CSS3</span>
+                    <span class="tag">JavaScript</span>
+                    <span class="tag">DOM</span>
+                    <span class="tag">AJAX</span>
+                    <span class="tag">React</span>
+                    <span class="tag">Responsive Design</span>
+                    <span class="tag">UI / UX</span>
+                    <span class="tag">Accesibilidad</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Backend</div>
+                <div class="skill-tags">
+                    <span class="tag">PHP</span>
+                    <span class="tag">Laravel</span>
+                    <span class="tag">Express.js</span>
+                    <span class="tag">APIs REST</span>
+                    <span class="tag">Arquitectura MVC</span>
+                    <span class="tag">Seguridad Web</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Bases de Datos</div>
+                <div class="skill-tags">
+                    <span class="tag">MySQL</span>
+                    <span class="tag">MariaDB</span>
+                    <span class="tag">SQL</span>
+                    <span class="tag">Modelo relacional</span>
+                    <span class="tag">Procedimientos almacenados</span>
+                    <span class="tag">XML / XQuery</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Despliegue &amp; Sistemas</div>
+                <div class="skill-tags">
+                    <span class="tag dark">Linux</span>
+                    <span class="tag dark">Apache / Nginx</span>
+                    <span class="tag dark">SSH / FTP</span>
+                    <span class="tag dark">Raspberry Pi</span>
+                    <span class="tag dark">Redes TCP/IP</span>
+                    <span class="tag dark">Servidor propio</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Herramientas</div>
+                <div class="skill-tags">
+                    <span class="tag dark">Git / GitHub</span>
+                    <span class="tag dark">Webhooks / CI</span>
+                    <span class="tag dark">UML</span>
+                    <span class="tag dark">Testing</span>
+                    <span class="tag dark">Documentación técnica</span>
+                </div>
+            </div>
+
+            <!-- Formación -->
+            <div class="section">
+                <div class="section-title">Formación</div>
+
+                <div class="edu-item">
+                    <div class="edu-degree">
+                        G.S. Desarrollo de Aplicaciones Web
+                        <span class="edu-badge">EN CURSO</span>
+                    </div>
+                    <div class="edu-school">Centro de Formación Profesional</div>
+                    <div class="edu-year">2024 – 2026 · 2000 h · EQF Nivel 5</div>
+                </div>
+
+                <div class="edu-item">
+                    <div class="edu-degree">G.S. Mecatrónica Industrial</div>
+                    <div class="edu-school">I.E.S. El Arenal</div>
+                    <div class="edu-year">2021 – 2023</div>
+                </div>
+            </div>
+
+            <!-- Intereses -->
+            <div class="section">
+                <div class="section-title">Intereses</div>
+                <div class="hobby-list">
+                    <div class="hobby-item">
+                        <div>
+                            <div class="hobby-name">Escalada y Alpinismo</div>
+                            <div class="hobby-detail">Vocal, Federación Andaluza de Montaña</div>
+                        </div>
+                    </div>
+                    <div class="hobby-item">
+                        <div>
+                            <div class="hobby-name">Diseño e Impresión 3D</div>
+                            <div class="hobby-detail">Modelado con CATIA V5</div>
+                        </div>
+                    </div>
+                    <div class="hobby-item">
+                        <div>
+                            <div class="hobby-name">Desarrollo de proyectos propios</div>
+                            <div class="hobby-detail">Portfolio desplegado en servidor casero</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- ===== MAIN ===== -->
+        <main class="main">
+
+            <!-- Perfil -->
+            <div class="section">
+                <div class="section-title">Perfil Profesional</div>
+                <p class="about-text">
+                    Desarrollador web con formación en el <strong>Grado Superior de Desarrollo de Aplicaciones Web</strong> (finalizando en 2026) y perfil técnico sólido adquirido como técnico de laboratorio en el departamento de <strong>Ingeniería en Fusión Nuclear de la Universidad de Sevilla</strong>. Cuento con experiencia práctica construyendo aplicaciones web completas — desde el diseño del frontend hasta el despliegue en servidor propio — y con la capacidad de abordar problemas complejos de forma metódica y orientada a resultados.
+                </p>
+                <p class="about-text" style="margin-top:7px;">
+                    Busco mi primera oportunidad en un equipo de desarrollo donde aportar desde el primer día, seguir creciendo y construir productos que importen.
+                </p>
+            </div>
+
+            <!-- Experiencia -->
+            <div class="section">
+                <div class="section-title">Experiencia</div>
+
+                <div class="exp-item">
+                    <div class="exp-header">
+                        <div>
+                            <div class="exp-title">Técnico de Laboratorio — Ingeniería en Fusión Nuclear</div>
+                            <div class="exp-company">Universidad de Sevilla</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="exp-badge">EN ACTIVO</div>
+                            <div class="exp-date">Jul 2024 → Actualidad</div>
+                        </div>
+                    </div>
+                    <p class="exp-desc">
+                        Diseño, prototipado y fabricación de componentes para un reactor de fusión nuclear en un entorno de investigación puntero. El rol exige análisis riguroso de requisitos, gestión de múltiples iteraciones sobre prototipos y documentación técnica precisa — la misma mentalidad que aplico al desarrollo de software. Colaboración directa con investigadores e ingenieros en proyectos de alta complejidad técnica.
+                    </p>
+                    <div class="exp-tags">
+                        <span class="tag dark">Resolución de problemas</span>
+                        <span class="tag dark">Diseño técnico</span>
+                        <span class="tag dark">Prototipado iterativo</span>
+                        <span class="tag dark">Documentación técnica</span>
+                        <span class="tag dark">Entorno I+D</span>
+                        <span class="tag dark">Trabajo en equipo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proyectos -->
+            <div class="section">
+                <div class="section-title">Proyectos Destacados</div>
+
+                <div class="project-item">
+                    <div class="project-header">
+                        <div class="project-name">ESCALADA — Gestión de Competiciones</div>
+                        <div class="project-langs">
+                            <span class="project-lang">Laravel</span>
+                            <span class="project-lang">PHP</span>
+                            <span class="project-lang">MySQL</span>
+                        </div>
+                    </div>
+                    <p class="project-desc">
+                        Aplicación web completa para la gestión de competiciones de escalada deportiva en Andalucía. Implementa un sistema de roles diferenciados (administrador, árbitro, entrenador y competidor), inscripciones con validación documental adjunta, gestión de copas por temporada y clasificaciones automáticas. Desarrollada con el framework Laravel siguiendo arquitectura MVC, base de datos relacional MySQL y desplegada en servidor propio sobre Raspberry Pi.
+                    </p>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-header">
+                        <div class="project-name">ZIRPO — App de Carpooling</div>
+                        <div class="project-langs">
+                            <span class="project-lang">React</span>
+                            <span class="project-lang">Express</span>
+                            <span class="project-lang">MariaDB</span>
+                        </div>
+                    </div>
+                    <p class="project-desc">
+                        Plataforma de movilidad compartida para publicar y unirse a viajes en coche, con cálculo y reparto de gastos entre ocupantes. Integra la API de Google Maps para selección de rutas, paradas intermedias configurables y precios por tramo. Arquitectura full-stack: frontend en React, API REST con Node.js y Express, base de datos MariaDB. Desplegada en Raspberry Pi con dominio propio.
+                    </p>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-header">
+                        <div class="project-name">POKER SENCILLO — Juego de Poker Online</div>
+                        <div class="project-langs">
+                            <span class="project-lang">PHP</span>
+                            <span class="project-lang">HTML</span>
+                            <span class="project-lang">CSS</span>
+                        </div>
+                    </div>
+                    <p class="project-desc">
+                        Juego de poker funcional desarrollado íntegramente en PHP orientado a objetos. Implementa la lógica completa del juego: generación y barajado de baraja, reparto de cartas, detección y evaluación de manos, gestión del estado de la partida y ciclo de juego entre varios jugadores. Desplegado sobre servidor Apache en Raspberry Pi con acceso desde internet.
+                    </p>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-header">
+                        <div class="project-name">CUENTA ATRÁS — Countdown en Tiempo Real</div>
+                        <div class="project-langs">
+                            <span class="project-lang">HTML</span>
+                            <span class="project-lang">CSS</span>
+                            <span class="project-lang">JS</span>
+                        </div>
+                    </div>
+                    <p class="project-desc">
+                        Aplicación web de contador regresivo en tiempo real con soporte de múltiples zonas horarias (zona horaria de Salt Lake City, Utah). Muestra el tiempo restante desglosado en meses, días, horas, minutos y segundos, actualizándose cada segundo mediante JavaScript puro sin dependencias. Demuestra manejo de la API de fechas de JS y manipulación dinámica del DOM.
+                    </p>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+</div>
+</body>
+</html>

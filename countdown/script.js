@@ -1,8 +1,8 @@
-// Llegada Sevilla: 13 oct 2026 16:30 CEST (UTC+2) → 14:30 UTC
-const TARGET_ARRIVAL   = new Date('2026-10-13T14:30:00Z');
+// Llegada Los Angeles: 20 dec 2026 16:40 CEST (UTC-7) → 9:40 UTC
+const TARGET_ARRIVAL   = new Date('2026-12-20T16:40:00Z');
 
-// Salida SLC: 12 oct 2026 15:30 MDT (UTC-6) → 21:30 UTC
-const TARGET_DEPARTURE = new Date('2026-10-12T21:30:00Z');
+// Salida Sevilla: 12 oct 2026 12:55 MDT (UTC+2) → 14:55 UTC
+const TARGET_DEPARTURE = new Date('2026-12-20T12:55:00Z');
 
 function pad(n) {
     return String(n).padStart(2, '0');
