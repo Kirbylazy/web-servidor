@@ -253,6 +253,19 @@ main {
     margin-bottom: 4px;
 }
 
+.flight-video {
+    display: none;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 4px;
+    box-shadow: var(--glow-cyan);
+    border: 1px solid rgba(93,214,255,0.3);
+}
+
+.flight-video.visible {
+    display: block;
+}
+
 .arrived-msg {
     font-size: clamp(10px, 2vw, 14px);
     color: var(--orange);
