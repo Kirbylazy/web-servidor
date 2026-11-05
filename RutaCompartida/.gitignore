@@ -17,3 +17,7 @@ app/static/img/avatares/
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+
+# Ficheros internos de desarrollo (no para el repositorio)
+CLAUDE.md
+docs/
