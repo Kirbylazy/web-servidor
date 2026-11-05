@@ -17,7 +17,7 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - Mockups en texto o HTML estático de: inicio, registro, login, perfil, publicar viaje, búsqueda, detalle, chat.
 - **Hecho cuando:** el documento existe y cubre todas las pantallas del alcance.
 
-### [ ] 1.2 Entorno y esqueleto (23–26 oct)
+### [x] 1.2 Entorno y esqueleto (23–26 oct)
 - `requirements.txt`: flask, flask-sqlalchemy, flask-login, flask-wtf, pymysql, python-dotenv,
   requests, waitress, pytest.
 - `config.py` que lee `.env`; `.env.example`; `.gitignore` (venv, .env, __pycache__, instance/).
@@ -150,6 +150,11 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - [ ] Chat en tiempo real con Flask-SocketIO.
 
 ## Decisiones y notas
+
+### 1.2
+- Las rutas `/` y `/salud` viven directamente en `create_app()` para no crear un blueprint solo para dos rutas simples; se moverán cuando haga falta.
+- `/salud` devuelve JSON para que sea fácil de leer en el navegador y en los tests.
+- Las plantillas de esta tarea son HTML mínimo; se reemplazarán por `base.html` + Bootstrap en la tarea 1.4.
 
 ### 1.1
 - `docs/requisitos.md` cubre 10 casos de uso (incluye cerrar sesión y cancelar viaje como CU separados).

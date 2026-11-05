@@ -1,0 +1,19 @@
+# Entorno virtual
+venv/
+
+# Variables de entorno (contiene contraseñas y claves)
+.env
+
+# Caché de Python
+__pycache__/
+*.pyc
+
+# Carpeta de instancia de Flask (puede contener la BD SQLite de pruebas)
+instance/
+
+# Avatares subidos por los usuarios
+app/static/img/avatares/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
