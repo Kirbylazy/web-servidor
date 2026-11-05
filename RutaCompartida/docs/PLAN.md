@@ -48,7 +48,7 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - Tests: registro correcto, email duplicado, login correcto e incorrecto, acceso protegido sin sesión.
 - **Hecho cuando:** el recorrido registro → login → editar perfil → logout funciona y los tests pasan.
 
-### [ ] 1.6 Cierre E1 (4–5 nov)
+### [x] 1.6 Cierre E1 (4–5 nov)
 - Revisar errores, limpiar código, actualizar README.
 - `docs/entregable1.md`: qué incluye, capturas de pantalla, cómo probarlo.
 - `git tag v0.1`.
@@ -150,6 +150,10 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - [ ] Chat en tiempo real con Flask-SocketIO.
 
 ## Decisiones y notas
+
+### 1.6
+- 8 tests pasan en 0,70 s con SQLite en memoria.
+- README actualizado con tabla de cuentas de prueba y todos los comandos.
 
 ### 1.5
 - Los fixtures de pytest usan `scope='function'` (cada test tiene su propia BD limpia). El hang anterior ya no ocurre porque `create_app()` no abre contexto de BD al importar modelos.
