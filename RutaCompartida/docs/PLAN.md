@@ -40,7 +40,7 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - Páginas 404 y 500 con el mismo estilo.
 - **Hecho cuando:** todas las páginas heredan de `base.html` y se ven bien a 375 px de ancho.
 
-### [ ] 1.5 Usuarios (29 oct – 3 nov)
+### [x] 1.5 Usuarios (29 oct – 3 nov)
 - Blueprint `auth`: registro, login (con "recordarme"), logout, perfil (ver y editar).
 - Validaciones: email único y válido, contraseña de 8+ caracteres con confirmación, consumo entre 2 y 20.
 - Subida de avatar (jpg/png, máx. 2 MB) a `static/img/avatares/` con nombre seguro.
@@ -150,6 +150,11 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - [ ] Chat en tiempo real con Flask-SocketIO.
 
 ## Decisiones y notas
+
+### 1.5
+- Los fixtures de pytest usan `scope='function'` (cada test tiene su propia BD limpia). El hang anterior ya no ocurre porque `create_app()` no abre contexto de BD al importar modelos.
+- El avatar se guarda con nombre `{id}_{uuid}.ext` para evitar colisiones y no exponer el nombre original.
+- `PerfilForm(obj=current_user)` rellena el formulario automáticamente con los datos actuales del usuario al entrar con GET.
 
 ### 1.4
 - Tema Bootswatch Flatly por CDN (verde/blanco, legible y profesional).

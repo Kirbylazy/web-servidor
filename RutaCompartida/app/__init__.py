@@ -25,8 +25,11 @@ def create_app(test_config=None):
 
     # Importar los modelos registra el user_loader de Flask-Login
     # y hace que SQLAlchemy conozca todas las tablas.
-    # No hace falta contexto de app para esto — el decorador funciona en cualquier momento.
     from app import models  # noqa
+
+    # Registrar blueprints
+    from app.auth import auth as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
 
     # --- Rutas básicas ---
 

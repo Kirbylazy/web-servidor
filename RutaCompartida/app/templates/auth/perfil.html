@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block titulo %}Mi perfil — RutaCompartida{% endblock %}
+
+{% block contenido %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+      <h2 class="mb-4">Mi perfil</h2>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+
+          <!-- Avatar actual -->
+          <div class="text-center mb-4">
+            {% if current_user.avatar %}
+              <img src="{{ url_for('static', filename='img/avatares/' + current_user.avatar) }}"
+                   alt="Avatar" class="rounded-circle"
+                   style="width:100px; height:100px; object-fit:cover;">
+            {% else %}
+              <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center"
+                   style="width:100px; height:100px; font-size:2.5rem; color:white;">
+                {{ current_user.nombre[0].upper() }}
+              </div>
+            {% endif %}
+            <p class="text-muted small mt-2">{{ current_user.email }}</p>
+          </div>
+
+          <form method="post" enctype="multipart/form-data" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Nombre -->
+            <div class="mb-3">
+              {{ form.nombre.label(class="form-label") }}
+              {{ form.nombre(class="form-control" + (" is-invalid" if form.nombre.errors else "")) }}
+              {% for error in form.nombre.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- Teléfono -->
+            <div class="mb-3">
+              {{ form.telefono.label(class="form-label") }}
+              {{ form.telefono(class="form-control", placeholder="Ej: 600 000 000") }}
+            </div>
+
+            <!-- Fila: coche y consumo -->
+            <div class="row g-3 mb-3">
+              <div class="col-12 col-sm-7">
+                {{ form.coche_modelo.label(class="form-label") }}
+                {{ form.coche_modelo(class="form-control", placeholder="Ej: Seat Ibiza") }}
+              </div>
+              <div class="col-12 col-sm-5">
+                {{ form.consumo_l100km.label(class="form-label") }}
+                {{ form.consumo_l100km(class="form-control" + (" is-invalid" if form.consumo_l100km.errors else "")) }}
+                {% for error in form.consumo_l100km.errors %}
+                  <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Avatar -->
+            <div class="mb-4">
+              {{ form.avatar.label(class="form-label") }}
+              {{ form.avatar(class="form-control" + (" is-invalid" if form.avatar.errors else "")) }}
+              <div class="form-text">jpg o png, máximo 2 MB.</div>
+              {% for error in form.avatar.errors %}
+                <div class="invalid-feedback d-block">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('inicio') }}" class="btn btn-outline-secondary ms-2">Cancelar</a>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

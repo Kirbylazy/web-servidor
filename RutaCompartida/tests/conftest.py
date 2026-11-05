@@ -10,11 +10,11 @@ from app import create_app
 from app.extensions import db as _db
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def app():
     """
     Crea una instancia de la app configurada para tests.
-    scope='module' significa que se reutiliza para todos los tests del mismo
+    scope='function' significa que se reutiliza para todos los tests del mismo
     fichero, en lugar de crear y destruir la app en cada test.
     """
     app = create_app({
@@ -29,13 +29,13 @@ def app():
         _db.drop_all()     # Limpia al terminar todos los tests del módulo
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def db(app):
     """Devuelve el objeto de base de datos dentro del contexto de la app."""
     return _db
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='function')
 def client(app):
     """Cliente HTTP para hacer peticiones a la app en los tests."""
     return app.test_client()
