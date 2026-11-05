@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify
 from config import Config
-from app.extensions import db, login_manager, csrf
+from app.extensions import db, csrf
 
 
 def create_app():
@@ -14,8 +14,8 @@ def create_app():
 
     # Conecta las extensiones con esta instancia de la app
     db.init_app(app)
-    login_manager.init_app(app)
     csrf.init_app(app)
+    # login_manager se activa en la tarea 1.5, cuando exista el modelo Usuario
 
     # --- Rutas básicas ---
 
