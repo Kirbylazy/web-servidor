@@ -1,18 +1,104 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RutaCompartida</title>
-  <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 80px auto; text-align: center; }
-    h1 { color: #0d6efd; }
-    a { color: #0d6efd; }
-  </style>
-</head>
-<body>
-  <h1>Hola RutaCompartida</h1>
-  <p>La aplicación está funcionando correctamente.</p>
-  <p><a href="/salud">Comprobar conexión a la base de datos →</a></p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block titulo %}RutaCompartida — Comparte tu viaje{% endblock %}
+
+{% block contenido %}
+
+  <!-- Bloque hero con el buscador -->
+  <section class="hero">
+    <div class="container text-center">
+      <h1>Encuentra tu próximo viaje compartido</h1>
+      <p class="lead mb-4">Ahorra dinero y viaja acompañado por toda España.</p>
+
+      <!-- Formulario de búsqueda (de momento solo redirige a /viajes) -->
+      <form action="#" method="get" class="row g-2 justify-content-center">
+        <div class="col-12 col-sm-auto">
+          <input type="text" name="origen" class="form-control"
+                 placeholder="Origen (ej: Sevilla)">
+        </div>
+        <div class="col-12 col-sm-auto">
+          <input type="text" name="destino" class="form-control"
+                 placeholder="Destino (ej: Madrid)">
+        </div>
+        <div class="col-12 col-sm-auto">
+          <input type="date" name="fecha" class="form-control">
+        </div>
+        <div class="col-12 col-sm-auto">
+          <button type="submit" class="btn btn-warning w-100 fw-bold">
+            Buscar
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- Sección de viajes de ejemplo -->
+  <section class="container my-5">
+    <h2 class="mb-4">Viajes disponibles</h2>
+
+    <div class="row g-3">
+
+      <div class="col-12 col-md-6">
+        <div class="card tarjeta-viaje h-100">
+          <div class="card-body">
+            <span class="badge bg-success mb-2">3 plazas libres</span>
+            <h5 class="card-title">Sevilla → Madrid</h5>
+            <p class="card-text text-muted mb-1">📅 12/11/2026 a las 08:00</p>
+            <p class="card-text text-muted mb-1">🧑 Carlos García</p>
+            <p class="card-text fw-bold text-primary fs-5">13,50 € / plaza</p>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="#" class="btn btn-primary btn-sm">Ver detalle</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card tarjeta-viaje h-100">
+          <div class="card-body">
+            <span class="badge bg-success mb-2">2 plazas libres</span>
+            <h5 class="card-title">Córdoba → Granada</h5>
+            <p class="card-text text-muted mb-1">📅 13/11/2026 a las 09:30</p>
+            <p class="card-text text-muted mb-1">🧑 Laura Martín</p>
+            <p class="card-text fw-bold text-primary fs-5">4,50 € / plaza</p>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="#" class="btn btn-primary btn-sm">Ver detalle</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card tarjeta-viaje h-100">
+          <div class="card-body">
+            <span class="badge bg-success mb-2">3 plazas libres</span>
+            <h5 class="card-title">Málaga → Sevilla</h5>
+            <p class="card-text text-muted mb-1">📅 14/11/2026 a las 07:00</p>
+            <p class="card-text text-muted mb-1">🧑 Javier Ruiz</p>
+            <p class="card-text fw-bold text-primary fs-5">5,50 € / plaza</p>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="#" class="btn btn-primary btn-sm">Ver detalle</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card tarjeta-viaje h-100">
+          <div class="card-body">
+            <span class="badge bg-success mb-2">4 plazas libres</span>
+            <h5 class="card-title">Sevilla → Granada</h5>
+            <p class="card-text text-muted mb-1">📅 15/11/2026 a las 10:00</p>
+            <p class="card-text text-muted mb-1">🧑 Laura Martín</p>
+            <p class="card-text fw-bold text-primary fs-5">6,50 € / plaza</p>
+          </div>
+          <div class="card-footer bg-transparent">
+            <a href="#" class="btn btn-primary btn-sm">Ver detalle</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+{% endblock %}

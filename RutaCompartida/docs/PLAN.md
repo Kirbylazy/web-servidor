@@ -33,7 +33,7 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - Test que crea un usuario, un viaje y una reserva en SQLite en memoria.
 - **Hecho cuando:** las tablas aparecen en phpMyAdmin y `pytest` pasa.
 
-### [ ] 1.4 Plantilla base (27–29 oct)
+### [x] 1.4 Plantilla base (27–29 oct)
 - `base.html` con Bootstrap 5 + tema Bootswatch, barra de navegación (cambia según sesión),
   zona de mensajes flash y pie.
 - Portada con buscador simple (origen, destino, fecha) que de momento no busca.
@@ -150,6 +150,12 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - [ ] Chat en tiempo real con Flask-SocketIO.
 
 ## Decisiones y notas
+
+### 1.4
+- Tema Bootswatch Flatly por CDN (verde/blanco, legible y profesional).
+- `current_user` lo inyecta Flask-Login automáticamente en todas las plantillas; no hace falta pasarlo desde la vista.
+- Los enlaces de la navbar apuntan a `#` por ahora; se actualizarán en las tareas 1.5 y 2.x cuando existan las rutas.
+- `base.html` usa flexbox (`min-height: 100vh`) para que el pie quede siempre al fondo.
 
 ### 1.3
 - `create_app()` acepta `test_config` para que los tests puedan usar SQLite en memoria sin tocar MySQL.

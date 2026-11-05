@@ -1,0 +1,49 @@
+/* app.css — estilos propios de RutaCompartida */
+
+/* Empuja el pie de página al fondo aunque la página tenga poco contenido */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+/* Buscador de la portada */
+.hero {
+  background: linear-gradient(135deg, #2c3e50 0%, #18bc9c 100%);
+  padding: 60px 0;
+  color: white;
+}
+
+.hero h1 {
+  font-weight: 700;
+}
+
+/* Tarjetas de viaje */
+.tarjeta-viaje {
+  transition: box-shadow 0.2s;
+}
+
+.tarjeta-viaje:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Burbujas del chat */
+.burbuja {
+  max-width: 70%;
+  word-break: break-word;
+}
+
+/* Ajustes para móvil (375 px) */
+@media (max-width: 576px) {
+  .hero {
+    padding: 32px 0;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+}
