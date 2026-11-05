@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RutaCompartida — Detalle del viaje</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 16px; }
+    nav { background: #0d6efd; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; }
+    nav a { color: white; text-decoration: none; margin-left: 16px; }
+    .cabecera { display: flex; justify-content: space-between; align-items: flex-start; margin: 24px 0 12px; }
+    .cabecera h2 { margin: 0; }
+    .estado { background: #d1e7dd; color: #0a3622; padding: 4px 10px; border-radius: 4px; font-size: 13px; }
+    .info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .dato { background: #f8f9fa; padding: 12px; border-radius: 6px; }
+    .dato small { color: #888; font-size: 12px; }
+    .dato strong { display: block; font-size: 15px; margin-top: 2px; }
+    .mapa { background: #e9ecef; height: 200px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #888; margin: 16px 0; border: 1px solid #dee2e6; }
+    .conductor { display: flex; align-items: center; gap: 16px; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .conductor img { width: 60px; height: 60px; border-radius: 50%; background: #dee2e6; }
+    .acciones { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+    button.primary { padding: 12px 24px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; }
+    button.secondary { padding: 12px 24px; background: white; border: 1px solid #0d6efd; color: #0d6efd; border-radius: 4px; font-size: 15px; cursor: pointer; }
+    button.peligro { padding: 12px 24px; background: white; border: 1px solid #dc3545; color: #dc3545; border-radius: 4px; font-size: 15px; cursor: pointer; }
+    .reservar { border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-top: 16px; }
+    .reservar h3 { margin-top: 0; }
+    input[type="number"] { width: 80px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <strong>🚗 RutaCompartida</strong>
+    <span>
+      <a href="inicio.html">Inicio</a>
+      <a href="busqueda.html">← Resultados</a>
+      <a href="#">Cerrar sesión</a>
+    </span>
+  </nav>
+
+  <div class="cabecera">
+    <h2>Sevilla → Madrid</h2>
+    <span class="estado">Activo</span>
+  </div>
+
+  <!-- Datos del viaje -->
+  <div class="info">
+    <div class="dato">
+      <small>Fecha y hora</small>
+      <strong>12/11/2026 a las 08:00</strong>
+    </div>
+    <div class="dato">
+      <small>Distancia</small>
+      <strong>530 km · ~5h 20min</strong>
+    </div>
+    <div class="dato">
+      <small>Precio por plaza</small>
+      <strong>13,50 €</strong>
+    </div>
+    <div class="dato">
+      <small>Plazas disponibles</small>
+      <strong>3 de 3</strong>
+    </div>
+  </div>
+
+  <div class="mapa">[Mapa con la ruta Sevilla → Madrid]</div>
+
+  <p><strong>Comentarios:</strong> No fumar. Paro si se necesita.</p>
+
+  <!-- Datos del conductor -->
+  <div class="conductor">
+    <img src="https://via.placeholder.com/60" alt="Avatar">
+    <div>
+      <strong>Carlos García</strong><br>
+      <small>Coche: Seat Ibiza · Consumo: 6,5 l/100 km</small><br>
+      <small>📞 600 000 000</small>
+    </div>
+  </div>
+
+  <!-- Formulario de reserva (solo si el usuario no es el conductor) -->
+  <div class="reservar">
+    <h3>Reservar plaza</h3>
+    <label>Número de plazas: <input type="number" value="1" min="1" max="3"></label>
+    <div class="acciones">
+      <button class="primary">Reservar</button>
+      <button class="secondary" onclick="location.href='chat.html'">💬 Contactar con el conductor</button>
+    </div>
+  </div>
+
+  <!-- Botón cancelar (solo visible para el conductor de este viaje) -->
+  <!--
+  <div style="margin-top:16px;">
+    <button class="peligro">Cancelar viaje</button>
+  </div>
+  -->
+
+</body>
+</html>

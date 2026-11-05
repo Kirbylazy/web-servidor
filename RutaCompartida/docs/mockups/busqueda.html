@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RutaCompartida — Buscar viajes</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 16px; }
+    nav { background: #0d6efd; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; }
+    nav a { color: white; text-decoration: none; margin-left: 16px; }
+    .filtros { background: #f8f9fa; padding: 16px; border-radius: 6px; margin: 16px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+    .filtros label { font-size: 13px; color: #444; }
+    .filtros input, .filtros select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    button.primary { padding: 9px 18px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .resultado { border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .resultado h3 { margin: 0 0 4px; }
+    .resultado p { margin: 2px 0; font-size: 14px; color: #555; }
+    .precio { font-size: 20px; font-weight: bold; color: #0d6efd; }
+    .plazas { font-size: 13px; color: #198754; }
+    a.btn { padding: 8px 14px; background: #0d6efd; color: white; border-radius: 4px; text-decoration: none; font-size: 14px; }
+    .paginacion { text-align: center; margin-top: 16px; }
+    .paginacion a { margin: 0 4px; padding: 6px 12px; border: 1px solid #dee2e6; border-radius: 4px; text-decoration: none; color: #0d6efd; }
+    .paginacion a.activa { background: #0d6efd; color: white; border-color: #0d6efd; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <strong>🚗 RutaCompartida</strong>
+    <span>
+      <a href="inicio.html">Inicio</a>
+      <a href="#">Cerrar sesión</a>
+    </span>
+  </nav>
+
+  <h2>Buscar viajes</h2>
+
+  <!-- Filtros -->
+  <div class="filtros">
+    <div>
+      <label>Origen</label><br>
+      <input type="text" value="Sevilla">
+    </div>
+    <div>
+      <label>Destino</label><br>
+      <input type="text" placeholder="Cualquiera">
+    </div>
+    <div>
+      <label>Fecha</label><br>
+      <input type="date" value="2026-11-12">
+    </div>
+    <div>
+      <label>Plazas mínimas</label><br>
+      <select>
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+      </select>
+    </div>
+    <button class="primary">Buscar</button>
+  </div>
+
+  <p>3 viajes encontrados</p>
+
+  <!-- Resultados -->
+  <div class="resultado">
+    <div>
+      <h3>Sevilla → Madrid</h3>
+      <p>📅 12/11/2026 a las 08:00 · 530 km · ~5h 20min</p>
+      <p>🧑 Carlos García</p>
+      <span class="plazas">✔ 3 plazas libres</span>
+    </div>
+    <div style="text-align:right">
+      <div class="precio">13,50 €</div>
+      <small>por plaza</small><br><br>
+      <a class="btn" href="detalle.html">Ver</a>
+    </div>
+  </div>
+
+  <div class="resultado">
+    <div>
+      <h3>Sevilla → Córdoba</h3>
+      <p>📅 12/11/2026 a las 10:00 · 143 km · ~1h 30min</p>
+      <p>🧑 Ana López</p>
+      <span class="plazas">✔ 2 plazas libres</span>
+    </div>
+    <div style="text-align:right">
+      <div class="precio">4,00 €</div>
+      <small>por plaza</small><br><br>
+      <a class="btn" href="detalle.html">Ver</a>
+    </div>
+  </div>
+
+  <div class="resultado">
+    <div>
+      <h3>Sevilla → Granada</h3>
+      <p>📅 13/11/2026 a las 07:30 · 256 km · ~2h 45min</p>
+      <p>🧑 Pedro Sánchez</p>
+      <span class="plazas">✔ 1 plaza libre</span>
+    </div>
+    <div style="text-align:right">
+      <div class="precio">7,00 €</div>
+      <small>por plaza</small><br><br>
+      <a class="btn" href="detalle.html">Ver</a>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div class="paginacion">
+    <a href="#" class="activa">1</a>
+    <a href="#">2</a>
+    <a href="#">→</a>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RutaCompartida — Inicio</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 16px; }
+    nav { background: #0d6efd; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; }
+    nav a { color: white; text-decoration: none; margin-left: 16px; }
+    .hero { background: #e9f1ff; padding: 32px; text-align: center; border-radius: 8px; margin: 24px 0; }
+    .buscador { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+    input, select, button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    button.primary { background: #0d6efd; color: white; border: none; cursor: pointer; }
+    .tarjetas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    .tarjeta { border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; }
+    .tarjeta h3 { margin: 0 0 8px; }
+    .etiqueta { display: inline-block; background: #0d6efd; color: white; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+    footer { text-align: center; color: #888; margin-top: 40px; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de navegación -->
+  <nav>
+    <strong>🚗 RutaCompartida</strong>
+    <span>
+      <a href="registro.html">Registrarse</a>
+      <a href="login.html">Iniciar sesión</a>
+    </span>
+  </nav>
+
+  <!-- Bloque principal con el buscador -->
+  <div class="hero">
+    <h1>Encuentra tu próximo viaje compartido</h1>
+    <p>Ahorra dinero y viaja acompañado por toda España.</p>
+    <div class="buscador">
+      <input type="text" placeholder="Origen (ej: Sevilla)">
+      <input type="text" placeholder="Destino (ej: Madrid)">
+      <input type="date">
+      <button class="primary">Buscar</button>
+    </div>
+  </div>
+
+  <!-- Viajes de ejemplo -->
+  <h2>Viajes disponibles</h2>
+  <div class="tarjetas">
+
+    <div class="tarjeta">
+      <span class="etiqueta">1 plaza libre</span>
+      <h3>Sevilla → Madrid</h3>
+      <p>📅 12/11/2026 a las 08:00</p>
+      <p>💶 13,50 € por plaza</p>
+      <p>🧑 Carlos García</p>
+      <a href="detalle.html">Ver detalle</a>
+    </div>
+
+    <div class="tarjeta">
+      <span class="etiqueta">3 plazas libres</span>
+      <h3>Córdoba → Granada</h3>
+      <p>📅 13/11/2026 a las 09:30</p>
+      <p>💶 7,00 € por plaza</p>
+      <p>🧑 Laura Martín</p>
+      <a href="detalle.html">Ver detalle</a>
+    </div>
+
+    <div class="tarjeta">
+      <span class="etiqueta">2 plazas libres</span>
+      <h3>Málaga → Sevilla</h3>
+      <p>📅 14/11/2026 a las 07:00</p>
+      <p>💶 9,50 € por plaza</p>
+      <p>🧑 Javier Ruiz</p>
+      <a href="detalle.html">Ver detalle</a>
+    </div>
+
+    <div class="tarjeta">
+      <span class="etiqueta">2 plazas libres</span>
+      <h3>Madrid → Córdoba</h3>
+      <p>📅 15/11/2026 a las 10:00</p>
+      <p>💶 11,00 € por plaza</p>
+      <p>🧑 Ana López</p>
+      <a href="detalle.html">Ver detalle</a>
+    </div>
+
+  </div>
+
+  <footer>RutaCompartida · Proyecto académico 2026</footer>
+
+</body>
+</html>

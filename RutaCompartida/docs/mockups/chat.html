@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RutaCompartida — Chat</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 16px; }
+    nav { background: #0d6efd; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; }
+    nav a { color: white; text-decoration: none; margin-left: 16px; }
+    .titulo { margin: 24px 0 8px; }
+    .subtitulo { color: #888; font-size: 14px; margin-bottom: 16px; }
+    .mensajes { border: 1px solid #dee2e6; border-radius: 8px; padding: 16px; height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .burbuja { max-width: 65%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+    .burbuja small { display: block; font-size: 11px; color: #888; margin-top: 4px; }
+    .burbuja.otro { background: #f1f3f5; align-self: flex-start; border-bottom-left-radius: 0; }
+    .burbuja.yo { background: #0d6efd; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+    .burbuja.yo small { color: #cfe2ff; }
+    .enviar { display: flex; gap: 8px; margin-top: 12px; }
+    .enviar textarea { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; resize: none; height: 60px; }
+    .enviar button { padding: 0 20px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .contador { font-size: 12px; color: #888; text-align: right; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <strong>🚗 RutaCompartida</strong>
+    <span>
+      <a href="inicio.html">Inicio</a>
+      <a href="detalle.html">← Volver al viaje</a>
+      <a href="#">Cerrar sesión</a>
+    </span>
+  </nav>
+
+  <h2 class="titulo">Chat</h2>
+  <p class="subtitulo">Viaje: Sevilla → Madrid · 12/11/2026 · con Carlos García</p>
+
+  <!-- Área de mensajes -->
+  <div class="mensajes">
+
+    <!-- Mensaje del otro usuario -->
+    <div class="burbuja otro">
+      Hola, ¿a qué hora pasas exactamente por Sevilla?
+      <small>Carlos García · 05/11/2026 10:02</small>
+    </div>
+
+    <!-- Mensaje propio -->
+    <div class="burbuja yo">
+      Salgo de casa a las 7:30, así que estaré en el punto de encuentro a las 8:00 en punto.
+      <small>Tú · 05/11/2026 10:05</small>
+    </div>
+
+    <div class="burbuja otro">
+      Perfecto, nos vemos allí. El punto de encuentro es la estación de autobuses del Prado.
+      <small>Carlos García · 05/11/2026 10:07</small>
+    </div>
+
+    <div class="burbuja yo">
+      De acuerdo, ¡hasta el miércoles!
+      <small>Tú · 05/11/2026 10:08</small>
+    </div>
+
+  </div>
+
+  <!-- Formulario de envío -->
+  <div class="enviar">
+    <textarea placeholder="Escribe un mensaje… (máx. 1000 caracteres)"></textarea>
+    <button>Enviar</button>
+  </div>
+  <div class="contador">0 / 1000</div>
+
+</body>
+</html>

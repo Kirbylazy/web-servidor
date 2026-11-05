@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>RutaCompartida — Registro</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 16px; }
+    nav { background: #0d6efd; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; }
+    nav a { color: white; text-decoration: none; margin-left: 16px; }
+    .caja { max-width: 420px; margin: 40px auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 32px; }
+    .caja h2 { margin-top: 0; }
+    label { display: block; margin-top: 16px; font-size: 14px; color: #444; }
+    input { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+    .error { color: #dc3545; font-size: 13px; margin-top: 4px; }
+    button { width: 100%; margin-top: 24px; padding: 12px; background: #0d6efd; color: white; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; }
+    .pie { text-align: center; margin-top: 16px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <strong>🚗 RutaCompartida</strong>
+    <span>
+      <a href="login.html">Iniciar sesión</a>
+    </span>
+  </nav>
+
+  <div class="caja">
+    <h2>Crear cuenta</h2>
+
+    <label>Nombre
+      <input type="text" placeholder="Tu nombre">
+    </label>
+
+    <label>Email
+      <input type="email" placeholder="correo@ejemplo.com">
+      <!-- Ejemplo de error: -->
+      <!-- <span class="error">Este email ya está en uso.</span> -->
+    </label>
+
+    <label>Contraseña (mínimo 8 caracteres)
+      <input type="password" placeholder="••••••••">
+    </label>
+
+    <label>Confirmar contraseña
+      <input type="password" placeholder="••••••••">
+      <!-- Ejemplo de error: -->
+      <!-- <span class="error">Las contraseñas no coinciden.</span> -->
+    </label>
+
+    <button>Registrarse</button>
+
+    <p class="pie">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+  </div>
+
+</body>
+</html>
