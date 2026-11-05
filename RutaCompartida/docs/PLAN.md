@@ -26,7 +26,7 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - `README.md` con instalación paso a paso en Windows (XAMPP + venv).
 - **Hecho cuando:** `python run.py` abre la portada y `/salud` responde OK con MySQL de XAMPP arrancado.
 
-### [ ] 1.3 Modelo de datos y BD (26–28 oct)
+### [x] 1.3 Modelo de datos y BD (26–28 oct)
 - Los cinco modelos de `CLAUDE.md` en `app/models.py` con relaciones y restricciones únicas.
 - Comando `flask crear-bd` que crea las tablas, y `schema.sql` equivalente para phpMyAdmin.
 - `seed.py` con 3 usuarios y 5 viajes de ejemplo (Sevilla, Madrid, Córdoba, Málaga, Granada).
@@ -150,6 +150,11 @@ Al cerrar cada fase: etiqueta en Git (`git tag v0.1`, `v0.2`, `v1.0`).
 - [ ] Chat en tiempo real con Flask-SocketIO.
 
 ## Decisiones y notas
+
+### 1.3
+- `create_app()` acepta `test_config` para que los tests puedan usar SQLite en memoria sin tocar MySQL.
+- Los fixtures de pytest usan `scope='module'` para evitar recrear la app entre cada test.
+- Los tests usan emails distintos por test para no violar la restricción UNIQUE de la tabla `usuarios`.
 
 ### 1.2
 - Las rutas `/` y `/salud` viven directamente en `create_app()` para no crear un blueprint solo para dos rutas simples; se moverán cuando haga falta.
