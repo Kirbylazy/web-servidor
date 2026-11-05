@@ -1,5 +1,4 @@
 *.pdf
-generar_pdf.py
 
 # Dependencias
 node_modules/
